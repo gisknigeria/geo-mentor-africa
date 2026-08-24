@@ -61,3 +61,10 @@ test("renders safe registration and supervised student joining", async () => {
   assert.match(join, /School-managed email/);
   assert.match(join, /teacher must verify/i);
 });
+
+test("renders onboarding administration and staff invitation routes", async () => {
+  const admin = await expectPage("/admin/onboarding", /Loading onboarding workspace/);
+  assert.match(admin, /Onboarding administration/);
+  const invitation = await expectPage("/invite", /Accept your trusted role/);
+  assert.match(invitation, /Verify invited email/);
+});

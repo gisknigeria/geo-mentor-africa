@@ -19,7 +19,7 @@ export function AuthCallback() {
         return;
       }
       const requested = searchParams.get("next");
-      const next = requested === "/register/complete" || requested === "/join" ? requested : "/";
+      const next = requested === "/register/complete" || requested === "/join" || requested === "/invite" ? requested : "/";
       router.replace(next);
       router.refresh();
     };
