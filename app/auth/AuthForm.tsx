@@ -40,7 +40,7 @@ export function AuthForm() {
         </form>
         {message && <div className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-900" role="status">{message}</div>}
         <div className="mt-6 flex gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4"><ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-700" /><p className="text-xs leading-5 text-slate-600"><strong className="block text-emerald-950">Protected school access</strong>Your role and school membership are checked by the database for every record.</p></div>
-        <Link href="/" className="mt-6 inline-block text-xs font-bold text-emerald-800 hover:underline">← Return to pilot preview</Link>
+        <div className="mt-6 flex items-center justify-between gap-3"><Link href="/" className="text-xs font-bold text-emerald-800 hover:underline">← Return to pilot preview</Link><Link href="/register" className="text-xs font-bold text-emerald-800 hover:underline">Apply to join →</Link></div>
       </section>
     </main>
   );

@@ -15,7 +15,7 @@ This repository contains the first pilot slice:
 
 The pilot uses Supabase Auth, Postgres/PostGIS, Row Level Security, and a private `observation-evidence` storage bucket. Copy `.env.example` to `.env.local` and set the project URL plus publishable key. Never expose `SUPABASE_SECRET_KEY` in browser code.
 
-Apply `supabase/migrations/0001_core.sql` followed by `0002_auth_and_storage.sql` through the Supabase migration pipeline. Invite adult pilot users in Supabase Auth, then add a verified organization membership before they access school records. Student class-code onboarding remains a separate supervised workflow.
+Apply `supabase/migrations/0001_core.sql`, `0002_auth_and_storage.sql`, then `0003_registration_and_class_codes.sql` through the Supabase migration pipeline. Schools, mentors and experts verify their email before submitting a review application. Students verify a school-managed email, enter a teacher-issued class code, and remain pending until teacher review and consent recording.
 
 ## Product boundaries
 

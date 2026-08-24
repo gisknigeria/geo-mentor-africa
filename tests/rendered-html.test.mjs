@@ -51,3 +51,13 @@ test("renders invite-only Supabase sign in", async () => {
   assert.match(html, /Email me a sign-in link/);
   assert.match(html, /Protected school access/);
 });
+
+test("renders safe registration and supervised student joining", async () => {
+  const registration = await expectPage("/register", /Choose how you want to join/);
+  assert.match(registration, /School/);
+  assert.match(registration, /Mentor/);
+  assert.match(registration, /Expert/);
+  const join = await expectPage("/join", /Join your school project/);
+  assert.match(join, /School-managed email/);
+  assert.match(join, /teacher must verify/i);
+});

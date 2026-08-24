@@ -33,7 +33,7 @@ export function AccountMenu() {
   }
 
   if (!user) {
-    return <Link href="/auth" className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#0b4436] px-3 text-xs font-bold text-white hover:bg-[#0f5745]"><LogIn className="size-4" />Sign in</Link>;
+    return <div className="flex items-center gap-1"><Link href="/register" className="hidden min-h-9 items-center rounded-lg px-3 text-xs font-bold text-emerald-800 hover:bg-emerald-50 sm:inline-flex">Register</Link><Link href="/auth" className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#0b4436] px-3 text-xs font-bold text-white hover:bg-[#0f5745]"><LogIn className="size-4" />Sign in</Link></div>;
   }
 
   return (
