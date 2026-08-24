@@ -11,9 +11,15 @@ This repository contains the first pilot slice:
 - PostgreSQL/PostGIS schema with school-scoped row-level security policies
 - Responsive layouts and rendered-route tests
 
+## Supabase connection
+
+The pilot uses Supabase Auth, Postgres/PostGIS, Row Level Security, and a private `observation-evidence` storage bucket. Copy `.env.example` to `.env.local` and set the project URL plus publishable key. Never expose `SUPABASE_SECRET_KEY` in browser code.
+
+Apply `supabase/migrations/0001_core.sql` followed by `0002_auth_and_storage.sql` through the Supabase migration pipeline. Invite adult pilot users in Supabase Auth, then add a verified organization membership before they access school records. Student class-code onboarding remains a separate supervised workflow.
+
 ## Product boundaries
 
-The current hosted surface is a functional product preview. Offline drafts are stored only on the user’s device. Production submission, accounts and shared records must not be enabled until a Supabase project, storage policies and school onboarding controls are connected.
+The current hosted surface is a functional product preview connected to a Supabase project. Offline drafts remain on the user’s device; live submissions activate after the database migrations and school onboarding records are applied.
 
 Student safety is a release requirement:
 

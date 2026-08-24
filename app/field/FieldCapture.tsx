@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Logo } from "../../components/app/logo";
 import { Button } from "../../components/ui/button";
+import { supabase } from "../../lib/supabase/client";
 
 type Coordinates = { latitude: number; longitude: number; accuracy: number };
 type Draft = {
@@ -15,6 +16,7 @@ type Draft = {
   observedAt: string;
   coordinates: Coordinates | null;
   photoName: string | null;
+  photo: { blob: Blob; type: string; name: string; size: number } | null;
   updatedAt: string;
 };
 
@@ -45,6 +47,15 @@ async function saveDraftRecord(draft: Draft) {
   database.close();
 }
 
+function subscribeToConnectivity(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
 export function FieldCapture() {
   const [category, setCategory] = useState("TREE");
   const [commonName, setCommonName] = useState("");
@@ -55,6 +66,7 @@ export function FieldCapture() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const online = useSyncExternalStore(subscribeToConnectivity, () => navigator.onLine, () => true);
 
   const observedAt = useMemo(() => new Date().toISOString(), []);
 
@@ -63,6 +75,20 @@ export function FieldCapture() {
       if (photoUrl) URL.revokeObjectURL(photoUrl);
     };
   }, [photoUrl]);
+
+  function createDraft(): Draft {
+    return {
+      id: crypto.randomUUID(),
+      category,
+      commonName: commonName.trim(),
+      notes: notes.trim(),
+      observedAt,
+      coordinates,
+      photoName: photo?.name ?? null,
+      photo: photo ? { blob: photo, type: photo.type, name: photo.name, size: photo.size } : null,
+      updatedAt: new Date().toISOString(),
+    };
+  }
 
   function captureLocation() {
     setMessage(null);
@@ -112,16 +138,7 @@ export function FieldCapture() {
     setSaving(true);
     setMessage(null);
     try {
-      await saveDraftRecord({
-        id: crypto.randomUUID(),
-        category,
-        commonName: commonName.trim(),
-        notes: notes.trim(),
-        observedAt,
-        coordinates,
-        photoName: photo?.name ?? null,
-        updatedAt: new Date().toISOString(),
-      });
+      await saveDraftRecord(createDraft());
       setMessage("Draft saved securely on this device. It will remain pending until you submit it.");
     } catch {
       setMessage("The draft could not be saved on this device. Keep this page open and try again.");
@@ -136,15 +153,95 @@ export function FieldCapture() {
       setMessage("Add a photo and capture your GPS location before submitting for teacher review.");
       return;
     }
-    await saveDraft();
-    setMessage("Observation added to the pending sync queue. A teacher must review it before expert verification.");
+    if (!navigator.onLine) {
+      await saveDraft();
+      setMessage("You are offline. The observation is saved on this device and can be submitted when you reconnect.");
+      return;
+    }
+
+    setSaving(true);
+    setMessage(null);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) throw new Error("SIGN_IN_REQUIRED");
+
+      const { data: memberships, error: membershipError } = await supabase
+        .from("organization_memberships")
+        .select("organization_id, role, status")
+        .eq("user_id", authData.user.id)
+        .eq("status", "VERIFIED")
+        .limit(1);
+      if (membershipError) throw membershipError;
+      const membership = memberships?.[0];
+      if (!membership) throw new Error("MEMBERSHIP_REQUIRED");
+
+      const { data: schools, error: schoolError } = await supabase
+        .from("schools")
+        .select("id")
+        .eq("organization_id", membership.organization_id)
+        .limit(1);
+      if (schoolError) throw schoolError;
+      const school = schools?.[0];
+      if (!school) throw new Error("SCHOOL_REQUIRED");
+
+      const observationId = crypto.randomUUID();
+      const { error: observationError } = await supabase.from("observations").insert({
+        id: observationId,
+        organization_id: membership.organization_id,
+        school_id: school.id,
+        observer_id: authData.user.id,
+        observation_type: category,
+        common_name: commonName.trim() || null,
+        notes: notes.trim(),
+        observed_at: observedAt,
+        location: `SRID=4326;POINT(${coordinates.longitude} ${coordinates.latitude})`,
+        coordinate_accuracy_m: Math.min(coordinates.accuracy, 50000),
+        verification_status: "PENDING",
+        visibility: "SCHOOL",
+      });
+      if (observationError) throw observationError;
+
+      const extension = photo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const storagePath = `${authData.user.id}/${observationId}/evidence.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("observation-evidence").upload(storagePath, photo, { contentType: photo.type, upsert: false });
+      if (uploadError) throw uploadError;
+
+      const digest = await crypto.subtle.digest("SHA-256", await photo.arrayBuffer());
+      const sha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+      const { error: mediaError } = await supabase.from("observation_media").insert({
+        observation_id: observationId,
+        storage_path: storagePath,
+        content_type: photo.type,
+        size_bytes: photo.size,
+        sha256,
+      });
+      if (mediaError) throw mediaError;
+
+      setMessage("Observation submitted securely. A teacher must review it before expert verification.");
+      setCommonName("");
+      setNotes("");
+      setCoordinates(null);
+      setGpsState("idle");
+      setPhoto(null);
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+      setPhotoUrl(null);
+    } catch (error) {
+      await saveDraftRecord(createDraft());
+      const reason = error instanceof Error ? error.message : "";
+      if (reason === "SIGN_IN_REQUIRED") setMessage("Draft saved on this device. Sign in with your invited school email before submitting.");
+      else if (reason === "MEMBERSHIP_REQUIRED") setMessage("Draft saved. Your school administrator must approve your membership before you can submit.");
+      else if (reason === "SCHOOL_REQUIRED") setMessage("Draft saved. Your organization does not yet have a school configured.");
+      else setMessage("The live submission could not be completed, so your draft was kept safely on this device. Try again after the school database is activated.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <main className="capture-page">
       <header className="capture-header">
         <Logo />
-        <span className="sync-state"><i />Offline-ready</span>
+        <span className="sync-state"><i />{online ? "Supabase connected" : "Offline-ready"}</span>
       </header>
 
       <div className="capture-layout">
@@ -198,7 +295,7 @@ export function FieldCapture() {
           </div>
 
           {message && <div className="form-message" role="status">{message}</div>}
-          <div className="form-actions"><Button type="button" variant="secondary" onClick={saveDraft} disabled={saving}>{saving ? "Saving…" : "Save offline draft"}</Button><Button type="submit">Submit for teacher review <span>→</span></Button></div>
+          <div className="form-actions"><Button type="button" variant="secondary" onClick={saveDraft} disabled={saving}>{saving ? "Saving…" : "Save offline draft"}</Button><Button type="submit" disabled={saving}>{saving ? "Submitting securely…" : "Submit for teacher review"} <span>→</span></Button></div>
         </form>
       </div>
     </main>

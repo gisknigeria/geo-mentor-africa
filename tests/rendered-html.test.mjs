@@ -45,3 +45,9 @@ test("renders mentor and expert workspaces", async () => {
   assert.match(expert, /AI suggestions remain unverified/);
   assert.match(expert, /Save expert decision/);
 });
+
+test("renders invite-only Supabase sign in", async () => {
+  const html = await expectPage("/auth", /Sign in securely/);
+  assert.match(html, /Email me a sign-in link/);
+  assert.match(html, /Protected school access/);
+});
