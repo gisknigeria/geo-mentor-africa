@@ -8,6 +8,7 @@ This repository contains the first pilot slice:
 - Mobile field capture with camera, GPS accuracy and offline IndexedDB drafts
 - Mentor portfolio, supervised sessions and guidance requests
 - Expert validation queue where AI suggestions never become verified automatically
+- Teacher evidence-quality gate before expert scientific validation
 - PostgreSQL/PostGIS schema with school-scoped row-level security policies
 - Responsive layouts and rendered-route tests
 
@@ -15,7 +16,7 @@ This repository contains the first pilot slice:
 
 The pilot uses Supabase Auth, Postgres/PostGIS, Row Level Security, and a private `observation-evidence` storage bucket. Copy `.env.example` to `.env.local` and set the project URL plus publishable key. Never expose `SUPABASE_SECRET_KEY` in browser code.
 
-Apply `supabase/migrations/0001_core.sql` through `0004_onboarding_administration.sql` in order through the Supabase migration pipeline. Schools, mentors and experts verify their email before submitting a review application. Students verify a school-managed email, enter a teacher-issued class code, and remain pending until teacher review and consent recording. The onboarding administration workspace reviews applications, creates class codes, records consent decisions, and issues email-bound staff invitations.
+Apply `supabase/migrations/0001_core.sql` through `0005_teacher_and_expert_review.sql` in order through the Supabase migration pipeline. Schools, mentors and experts verify their email before submitting a review application. Students verify a school-managed email, enter a teacher-issued class code, and remain pending until teacher review and consent recording. The onboarding administration workspace reviews applications, creates class codes, records consent decisions, and issues email-bound staff invitations. Migration 0005 activates the controlled student → teacher → expert review workflow and auditable review actions.
 
 ## Product boundaries
 

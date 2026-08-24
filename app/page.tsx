@@ -69,6 +69,7 @@ export default function Home() {
             <span className="grid gap-0.5"><small className="text-[9px] font-bold tracking-[.14em] text-slate-400">YOUR SCHOOL</small><strong className="text-xs">Staff School, Ibadan</strong></span>
           </div>
           <div className="flex items-center gap-1.5">
+            <Link className="hidden rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 sm:block" href="/teacher">Teacher</Link>
             <Link className="hidden rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 sm:block" href="/mentor">Mentor</Link>
             <Link className="hidden rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 sm:block" href="/expert">Expert</Link>
             <button className="relative grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Notifications"><Bell className="size-[18px]" /><span className="absolute right-2 top-2 size-1.5 rounded-full bg-orange-500" /></button>

@@ -46,6 +46,12 @@ test("renders mentor and expert workspaces", async () => {
   assert.match(expert, /Save expert decision/);
 });
 
+test("renders the teacher evidence-quality gate", async () => {
+  const teacher = await expectPage("/teacher", /Teacher review queue/);
+  assert.match(teacher, /Send to expert/);
+  assert.match(teacher, /Save teacher decision/);
+});
+
 test("renders invite-only Supabase sign in", async () => {
   const html = await expectPage("/auth", /Sign in securely/);
   assert.match(html, /Email me a sign-in link/);
