@@ -59,6 +59,14 @@ test("renders the protected school operations workspace", async () => {
   assert.match(school, /Open teacher queue/);
 });
 
+test("renders the role-aware workspace portal", async () => {
+  const portal = await expectPage("/portal", /One account\. The right workspace\./);
+  assert.match(portal, /Student fieldwork/);
+  assert.match(portal, /Teacher review/);
+  assert.match(portal, /Expert validation/);
+  assert.match(portal, /Role protected/);
+});
+
 test("renders invite-only Supabase sign in", async () => {
   const html = await expectPage("/auth", /Sign in securely/);
   assert.match(html, /Email me a sign-in link/);

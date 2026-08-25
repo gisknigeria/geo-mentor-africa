@@ -19,7 +19,8 @@ export function AuthCallback() {
         return;
       }
       const requested = searchParams.get("next");
-      const next = requested === "/register/complete" || requested === "/join" || requested === "/invite" ? requested : "/";
+      const allowed = ["/portal", "/register/complete", "/join", "/invite"];
+      const next = requested && allowed.includes(requested) ? requested : "/portal";
       router.replace(next);
       router.refresh();
     };

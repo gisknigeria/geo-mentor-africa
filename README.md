@@ -10,6 +10,7 @@ This repository contains the first pilot slice:
 - Expert validation queue where AI suggestions never become verified automatically
 - Teacher evidence-quality gate before expert scientific validation
 - School operations dashboard for consent, review queues and privacy-safe mapping
+- Role-aware portal that reveals only verified workspaces after sign-in
 - PostgreSQL/PostGIS schema with school-scoped row-level security policies
 - Responsive layouts and rendered-route tests
 

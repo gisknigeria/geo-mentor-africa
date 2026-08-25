@@ -20,7 +20,7 @@ export function AuthForm() {
       email: email.trim(),
       options: {
         shouldCreateUser: false,
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/portal`,
       },
     });
     setMessage(error ? "We could not send a sign-in link. Confirm that your school administrator has invited this email address." : "Check your email for a secure sign-in link. You can close this page after opening it.");
