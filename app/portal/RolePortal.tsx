@@ -12,7 +12,7 @@ type Application = { application_type: string; status: string; organization_name
 type PortalData = { memberships: Membership[]; applications: Application[] };
 
 const workspaces = {
-  STUDENT: { title: "Student fieldwork", description: "Capture observations and follow your school’s biodiversity projects.", href: "/", icon: GraduationCap, tone: "bg-lime-100 text-lime-800" },
+  STUDENT: { title: "Student fieldwork", description: "Capture observations and follow your school’s biodiversity projects.", href: "/student", icon: GraduationCap, tone: "bg-lime-100 text-lime-800" },
   TEACHER: { title: "Teacher review", description: "Check student evidence before scientific validation.", href: "/teacher", icon: UserRoundCheck, tone: "bg-amber-100 text-amber-800" },
   SCHOOL_ADMIN: { title: "School operations", description: "Manage student access, consent, reviews and school progress.", href: "/school", icon: Building2, tone: "bg-emerald-100 text-emerald-800" },
   MENTOR: { title: "Mentor workspace", description: "Guide assigned schools and support supervised field learning.", href: "/mentor", icon: Binoculars, tone: "bg-sky-100 text-sky-800" },

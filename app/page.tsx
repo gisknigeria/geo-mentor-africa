@@ -10,10 +10,11 @@ import { AccountMenu } from "../components/app/account-menu";
 import { Badge } from "../components/ui/badge";
 import { buttonVariants } from "../components/ui/button";
 import { cn } from "../lib/utils";
+import { PublicLanding } from "./PublicLanding";
 
 export const metadata: Metadata = {
-  title: "School fieldwork | GeoMentor Africa",
-  description: "A secure field learning and biodiversity platform for African schools.",
+  title: "Spatial learning and biodiversity fieldwork",
+  description: "Connect students, schools, mentors and experts through supervised GIS fieldwork and biodiversity verification.",
 };
 
 const navigation = [
@@ -37,7 +38,9 @@ const observations = [
   { species: "Neem", kind: "Tree", status: "AI suggested", time: "Yesterday, 11:06", icon: Sprout, tone: "bg-emerald-100 text-emerald-800", badge: "bg-violet-50 text-violet-700" },
 ];
 
-export default function Home() {
+export default function Home() { return <PublicLanding />; }
+
+export function StudentDashboard() {
   return (
     <div className="min-h-screen bg-[#f4f6f1] text-[#15342d] lg:flex">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-[#0b4436] px-5 py-7 text-white lg:flex">

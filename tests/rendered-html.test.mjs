@@ -23,8 +23,15 @@ async function expectPage(pathname, expectedText) {
   return html;
 }
 
+test("renders the public GeoMentor Africa landing page", async () => {
+  const html = await expectPage("/", /Turn every school into a living biodiversity classroom\./);
+  assert.match(html, /Register your school/);
+  assert.match(html, /Safeguarding by design/i);
+  assert.match(html, /Join with a class code/);
+});
+
 test("renders the student biodiversity dashboard", async () => {
-  const html = await expectPage("/", /Good morning, Amina\./);
+  const html = await expectPage("/student", /Good morning, Amina\./);
   assert.match(html, /Record an observation/);
   assert.match(html, /Your living school map/);
   assert.match(html, /Verified mentor/);
