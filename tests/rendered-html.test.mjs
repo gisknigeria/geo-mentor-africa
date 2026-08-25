@@ -52,6 +52,13 @@ test("renders the teacher evidence-quality gate", async () => {
   assert.match(teacher, /Save teacher decision/);
 });
 
+test("renders the protected school operations workspace", async () => {
+  const school = await expectPage("/school", /SCHOOL OPERATIONS/);
+  assert.match(school, /Pending consent/i);
+  assert.match(school, /PRIVACY-SAFE MAP/);
+  assert.match(school, /Open teacher queue/);
+});
+
 test("renders invite-only Supabase sign in", async () => {
   const html = await expectPage("/auth", /Sign in securely/);
   assert.match(html, /Email me a sign-in link/);
