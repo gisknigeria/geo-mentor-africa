@@ -6,6 +6,7 @@ This repository contains the first pilot slice:
 
 - Student biodiversity dashboard and school impact summary
 - Public pilot landing page with role-specific entry points
+- Public Trust and Safety Centre covering safeguarding, privacy, consent, pilot terms and support
 - Mobile field capture with camera, GPS accuracy and offline IndexedDB drafts
 - Mentor portfolio, supervised sessions and guidance requests
 - Expert validation queue where AI suggestions never become verified automatically

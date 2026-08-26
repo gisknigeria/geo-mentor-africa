@@ -28,6 +28,16 @@ test("renders the public GeoMentor Africa landing page", async () => {
   assert.match(html, /Register your school/);
   assert.match(html, /Safeguarding by design/i);
   assert.match(html, /Join with a class code/);
+  assert.match(html, /Trust &amp; safety/);
+});
+
+test("renders the public trust and safety centre", async () => {
+  const trust = await expectPage("/trust", /Trust, safety and dignity by design\./);
+  assert.match(trust, /The child’s best interests come first\./);
+  assert.match(trust, /Collect less\. Explain clearly\. Protect carefully\./);
+  assert.match(trust, /Consent is informed, recorded and reversible\./);
+  assert.match(trust, /Pilot Terms of Use/i);
+  assert.match(trust, /Nigeria Data Protection Act 2023/);
 });
 
 test("renders the student biodiversity dashboard", async () => {
