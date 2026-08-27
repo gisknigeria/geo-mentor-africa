@@ -51,10 +51,20 @@ test("renders the public pilot onboarding centre", async () => {
 test("renders the student biodiversity dashboard", async () => {
   const html = await expectPage("/student", /Good morning, Amina\./);
   assert.match(html, /Open today’s mission/);
+  assert.match(html, /Explore GIS map/);
   assert.match(html, /Record an observation/);
   assert.match(html, /Your living school map/);
   assert.match(html, /Verified mentor/);
   assert.match(html, /Expert verified/);
+});
+
+test("renders the interactive privacy-safe school GIS map", async () => {
+  const map = await expectPage("/map", /Explore what lives around your school\./);
+  assert.match(map, /Map layers/);
+  assert.match(map, /Expert-verified records only/);
+  assert.match(map, /LOCATIONS GENERALIZED/);
+  assert.match(map, /Protected nest site/);
+  assert.match(map, /Record another observation/);
 });
 
 test("renders the student mission and lesson workflow", async () => {
