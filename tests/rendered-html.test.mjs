@@ -50,10 +50,20 @@ test("renders the public pilot onboarding centre", async () => {
 
 test("renders the student biodiversity dashboard", async () => {
   const html = await expectPage("/student", /Good morning, Amina\./);
+  assert.match(html, /Open today’s mission/);
   assert.match(html, /Record an observation/);
   assert.match(html, /Your living school map/);
   assert.match(html, /Verified mentor/);
   assert.match(html, /Expert verified/);
+});
+
+test("renders the student mission and lesson workflow", async () => {
+  const mission = await expectPage("/student/missions", /Discover one living neighbour\./);
+  assert.match(mission, /Safety gate/i);
+  assert.match(mission, /Complete the mission/);
+  assert.match(mission, /Learning reflection/i);
+  assert.match(mission, /Teacher quality gate/i);
+  assert.match(mission, /Save mission progress/);
 });
 
 test("renders the field-capture safety and evidence workflow", async () => {
