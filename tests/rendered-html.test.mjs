@@ -77,6 +77,14 @@ test("renders the teacher evidence-quality gate", async () => {
   assert.match(teacher, /Save teacher decision/);
 });
 
+test("renders the teacher pilot project setup workflow", async () => {
+  const setup = await expectPage("/teacher/projects/new", /Plan a safe first biodiversity project\./);
+  assert.match(setup, /Project and class/);
+  assert.match(setup, /Safe field area/);
+  assert.match(setup, /Observation themes/);
+  assert.match(setup, /Save project setup/);
+});
+
 test("renders the protected school operations workspace", async () => {
   const school = await expectPage("/school", /SCHOOL OPERATIONS/);
   assert.match(school, /Pending consent/i);
