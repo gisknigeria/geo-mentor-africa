@@ -40,6 +40,14 @@ test("renders the public trust and safety centre", async () => {
   assert.match(trust, /Nigeria Data Protection Act 2023/);
 });
 
+test("renders the public pilot onboarding centre", async () => {
+  const pilot = await expectPage("/pilot", /Take your school from interest to a safe first field lesson\./);
+  assert.match(pilot, /The pilot launch path/i);
+  assert.match(pilot, /Printable pilot checklist/i);
+  assert.match(pilot, /students join only through supervised class access/i);
+  assert.match(pilot, /Start an application/i);
+});
+
 test("renders the student biodiversity dashboard", async () => {
   const html = await expectPage("/student", /Good morning, Amina\./);
   assert.match(html, /Record an observation/);
