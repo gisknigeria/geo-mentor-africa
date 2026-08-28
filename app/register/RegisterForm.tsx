@@ -27,7 +27,7 @@ export function RegisterForm() {
     event.preventDefault();
     setBusy(true);
     setMessage(null);
-    const next = encodeURIComponent("/register/complete");
+    const next = encodeURIComponent("/auth/set-password?next=/register/complete");
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {

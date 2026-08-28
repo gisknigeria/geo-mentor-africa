@@ -22,7 +22,7 @@ export function StudentJoin() {
     const values = new FormData(event.currentTarget);
     const { error } = await supabase.auth.signInWithOtp({
       email: String(values.get("email") || "").trim(),
-      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/join")}`, data: { display_name: String(values.get("displayName") || "").trim(), applicant_type: "STUDENT" } },
+      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/auth/set-password?next=/join")}`, data: { display_name: String(values.get("displayName") || "").trim(), applicant_type: "STUDENT" } },
     });
     setMessage(error ? "We could not send the verification link. Check the email and try again." : "Open the verification link sent to the student or school-managed email, then enter the class code.");
     setBusy(false);

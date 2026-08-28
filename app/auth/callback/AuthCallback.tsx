@@ -20,7 +20,9 @@ export function AuthCallback() {
       }
       const requested = searchParams.get("next");
       const allowed = ["/portal", "/register/complete", "/join", "/invite"];
-      const next = requested && allowed.includes(requested) ? requested : "/portal";
+      const passwordSetup = requested?.startsWith("/auth/set-password?next=") ? requested : null;
+      const target = passwordSetup ? new URLSearchParams(passwordSetup.split("?", 2)[1]).get("next") : null;
+      const next = passwordSetup && target && allowed.includes(target) ? passwordSetup : requested && allowed.includes(requested) ? requested : "/portal";
       router.replace(next);
       router.refresh();
     };

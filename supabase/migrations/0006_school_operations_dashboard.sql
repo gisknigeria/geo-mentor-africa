@@ -13,7 +13,7 @@ begin
   select * into membership from public.organization_memberships
   where user_id = auth.uid() and status = 'VERIFIED' and role in ('SCHOOL_ADMIN', 'TEACHER')
   order by case when role = 'SCHOOL_ADMIN' then 0 else 1 end, created_at limit 1;
-  if membership.id is null then raise exception 'Verified school staff role required'; end if;
+  if membership.organization_id is null then raise exception 'Verified school staff role required'; end if;
 
   select * into selected_school from public.schools
   where organization_id = membership.organization_id order by created_at limit 1;

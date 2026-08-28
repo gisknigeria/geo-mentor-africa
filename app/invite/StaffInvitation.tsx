@@ -20,7 +20,7 @@ export function StaffInvitation() {
     event.preventDefault();
     setBusy(true);
     const values = new FormData(event.currentTarget);
-    const { error } = await supabase.auth.signInWithOtp({ email: String(values.get("email") || "").trim(), options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/invite")}`, data: { display_name: String(values.get("displayName") || "").trim(), applicant_type: "STAFF_INVITEE" } } });
+    const { error } = await supabase.auth.signInWithOtp({ email: String(values.get("email") || "").trim(), options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/auth/set-password?next=/invite")}`, data: { display_name: String(values.get("displayName") || "").trim(), applicant_type: "STAFF_INVITEE" } } });
     setMessage(error ? "The verification email could not be sent." : "Open the secure email link, then return to enter the one-time invitation code.");
     setBusy(false);
   }
