@@ -80,3 +80,4 @@ SUPABASE_SECRET_KEY=
 ```
 
 Secret or service-role credentials must only exist in trusted server-side runtime configuration. They must never be included in browser code or committed to source control.
+# geo-mentor-africa
