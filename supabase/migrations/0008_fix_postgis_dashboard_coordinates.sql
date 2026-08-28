@@ -1,5 +1,4 @@
--- Fix the school dashboard membership existence check.
--- organization_memberships uses a composite primary key and has no id column.
+-- Qualify PostGIS functions because Supabase installs the extension in schema extensions.
 
 create or replace function public.get_school_operations_dashboard()
 returns jsonb
