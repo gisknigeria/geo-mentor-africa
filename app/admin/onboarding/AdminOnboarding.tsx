@@ -22,6 +22,7 @@ function secureCode(length: number) {
 
 export function AdminOnboarding() {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
   const [students, setStudents] = useState<StudentRequest[]>([]);
@@ -48,7 +49,13 @@ export function AdminOnboarding() {
   useEffect(() => {
     void supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user);
-      if (data.user) await loadQueues();
+      if (data.user) {
+        const { data: membership } = await supabase.from("organization_memberships").select("user_id").eq("user_id", data.user.id).eq("role", "PLATFORM_ADMIN").eq("status", "VERIFIED").maybeSingle();
+        if (membership) {
+          setIsAdmin(true);
+          await loadQueues();
+        }
+      }
       setChecking(false);
     });
   }, [loadQueues]);
@@ -100,8 +107,10 @@ export function AdminOnboarding() {
 
   if (checking) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] text-sm text-emerald-950">Loading onboarding workspace…</main>;
   if (!user) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">Administrator sign-in required</h1><p className="mt-3 text-sm text-slate-600">Use your verified GeoMentor Africa administrator email.</p><Link href="/auth" className="mt-5 inline-block text-sm font-bold text-emerald-800">Sign in securely</Link></section></main>;
+  if (!isAdmin) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="w-full max-w-md rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-10 text-rose-700" /><p className="mt-5 text-[10px] font-black tracking-[.18em] text-rose-700">ACCESS NOT GRANTED</p><h1 className="mt-2 font-serif text-3xl text-emerald-950">This is not an administrator account.</h1><p className="mt-3 text-sm leading-6 text-slate-600">You are signed in as <strong>{user.email}</strong>, but this account does not have a verified Platform Administrator role.</p><Link href="/portal" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-[#0b4436] px-5 text-xs font-bold text-white">Return to my portal</Link></section></main>;
 
-  return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]"><header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-8"><div className="mx-auto flex max-w-7xl items-center justify-between"><Logo /><div className="text-right"><p className="text-xs font-bold text-emerald-900">Onboarding administration</p><p className="text-[10px] text-slate-400">{user.email}</p></div></div></header><div className="mx-auto max-w-7xl px-4 py-8 sm:px-8"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-[10px] font-bold tracking-[.18em] text-emerald-700">SECURE PILOT OPERATIONS</p><h1 className="mt-2 font-serif text-4xl text-emerald-950 sm:text-5xl">Review and activate access.</h1><p className="mt-2 text-sm text-slate-500">Every trusted role requires a verified decision and an auditable record.</p></div><Link href="/" className="text-xs font-bold text-emerald-800">← Return to overview</Link></div>
+  return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]"><header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-8"><div className="mx-auto flex max-w-7xl items-center justify-between"><Logo /><div className="flex items-center gap-3"><span className="rounded-full bg-rose-100 px-3 py-1.5 text-[10px] font-black text-rose-800">PLATFORM ADMINISTRATOR</span><div className="hidden text-right sm:block"><p className="text-xs font-bold text-emerald-900">Admin account verified</p><p className="text-[10px] text-slate-400">{user.email}</p></div></div></div></header><div className="mx-auto max-w-7xl px-4 py-8 sm:px-8"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-[10px] font-bold tracking-[.18em] text-emerald-700">SECURE PILOT OPERATIONS</p><h1 className="mt-2 font-serif text-4xl text-emerald-950 sm:text-5xl">Review and activate access.</h1><p className="mt-2 text-sm text-slate-500">You are signed in as the platform administrator. Every approval creates a controlled, auditable access decision.</p></div><Link href="/portal" className="text-xs font-bold text-emerald-800">← Return to my portal</Link></div>
+  <section className="mt-6 grid gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:grid-cols-3"><div><span className="text-[10px] font-black text-emerald-700">1 · REVIEW</span><strong className="mt-1 block text-sm text-emerald-950">Check applications</strong><p className="mt-1 text-xs leading-5 text-slate-600">Verify schools, mentors and experts before approving access.</p></div><div><span className="text-[10px] font-black text-emerald-700">2 · ACTIVATE</span><strong className="mt-1 block text-sm text-emerald-950">Prepare the school</strong><p className="mt-1 text-xs leading-5 text-slate-600">Create supervised class codes only after consent and safeguarding readiness.</p></div><div><span className="text-[10px] font-black text-emerald-700">3 · INVITE</span><strong className="mt-1 block text-sm text-emerald-950">Add trusted staff</strong><p className="mt-1 text-xs leading-5 text-slate-600">Issue email-bound invitations to teachers and school administrators.</p></div></section>
   {setupRequired && <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>Database activation required.</strong> Apply migrations 0001–0004 in Supabase before using this workspace.</div>}
   {message && <div className="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900" role="status">{message}</div>}
   {generated && <div className="mt-5 flex flex-col gap-4 rounded-xl border border-lime-200 bg-lime-50 p-5 sm:flex-row sm:items-center"><KeyRound className="size-7 text-emerald-700" /><div className="min-w-0 flex-1"><strong className="text-sm">{generated.title}</strong><code className="mt-2 block break-all rounded-lg bg-white px-3 py-2 font-mono text-sm font-black tracking-wider text-emerald-950">{generated.value}</code><p className="mt-2 text-xs text-slate-600">{generated.description}</p></div><Button type="button" variant="secondary" onClick={() => void navigator.clipboard.writeText(generated.value)}><Clipboard className="size-4" />Copy</Button></div>}
