@@ -10,16 +10,11 @@ import { supabase } from "../../lib/supabase/client";
 
 type Observation = { id: string; observation_type: string; common_name: string | null; notes: string; observed_at: string; coordinate_accuracy_m: number | null; school?: { name?: string } | null; observation_media?: Array<{ storage_path: string }> };
 
-const demoRecords: Observation[] = [
-  { id: "GMA-0248", observation_type: "POLLINATOR", common_name: "Orange butterfly", notes: "It stayed near the milkweed flowers for about four minutes and opened its wings in the sun.", observed_at: "2026-08-24T10:42:00Z", coordinate_accuracy_m: 8, school: { name: "Staff School, Ibadan" } },
-  { id: "GMA-0246", observation_type: "TREE", common_name: "Neem", notes: "Several lower leaves became yellow after three days of heavy rain.", observed_at: "2026-08-23T14:18:00Z", coordinate_accuracy_m: 12, school: { name: "Staff School, Ibadan" } },
-];
-
 export function TeacherReview() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [records, setRecords] = useState<Observation[]>(demoRecords);
-  const [preview, setPreview] = useState(true);
+  const [records, setRecords] = useState<Observation[]>([]);
+  const preview = false;
   const [selected, setSelected] = useState(0);
   const [decision, setDecision] = useState("SUBMIT_TO_EXPERT");
   const [notes, setNotes] = useState("");
@@ -32,7 +27,6 @@ export function TeacherReview() {
     const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, schools(name), observation_media(storage_path)").eq("review_stage", "TEACHER_REVIEW").eq("verification_status", "PENDING").order("created_at");
     if (!error) {
       setRecords((data ?? []).map((item) => ({ ...item, school: Array.isArray(item.schools) ? item.schools[0] : item.schools })) as Observation[]);
-      setPreview(false);
       setSelected(0);
     }
   }, []);
@@ -42,15 +36,14 @@ export function TeacherReview() {
   useEffect(() => {
     let active = true;
     const path = record?.observation_media?.[0]?.storage_path;
-    void Promise.resolve(!path || preview ? null : supabase.storage.from("observation-evidence").createSignedUrl(path, 600))
+    void Promise.resolve(!path ? null : supabase.storage.from("observation-evidence").createSignedUrl(path, 600))
       .then((result) => { if (active) setEvidenceUrl(result?.data?.signedUrl ?? null); });
     return () => { active = false; };
-  }, [record, preview]);
+  }, [record]);
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!record) return;
-    if (preview) { setMessage("Preview decision recorded locally. Live teacher reviews activate after migration 0005 and a verified school role."); return; }
     setBusy(true);
     setMessage(null);
     const { error } = await supabase.rpc("review_observation_as_teacher", { target_observation: record.id, teacher_decision: decision, review_notes: notes.trim() });

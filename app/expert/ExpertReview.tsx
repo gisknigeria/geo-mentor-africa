@@ -15,22 +15,16 @@ type ExpertRecord = {
   school?: { name?: string } | null; observation_media?: Array<{ storage_path: string }>; identification_suggestions?: Suggestion[];
 };
 
-const demoRecords: ExpertRecord[] = [
-  { id: "GMA-0248", observation_type: "POLLINATOR", common_name: "Orange butterfly", notes: "Observed feeding on milkweed flowers for about four minutes.", observed_at: "2026-08-24T10:42:00Z", coordinate_accuracy_m: 8, school: { name: "Staff School, Ibadan" }, identification_suggestions: [{ scientific_name: "Danaus chrysippus", common_name: "Plain tiger", confidence: 0.87 }] },
-  { id: "GMA-0246", observation_type: "TREE", common_name: "Neem", notes: "Mature tree beside the biodiversity garden path.", observed_at: "2026-08-23T14:18:00Z", coordinate_accuracy_m: 12, school: { name: "American Christian Academy" }, identification_suggestions: [{ scientific_name: "Azadirachta indica", common_name: "Neem", confidence: 0.72 }] },
-  { id: "GMA-0241", observation_type: "PLANT", common_name: "Red hibiscus", notes: "Flowering shrub with five broad red petals.", observed_at: "2026-08-22T11:06:00Z", coordinate_accuracy_m: 6, school: { name: "Staff School, Ibadan" }, identification_suggestions: [{ scientific_name: "Hibiscus rosa-sinensis", common_name: "Chinese hibiscus", confidence: 0.64 }] },
-];
-
 function suggestionFor(record: ExpertRecord | null) { return record?.identification_suggestions?.[0] ?? null; }
 
 export function ExpertReview() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [records, setRecords] = useState<ExpertRecord[]>(demoRecords);
-  const [preview, setPreview] = useState(true);
+  const [records, setRecords] = useState<ExpertRecord[]>([]);
+  const preview = false;
   const [selected, setSelected] = useState(0);
   const [decision, setDecision] = useState("VERIFIED");
-  const [scientificName, setScientificName] = useState(demoRecords[0].identification_suggestions?.[0]?.scientific_name ?? "");
+  const [scientificName, setScientificName] = useState("");
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,7 +39,7 @@ export function ExpertReview() {
       .eq("review_stage", "EXPERT_REVIEW").eq("verification_status", "PENDING").order("created_at");
     if (!error) {
       const queue = (data ?? []).map((item) => ({ ...item, school: Array.isArray(item.schools) ? item.schools[0] : item.schools })) as ExpertRecord[];
-      setRecords(queue); setPreview(false); setSelected(0); setScientificName(suggestionFor(queue[0])?.scientific_name ?? "");
+      setRecords(queue); setSelected(0); setScientificName(suggestionFor(queue[0])?.scientific_name ?? "");
     }
   }, []);
 
@@ -53,10 +47,10 @@ export function ExpertReview() {
   useEffect(() => {
     let active = true;
     const path = record?.observation_media?.[0]?.storage_path;
-    void Promise.resolve(!path || preview ? null : supabase.storage.from("observation-evidence").createSignedUrl(path, 600))
+    void Promise.resolve(!path ? null : supabase.storage.from("observation-evidence").createSignedUrl(path, 600))
       .then((result) => { if (active) setEvidenceUrl(result?.data?.signedUrl ?? null); });
     return () => { active = false; };
-  }, [record, preview]);
+  }, [record]);
 
   function chooseRecord(index: number) {
     const nextRecord = records[index];
@@ -66,7 +60,6 @@ export function ExpertReview() {
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!record) return;
-    if (preview) { setMessage("Preview decision recorded locally. Live expert decisions activate after migration 0005 and verified expert access."); return; }
     setBusy(true); setMessage("");
     const { error } = await supabase.rpc("review_observation_as_expert", { target_observation: record.id, expert_decision: decision, confirmed_scientific_name: scientificName.trim(), review_notes: notes.trim() });
     setMessage(error ? "The decision could not be saved. Confirm your expert verification and the review-workflow migration." : "Expert decision saved with an audit event.");
