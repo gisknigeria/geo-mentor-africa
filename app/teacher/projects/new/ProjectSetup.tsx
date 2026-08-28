@@ -14,7 +14,17 @@ const initialDraft: Draft = { title: "School Biodiversity Baseline", className: 
 export function ProjectSetup() {
   const [draft, setDraft] = useState(initialDraft);
   const [message, setMessage] = useState<string | null>(null);
-  useEffect(() => { try { const saved = localStorage.getItem(storageKey); if (saved) setDraft({ ...initialDraft, ...JSON.parse(saved) }); } catch {} }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) setDraft({ ...initialDraft, ...JSON.parse(saved) });
+      } catch {
+        // Ignore malformed device-local drafts and use the safe defaults.
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const readiness = useMemo(() => [draft.title, draft.className, draft.learnerCount, draft.startDate, draft.learningGoal, draft.safeArea, draft.themes.length].filter(Boolean).length, [draft]);
   function update<K extends keyof Draft>(key: K, value: Draft[K]) { setDraft((current) => ({ ...current, [key]: value })); setMessage(null); }
   function toggleTheme(theme: string) { update("themes", draft.themes.includes(theme) ? draft.themes.filter((item) => item !== theme) : [...draft.themes, theme]); }
@@ -37,5 +47,5 @@ export function ProjectSetup() {
 
 function Section({ number, title, icon: Icon, children }: { number: string; title: string; icon: typeof Users; children: ReactNode }) { return <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"><div className="mb-5 flex items-center gap-3"><span className="grid size-11 place-items-center rounded-xl bg-lime-100 text-emerald-800"><Icon className="size-5" /></span><div><p className="text-[9px] font-black tracking-[.16em] text-emerald-700">STEP {number}</p><h2 className="mt-1 font-serif text-2xl text-emerald-950">{title}</h2></div></div>{children}</section>; }
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="grid gap-2 text-xs font-bold text-slate-700"><span>{label}</span><span className="[&>input]:h-11 [&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:border-slate-300 [&>input]:px-3 [&>select]:h-11 [&>select]:w-full [&>select]:rounded-lg [&>select]:border [&>select]:border-slate-300 [&>select]:px-3 [&>textarea]:min-h-24 [&>textarea]:w-full [&>textarea]:rounded-lg [&>textarea]:border [&>textarea]:border-slate-300 [&>textarea]:p-3 [&>*]:font-normal [&>*]:outline-none focus-within:[&>*]:border-emerald-600">{children}</span></label>; }
-function Toggle({ checked, onChange, title, text }: { checked: boolean; onChange: (value: boolean) => void; title: string; text: string }) { return <label className="flex cursor-pointer gap-3 rounded-xl border border-slate-200 p-4"><input type="checkbox" className="mt-1 size-4 accent-emerald-700" checked={checked} onChange={(e) => onChange(e.target.checked)} /><span><strong className="block text-xs text-emerald-950">{title}</strong><small className="mt-1 block text-[10px] leading-4 text-slate-500">{text}</small></span></label>; }
+function Toggle({ checked, onChange, title, text }: { checked: boolean; onChange: (value: boolean) => void; title: string; text: string }) { return <label className="flex cursor-pointer gap-3 rounded-xl border border-slate-200 p-4"><input aria-label={title} type="checkbox" className="mt-1 size-4 accent-emerald-700" checked={checked} onChange={(e) => onChange(e.target.checked)} /><span><strong className="block text-xs text-emerald-950">{title}</strong><small className="mt-1 block text-[10px] leading-4 text-slate-500">{text}</small></span></label>; }
 function Summary({ label, value }: { label: string; value: string }) { return <div><small className="block text-[9px] font-black tracking-wider text-slate-400">{label}</small><strong className="mt-1 block leading-5 text-emerald-950">{value}</strong></div>; }

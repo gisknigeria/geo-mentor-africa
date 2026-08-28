@@ -51,10 +51,11 @@ export function ExpertReview() {
 
   useEffect(() => { void supabase.auth.getUser().then(async ({ data }) => { setUser(data.user); if (data.user) await loadQueue(); setAuthReady(true); }); }, [loadQueue]);
   useEffect(() => {
-    setEvidenceUrl(null);
+    let active = true;
     const path = record?.observation_media?.[0]?.storage_path;
-    if (!path || preview) return;
-    void supabase.storage.from("observation-evidence").createSignedUrl(path, 600).then(({ data }) => setEvidenceUrl(data?.signedUrl ?? null));
+    void Promise.resolve(!path || preview ? null : supabase.storage.from("observation-evidence").createSignedUrl(path, 600))
+      .then((result) => { if (active) setEvidenceUrl(result?.data?.signedUrl ?? null); });
+    return () => { active = false; };
   }, [record, preview]);
 
   function chooseRecord(index: number) {

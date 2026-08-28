@@ -18,7 +18,19 @@ export function MissionLesson() {
   const [safetyReady, setSafetyReady] = useState(false);
   const [reflection, setReflection] = useState("");
   const [message, setMessage] = useState<string | null>(null);
-  useEffect(() => { try { const saved = JSON.parse(localStorage.getItem(storageKey) || "{}"); setCompleted(saved.completed || []); setSafetyReady(Boolean(saved.safetyReady)); setReflection(saved.reflection || ""); } catch {} }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        setCompleted(saved.completed || []);
+        setSafetyReady(Boolean(saved.safetyReady));
+        setReflection(saved.reflection || "");
+      } catch {
+        // Ignore malformed device-local drafts and use the safe defaults.
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const progress = useMemo(() => Math.round((completed.length / tasks.length) * 100), [completed]);
   function toggle(id: string) { setCompleted((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); setMessage(null); }
   function save(event: FormEvent<HTMLFormElement>) { event.preventDefault(); localStorage.setItem(storageKey, JSON.stringify({ completed, safetyReady, reflection })); setMessage(completed.length === tasks.length && safetyReady ? "Mission ready for teacher review. Your progress is saved on this device until live student records are activated." : "Progress saved on this device. Complete the safety check and all mission tasks before teacher review."); }
