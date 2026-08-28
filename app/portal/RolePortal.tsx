@@ -7,7 +7,7 @@ import { ArrowRight, Binoculars, Building2, CheckCircle2, GraduationCap, Leaf, L
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
 
-type Membership = { role: string; status: string; organizations?: { name?: string } | Array<{ name?: string }> | null };
+type Membership = { organization_id: string; role: string; status: string; organizationName?: string };
 type Application = { application_type: string; status: string; organization_name: string | null };
 type PortalData = { memberships: Membership[]; applications: Application[] };
 
@@ -32,13 +32,24 @@ export function RolePortal() {
       setUser(currentUser);
       if (currentUser) {
         const [memberships, applications] = await Promise.all([
-          supabase.from("organization_memberships").select("role, status, organizations(name)").eq("user_id", currentUser.id),
+          supabase.from("organization_memberships").select("organization_id, role, status").eq("user_id", currentUser.id),
           supabase.from("registration_applications").select("application_type, status, organization_name").eq("applicant_user_id", currentUser.id).order("created_at", { ascending: false }),
         ]);
         if (!memberships.error) {
-          setData({ memberships: (memberships.data ?? []) as Membership[], applications: applications.error ? [] : (applications.data ?? []) as Application[] });
+          const membershipRows = (memberships.data ?? []) as Membership[];
+          const organizationIds = [...new Set(membershipRows.map((membership) => membership.organization_id))];
+          const { data: organizations, error: organizationsError } = organizationIds.length
+            ? await supabase.from("organizations").select("id, name").in("id", organizationIds)
+            : { data: [], error: null };
+          if (organizationsError) {
+            setLoadError(true);
+          } else {
+            const names = new Map((organizations ?? []).map((organization) => [organization.id, organization.name]));
+            setData({ memberships: membershipRows.map((membership) => ({ ...membership, organizationName: names.get(membership.organization_id) })), applications: applications.error ? [] : (applications.data ?? []) as Application[] });
+          }
         } else {
           setLoadError(true);
+          console.error("Unable to load account memberships", memberships.error);
         }
       }
       setAuthReady(true);
