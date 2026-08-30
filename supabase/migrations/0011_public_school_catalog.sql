@@ -87,7 +87,7 @@ select case
     'level', 'country',
     'items', coalesce((select jsonb_agg(row_data order by row_data->>'label') from (
       select jsonb_build_object('key', country_code, 'label', country_code, 'count', count(*),
-        'latitude', avg(extensions.st_y(location)), 'longitude', avg(extensions.st_x(location))) row_data
+        'latitude', avg(public.st_y(location)), 'longitude', avg(public.st_x(location))) row_data
       from selected group by country_code
     ) q), '[]'::jsonb)
   )
@@ -96,7 +96,7 @@ select case
     'items', coalesce((select jsonb_agg(row_data order by row_data->>'label') from (
       select jsonb_build_object('key', coalesce(state_region, 'Unspecified'),
         'label', coalesce(state_region, 'Unspecified'), 'count', count(*),
-        'latitude', avg(extensions.st_y(location)), 'longitude', avg(extensions.st_x(location))) row_data
+        'latitude', avg(public.st_y(location)), 'longitude', avg(public.st_x(location))) row_data
       from selected group by coalesce(state_region, 'Unspecified')
     ) q), '[]'::jsonb)
   )
@@ -105,7 +105,7 @@ select case
     'items', coalesce((select jsonb_agg(jsonb_build_object(
       'key', source || ':' || source_id, 'label', name, 'name', name, 'school_type', school_type,
       'country_code', country_code, 'state_region', state_region, 'district_lga', district_lga,
-      'city', city, 'latitude', extensions.st_y(location), 'longitude', extensions.st_x(location),
+      'city', city, 'latitude', public.st_y(location), 'longitude', public.st_x(location),
       'source', source, 'source_id', source_id, 'programme_member', programme_member
     ) order by name) from selected), '[]'::jsonb)
   )
@@ -122,14 +122,14 @@ security definer set search_path = ''
 as $$
 with matches as (
   select source, source_id, name, school_type, country_code::text country_code, state_region,
-    district_lga, city, extensions.st_y(location) latitude, extensions.st_x(location) longitude, false programme_member
+    district_lga, city, public.st_y(location) latitude, public.st_x(location) longitude, false programme_member
   from public.school_catalog
   where char_length(trim(p_query)) >= 2 and name ilike '%' || trim(p_query) || '%'
     and (p_country is null or country_code = upper(p_country))
   union all
   select coalesce(catalog_source, 'GEOMENTOR'), coalesce(catalog_external_id, id::text), name,
     school_type, country_code::text, state_region, district_lga, city,
-    extensions.st_y(location), extensions.st_x(location), true
+    public.st_y(location), public.st_x(location), true
   from public.schools
   where verification_status = 'VERIFIED' and location is not null
     and char_length(trim(p_query)) >= 2 and name ilike '%' || trim(p_query) || '%'
@@ -164,7 +164,7 @@ begin
   if application.id is null then raise exception 'Pending application not found'; end if;
 
   if application.proposed_latitude is not null then
-    proposed_location := extensions.st_setsrid(extensions.st_makepoint(application.proposed_longitude, application.proposed_latitude), 4326);
+    proposed_location := public.st_setsrid(public.st_makepoint(application.proposed_longitude, application.proposed_latitude), 4326);
   end if;
 
   if review_decision = 'VERIFIED' then

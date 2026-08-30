@@ -34,8 +34,8 @@ begin
     'recent_observations', coalesce((
       select jsonb_agg(row_data order by observed_at desc) from (
         select o.id, o.observation_type, o.common_name, o.scientific_name, o.verification_status, o.review_stage, o.observed_at, o.sensitivity_level,
-          case when o.sensitivity_level = 'CRITICAL' then null else round(extensions.st_y(o.location)::numeric, 4) end as latitude,
-          case when o.sensitivity_level = 'CRITICAL' then null else round(extensions.st_x(o.location)::numeric, 4) end as longitude
+          case when o.sensitivity_level = 'CRITICAL' then null else round(public.st_y(o.location)::numeric, 4) end as latitude,
+          case when o.sensitivity_level = 'CRITICAL' then null else round(public.st_x(o.location)::numeric, 4) end as longitude
         from public.observations o where o.school_id = selected_school.id order by o.observed_at desc limit 12
       ) row_data
     ), '[]'::jsonb)
