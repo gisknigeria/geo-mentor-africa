@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { ArrowRight, Binoculars, Building2, CheckCircle2, GraduationCap, Leaf, LogOut, ShieldAlert, Sparkles, UserRoundCheck } from "lucide-react";
+import { ArrowRight, Binoculars, Building2, CheckCircle2, GraduationCap, Handshake, Leaf, LogOut, ShieldAlert, Sparkles, UserRoundCheck } from "lucide-react";
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
 
@@ -17,6 +17,7 @@ const workspaces = {
   SCHOOL_ADMIN: { title: "School operations", description: "Manage student access, consent, reviews and school progress.", href: "/school", icon: Building2, tone: "bg-emerald-100 text-emerald-800" },
   MENTOR: { title: "Mentor workspace", description: "Guide assigned schools and support supervised field learning.", href: "/mentor", icon: Binoculars, tone: "bg-sky-100 text-sky-800" },
   EXPERT: { title: "Expert validation", description: "Verify biodiversity records after teacher review.", href: "/expert", icon: Leaf, tone: "bg-violet-100 text-violet-800" },
+  PARTNER: { title: "Geo-Partner impact", description: "Support schools, campaigns and location-linked conservation goals.", href: "/partner", icon: Handshake, tone: "bg-teal-100 text-teal-800" },
   PLATFORM_ADMIN: { title: "Platform onboarding", description: "Review applications and administer trusted access.", href: "/admin/onboarding", icon: ShieldAlert, tone: "bg-rose-100 text-rose-800" },
 } as const;
 

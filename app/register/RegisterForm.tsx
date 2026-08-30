@@ -2,18 +2,18 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { Building2, GraduationCap, Mail, Microscope, ShieldCheck } from "lucide-react";
+import { Building2, GraduationCap, Handshake, Mail, ShieldCheck } from "lucide-react";
 import { Logo } from "../../components/app/logo";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { supabase } from "../../lib/supabase/client";
 
-type ApplicantType = "SCHOOL" | "MENTOR" | "EXPERT";
+type ApplicantType = "SCHOOL" | "MENTOR" | "PARTNER";
 
 const applicantTypes = [
   { value: "SCHOOL" as const, label: "School", description: "Register a school or learning institution", icon: Building2 },
-  { value: "MENTOR" as const, label: "Mentor", description: "Support supervised student learning", icon: GraduationCap },
-  { value: "EXPERT" as const, label: "Expert", description: "Validate biodiversity observations", icon: Microscope },
+  { value: "MENTOR" as const, label: "Geo-Mentor", description: "Adopt schools, guide learning and review records", icon: GraduationCap },
+  { value: "PARTNER" as const, label: "Geo-Partner", description: "Fund and support visible school outcomes", icon: Handshake },
 ];
 
 export function RegisterForm() {
@@ -48,8 +48,8 @@ export function RegisterForm() {
           <div className="bg-[radial-gradient(circle_at_85%_5%,rgba(198,225,93,.24),transparent_34%),linear-gradient(145deg,#174f3e,#0b392e)] p-7 text-white sm:p-10">
             <p className="text-[10px] font-bold tracking-[.18em] text-lime-200">JOIN THE PILOT</p>
             <h1 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">Grow environmental learning with us.</h1>
-            <p className="mt-5 max-w-md text-sm leading-7 text-emerald-50/75">Applications are reviewed before trusted roles are activated. Students do not register here; they join through a supervised school code.</p>
-            <div className="mt-8 grid gap-4 text-xs text-emerald-50/85"><span className="flex gap-3"><ShieldCheck className="size-5 shrink-0 text-lime-300" />Verified email before application</span><span className="flex gap-3"><ShieldCheck className="size-5 shrink-0 text-lime-300" />Credentials reviewed for mentors and experts</span><span className="flex gap-3"><ShieldCheck className="size-5 shrink-0 text-lime-300" />No automatic access to student records</span></div>
+            <p className="mt-5 max-w-md text-sm leading-7 text-emerald-50/75">Choose one of the platform’s three roles. Teachers and students are onboarded by their registered school; students join through a supervised class code.</p>
+            <div className="mt-8 grid gap-4 text-xs text-emerald-50/85"><span className="flex gap-3"><ShieldCheck className="size-5 shrink-0 text-lime-300" />Verified email before application</span><span className="flex gap-3"><ShieldCheck className="size-5 shrink-0 text-lime-300" />Schools, mentor credentials and partners reviewed</span><span className="flex gap-3"><ShieldCheck className="size-5 shrink-0 text-lime-300" />No automatic access to student records</span></div>
             <Link href="/join" className="mt-10 inline-flex rounded-lg border border-white/25 px-4 py-3 text-xs font-bold text-white hover:bg-white/10">Student? Join with a class code →</Link>
           </div>
           <form className="p-7 sm:p-10" onSubmit={startRegistration}>

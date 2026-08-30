@@ -38,7 +38,9 @@ async function expectPage(pathname, expectedText) {
 }
 
 const pages = [
-  ["/", /Turn every school into a living biodiversity classroom\./],
+  ["/", /Map what lives\./],
+  ["/observations", /Evidence, not just identifications\./],
+  ["/partner", /Fund the goal\./],
   ["/pilot", /Take your school from interest to a safe first field lesson\./],
   ["/trust", /Trust, safety and dignity by design\./],
   ["/student", /Good morning, Amina\./],
@@ -49,8 +51,8 @@ const pages = [
   ["/expert", /Review observations/],
   ["/teacher", /Teacher review queue/],
   ["/teacher/projects/new", /Plan a safe first biodiversity project\./],
-  ["/school", /SCHOOL OPERATIONS/],
-  ["/portal", /One account\. The right workspace\./],
+  ["/school", /School data unavailable/],
+  ["/portal", /Checking your account and role/],
   ["/auth", /Sign in securely/],
   ["/register", /Choose how you want to join/],
   ["/join", /Join your school project/],

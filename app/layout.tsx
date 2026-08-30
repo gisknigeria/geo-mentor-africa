@@ -7,14 +7,14 @@ export const metadata: Metadata = {
     default: "GeoMentor Africa",
     template: "%s | GeoMentor Africa",
   },
-  description: "A secure, spatial learning and biodiversity platform connecting African students, schools, mentors and experts.",
+  description: "A spatial learning and biodiversity platform connecting African schools, Geo-Mentors and Geo-Partners.",
   openGraph: {
     title: "GeoMentor Africa",
-    description: "Mentor. Map. Observe. Conserve.",
+    description: "Schools, Geo-Mentors and Geo-Partners mapping biodiversity and growing visible impact across Africa.",
     type: "website",
     images: [{ url: "/og.png", width: 1733, height: 907, alt: "Students and a mentor documenting biodiversity in a school garden" }],
   },
-  twitter: { card: "summary_large_image", title: "GeoMentor Africa", description: "Mentor. Map. Observe. Conserve.", images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: "GeoMentor Africa", description: "Map what lives. Grow what matters.", images: ["/og.png"] },
 };
 
 export default function RootLayout({

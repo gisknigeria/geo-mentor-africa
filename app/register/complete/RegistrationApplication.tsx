@@ -8,7 +8,7 @@ import { Logo } from "../../../components/app/logo";
 import { Button } from "../../../components/ui/button";
 import { supabase } from "../../../lib/supabase/client";
 
-type ApplicantType = "SCHOOL" | "MENTOR" | "EXPERT";
+type ApplicantType = "SCHOOL" | "MENTOR" | "PARTNER";
 
 export function RegistrationApplication() {
   const [user, setUser] = useState<User | null>(null);
@@ -22,7 +22,7 @@ export function RegistrationApplication() {
     void supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       const proposed = data.user?.user_metadata?.applicant_type;
-      if (proposed === "SCHOOL" || proposed === "MENTOR" || proposed === "EXPERT") setType(proposed);
+      if (proposed === "SCHOOL" || proposed === "MENTOR" || proposed === "PARTNER") setType(proposed);
       setChecking(false);
     });
   }, []);
@@ -57,11 +57,11 @@ export function RegistrationApplication() {
   return (
     <main className="min-h-screen bg-[#f4f6f1] px-4 py-8 text-[#15342d]"><div className="mx-auto max-w-3xl"><Logo /><section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9"><p className="text-[10px] font-bold tracking-[.18em] text-emerald-700">STEP 2 OF 2 · VERIFIED EMAIL</p><h1 className="mt-3 font-serif text-4xl text-emerald-950">Complete your application</h1><p className="mt-3 text-sm text-slate-600">Signed in as {user.email}. Trusted access is granted only after review.</p>
       <form className="mt-7 grid gap-5" onSubmit={submitApplication}>
-        <label className="grid gap-2 text-xs font-bold text-slate-700"><span>Application type</span><select className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" value={type} onChange={(event) => setType(event.target.value as ApplicantType)}><option value="SCHOOL">School or institution</option><option value="MENTOR">Mentor</option><option value="EXPERT">Biodiversity or GIS expert</option></select></label>
-        {type === "SCHOOL" && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>School or institution name</span><input name="organizationName" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required minLength={2} maxLength={180} /></label>}
+        <label className="grid gap-2 text-xs font-bold text-slate-700"><span>Application type</span><select className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" value={type} onChange={(event) => setType(event.target.value as ApplicantType)}><option value="SCHOOL">School</option><option value="MENTOR">Geo-Mentor</option><option value="PARTNER">Geo-Partner</option></select></label>
+        {(type === "SCHOOL" || type === "PARTNER") && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>{type === "SCHOOL" ? "School or institution name" : "Partner organization name"}</span><input name="organizationName" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required minLength={2} maxLength={180} /></label>}
         <div className="grid gap-4 sm:grid-cols-3"><label className="grid gap-2 text-xs font-bold text-slate-700"><span>Country code</span><input name="countryCode" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal uppercase" defaultValue="NG" required minLength={2} maxLength={2} /></label><label className="grid gap-2 text-xs font-bold text-slate-700"><span>State or region</span><input name="stateRegion" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required maxLength={120} /></label><label className="grid gap-2 text-xs font-bold text-slate-700"><span>City</span><input name="city" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required maxLength={120} /></label></div>
         <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-xs font-bold text-slate-700"><span>Phone <em className="font-normal text-slate-400">Optional</em></span><input name="phone" type="tel" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" maxLength={30} /></label><label className="grid gap-2 text-xs font-bold text-slate-700"><span>Website or professional profile <em className="font-normal text-slate-400">Optional</em></span><input name="website" type="url" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" maxLength={300} /></label></div>
-        {type !== "SCHOOL" && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>Qualifications and relevant experience</span><textarea name="credentials" className="min-h-28 rounded-lg border border-slate-300 p-3 text-sm font-normal" required minLength={30} maxLength={2000} placeholder="Qualifications, professional memberships, conservation, GIS or education experience…" /></label>}
+        {type !== "SCHOOL" && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>{type === "MENTOR" ? "Qualifications and relevant experience" : "Partnership capacity and proposed support"}</span><textarea name="credentials" className="min-h-28 rounded-lg border border-slate-300 p-3 text-sm font-normal" required minLength={30} maxLength={2000} placeholder={type === "MENTOR" ? "Qualification level, discipline, research, industry, conservation, GIS or education experience…" : "Funding, materials, software, excursions, scholarships, equipment or technical collaboration…"} /></label>}
         <label className="grid gap-2 text-xs font-bold text-slate-700"><span>Why do you want to join GeoMentor Africa?</span><textarea name="motivation" className="min-h-28 rounded-lg border border-slate-300 p-3 text-sm font-normal" required minLength={30} maxLength={1500} /></label>
         <label className="flex gap-3 rounded-xl bg-emerald-50 p-4 text-xs leading-5 text-slate-600"><input type="checkbox" required className="mt-1 size-4 accent-emerald-700" /><span>I confirm that the information is accurate and understand that submitting this application does not grant access to student information.</span></label>
         {message && <div className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900" role="alert">{message}</div>}
