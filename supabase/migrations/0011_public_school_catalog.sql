@@ -63,24 +63,21 @@ language sql
 stable
 security definer set search_path = ''
 as $$
-with all_schools as (
-  select c.source, c.source_id, c.name, c.school_type, c.country_code::text country_code,
-    c.state_region, c.district_lga, c.city, c.location, false programme_member
-  from public.school_catalog c
-  where not exists (
-    select 1 from public.schools s
-    where s.catalog_source = c.source and s.catalog_external_id = c.source_id
-  )
-  union all
-  select coalesce(s.catalog_source, 'GEOMENTOR'), coalesce(s.catalog_external_id, s.id::text),
-    s.name, s.school_type, s.country_code::text, s.state_region, s.district_lga, s.city,
-    s.location, true
+with selected as (
+  select coalesce(s.catalog_source, 'GEOMENTOR') as source,
+    coalesce(s.catalog_external_id, s.id::text) as source_id,
+    s.name,
+    s.school_type,
+    s.country_code::text as country_code,
+    s.state_region,
+    s.district_lga,
+    s.city,
+    s.location,
+    true as programme_member
   from public.schools s
   where s.verification_status = 'VERIFIED' and s.location is not null
-), selected as (
-  select * from all_schools
-  where (p_country is null or country_code = upper(p_country))
-    and (p_state is null or lower(coalesce(state_region, 'Unspecified')) = lower(p_state))
+    and (p_country is null or s.country_code = upper(p_country))
+    and (p_state is null or lower(coalesce(s.state_region, 'Unspecified')) = lower(p_state))
 )
 select case
   when p_country is null then jsonb_build_object(
@@ -121,20 +118,22 @@ stable
 security definer set search_path = ''
 as $$
 with matches as (
-  select source, source_id, name, school_type, country_code::text country_code, state_region,
-    district_lga, city, public.st_y(location) latitude, public.st_x(location) longitude, false programme_member
-  from public.school_catalog
-  where char_length(trim(p_query)) >= 2 and name ilike '%' || trim(p_query) || '%'
-    and (p_country is null or country_code = upper(p_country))
-  union all
-  select coalesce(catalog_source, 'GEOMENTOR'), coalesce(catalog_external_id, id::text), name,
-    school_type, country_code::text, state_region, district_lga, city,
-    public.st_y(location), public.st_x(location), true
+  select coalesce(catalog_source, 'GEOMENTOR') as source,
+    coalesce(catalog_external_id, id::text) as source_id,
+    name,
+    school_type,
+    country_code::text as country_code,
+    state_region,
+    district_lga,
+    city,
+    public.st_y(location) latitude,
+    public.st_x(location) longitude,
+    true as programme_member
   from public.schools
   where verification_status = 'VERIFIED' and location is not null
     and char_length(trim(p_query)) >= 2 and name ilike '%' || trim(p_query) || '%'
     and (p_country is null or country_code = upper(p_country))
-  order by programme_member desc, name
+  order by name
   limit least(greatest(p_limit, 1), 20)
 )
 select coalesce(jsonb_agg(to_jsonb(matches)), '[]'::jsonb) from matches;
@@ -196,3 +195,88 @@ end;
 $$;
 revoke all on function public.review_registration_application(uuid, public.verification_status, text) from public;
 grant execute on function public.review_registration_application(uuid, public.verification_status, text) to authenticated;
+
+create or replace function public.admin_deactivate_account(p_user_id uuid, p_reason text default null)
+returns jsonb
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  if not private.is_platform_admin() then
+    raise exception 'Platform administrator role required';
+  end if;
+  if p_user_id is null then
+    raise exception 'User id is required';
+  end if;
+
+  update public.profiles
+  set suspended_at = coalesce(suspended_at, now()), updated_at = now()
+  where id = p_user_id;
+
+  if not found then
+    raise exception 'User profile not found';
+  end if;
+
+  update auth.users
+  set banned_until = '9999-12-31 23:59:59+00'::timestamptz
+  where id = p_user_id;
+
+  insert into public.audit_events (actor_id, organization_id, action, entity_type, entity_id, metadata)
+  values (
+    auth.uid(),
+    null,
+    'ACCOUNT_DEACTIVATED',
+    'profile',
+    p_user_id,
+    jsonb_build_object('reason', nullif(trim(p_reason), ''), 'suspended_at', now())
+  );
+
+  return jsonb_build_object('user_id', p_user_id, 'status', 'DEACTIVATED');
+end;
+$$;
+revoke all on function public.admin_deactivate_account(uuid, text) from public;
+grant execute on function public.admin_deactivate_account(uuid, text) to authenticated;
+
+create or replace function public.admin_delete_account(p_user_id uuid, p_reason text default null)
+returns jsonb
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  target_user public.profiles%rowtype;
+begin
+  if not private.is_platform_admin() then
+    raise exception 'Platform administrator role required';
+  end if;
+  if p_user_id is null then
+    raise exception 'User id is required';
+  end if;
+  if p_user_id = auth.uid() then
+    raise exception 'Administrators cannot delete their own account from this interface';
+  end if;
+
+  select * into target_user from public.profiles where id = p_user_id for update;
+  if target_user.id is null then
+    raise exception 'User profile not found';
+  end if;
+
+  insert into public.audit_events (actor_id, organization_id, action, entity_type, entity_id, metadata)
+  values (
+    auth.uid(),
+    null,
+    'ACCOUNT_DELETED',
+    'profile',
+    p_user_id,
+    jsonb_build_object('reason', nullif(trim(p_reason), ''), 'deleted_at', now())
+  );
+
+  delete from auth.users where id = p_user_id;
+  if not found then
+    raise exception 'Auth user not found';
+  end if;
+
+  return jsonb_build_object('user_id', p_user_id, 'status', 'DELETED');
+end;
+$$;
+revoke all on function public.admin_delete_account(uuid, text) from public;
+grant execute on function public.admin_delete_account(uuid, text) to authenticated;
