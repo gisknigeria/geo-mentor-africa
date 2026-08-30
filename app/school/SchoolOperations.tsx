@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, CheckCircle2, ClipboardCheck, FolderKanban, Leaf, ShieldAlert, UserCheck, Users } from "lucide-react";
 import { Logo } from "../../components/app/logo";
@@ -10,20 +10,60 @@ import { supabase } from "../../lib/supabase/client";
 
 type Observation = { id: string; observation_type: string; common_name: string | null; scientific_name: string | null; verification_status: string; review_stage: string; observed_at: string; sensitivity_level: string; latitude: number | null; longitude: number | null };
 type Dashboard = { school: { id: string; name: string; country_code: string }; role: string; metrics: { verified_students: number; pending_students: number; teacher_review: number; expert_review: number; verified_observations: number; active_projects: number }; recent_observations: Observation[] };
+type StaffInvite = { id: string; email: string; role: string; status: string; expires_at: string; created_at: string };
+type ClassJoinCode = { id: string; label: string; code_hint: string; expires_at: string; max_uses: number; use_count: number; active: boolean; created_at: string };
+type StudentJoinRequest = { id: string; student_display_name: string; guardian_name: string; guardian_email: string; consent_status: string; created_at: string };
 
 const stageLabel: Record<string, string> = { TEACHER_REVIEW: "Teacher review", EXPERT_REVIEW: "Expert review", STUDENT_REVISION: "Student revision", CLOSED: "Closed" };
+
+function randomCode(length: number) {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const values = new Uint32Array(length);
+  const bytes = typeof crypto !== "undefined" ? crypto.getRandomValues(values) : values;
+  return Array.from(bytes, (value) => alphabet[value % alphabet.length]).join("");
+}
 
 export function SchoolOperations() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [staffInvites, setStaffInvites] = useState<StaffInvite[]>([]);
+  const [classCodes, setClassCodes] = useState<ClassJoinCode[]>([]);
+  const [studentRequests, setStudentRequests] = useState<StudentJoinRequest[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"SCHOOL_ADMIN" | "TEACHER">("TEACHER");
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+  const [generatedInviteToken, setGeneratedInviteToken] = useState<string | null>(null);
+  const [codeLabel, setCodeLabel] = useState("Class code");
+  const [codeUses, setCodeUses] = useState(40);
+  const [codeExpiryDays, setCodeExpiryDays] = useState(30);
+  const [codeMessage, setCodeMessage] = useState<string | null>(null);
+  const [generatedClassCode, setGeneratedClassCode] = useState<string | null>(null);
+
+  const loadSchoolAdminData = useCallback(async (schoolId: string) => {
+    const [invitesResult, codesResult, requestsResult] = await Promise.all([
+      supabase.from("staff_invitations").select("id,email,role,status,expires_at,created_at").eq("school_id", schoolId).order("created_at", { ascending: false }),
+      supabase.from("class_join_codes").select("id,label,code_hint,expires_at,max_uses,use_count,active,created_at").eq("school_id", schoolId).order("created_at", { ascending: false }),
+      supabase.from("student_join_requests").select("id,student_display_name,guardian_name,guardian_email,consent_status,created_at").eq("school_id", schoolId).order("created_at", { ascending: false }),
+    ]);
+
+    if (!invitesResult.error) setStaffInvites((invitesResult.data ?? []) as StaffInvite[]);
+    if (!codesResult.error) setClassCodes((codesResult.data ?? []) as ClassJoinCode[]);
+    if (!requestsResult.error) setStudentRequests((requestsResult.data ?? []) as StudentJoinRequest[]);
+  }, []);
 
   const loadDashboard = useCallback(async () => {
     const { data, error } = await supabase.rpc("get_school_operations_dashboard");
-    if (error || !data) setLoadError(error?.message || "The school dashboard returned no data.");
-    else setDashboard(data as Dashboard);
-  }, []);
+    if (error || !data) {
+      setLoadError(error?.message || "The school dashboard returned no data.");
+      return;
+    }
+
+    const nextDashboard = data as Dashboard;
+    setDashboard(nextDashboard);
+    await loadSchoolAdminData(nextDashboard.school.id);
+  }, [loadSchoolAdminData]);
 
   useEffect(() => {
     void supabase.auth.getUser().then(async ({ data }) => {
@@ -32,6 +72,61 @@ export function SchoolOperations() {
       setAuthReady(true);
     });
   }, [loadDashboard]);
+
+  async function handleInviteSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!dashboard) return;
+
+    const token = randomCode(28);
+    const validUntil = new Date(Date.now() + codeExpiryDays * 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase.rpc("create_staff_invitation", {
+      target_school: dashboard.school.id,
+      invite_email: inviteEmail.trim(),
+      invite_role: inviteRole,
+      plain_token: token,
+      valid_until: validUntil,
+    });
+
+    if (error) {
+      setInviteMessage(error.message || "The staff invitation could not be created.");
+      setGeneratedInviteToken(null);
+      return;
+    }
+
+    setInviteMessage(`Invitation created for ${inviteEmail.trim()}. Share the one-time code below.`);
+    setGeneratedInviteToken(token);
+    setInviteEmail("");
+    setInviteRole("TEACHER");
+    await loadSchoolAdminData(dashboard.school.id);
+  }
+
+  async function handleClassCodeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!dashboard) return;
+
+    const generated = randomCode(10);
+    const validUntil = new Date(Date.now() + codeExpiryDays * 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase.rpc("create_class_join_code", {
+      target_school: dashboard.school.id,
+      plain_code: generated,
+      code_label: codeLabel.trim() || "Class code",
+      valid_until: validUntil,
+      allowed_uses: codeUses,
+    });
+
+    if (error) {
+      setCodeMessage(error.message || "The class code could not be created.");
+      setGeneratedClassCode(null);
+      return;
+    }
+
+    setGeneratedClassCode(generated);
+    setCodeMessage("A new class join code was created. Share the code below with your students.");
+    setCodeLabel("Class code");
+    setCodeUses(40);
+    setCodeExpiryDays(30);
+    await loadSchoolAdminData(dashboard.school.id);
+  }
 
   if (authReady && !user) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School staff sign-in required</h1><p className="mt-3 text-sm text-slate-600">This workspace is restricted to verified teachers and school administrators.</p><Link href="/auth" className="mt-5 inline-block text-sm font-bold text-emerald-800">Sign in securely</Link></section></main>;
   if (!authReady || !dashboard) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School data unavailable</h1><p className="mt-3 text-sm leading-6 text-slate-600">{loadError || "Loading your live school dashboard..."}</p><Link href="/portal" className="mt-5 inline-block text-sm font-bold text-emerald-800">Return to portal</Link></section></main>;
@@ -48,9 +143,76 @@ export function SchoolOperations() {
     <div className="mx-auto max-w-7xl px-4 py-7 sm:px-7">
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">SCHOOL OPERATIONS</p><h1 className="mt-2 font-serif text-4xl text-emerald-950">{dashboard.school.name}</h1><p className="mt-2 text-sm text-slate-500">Student access, evidence review and biodiversity progress in one protected workspace.</p></div><Link href="/teacher" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#0b4436] px-5 text-xs font-bold text-white">Open teacher queue <ArrowRight className="size-4" /></Link></section>
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(([label,value,Icon,tone]) => <article key={label} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5"><span className={`grid size-12 place-items-center rounded-xl ${tone}`}><Icon className="size-5" /></span><div><small className="text-[9px] font-black tracking-[.12em] text-slate-400">{label.toUpperCase()}</small><strong className="mt-1 block font-serif text-3xl text-emerald-950">{value}</strong></div></article>)}</section>
-      <section className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,.7fr)]">
+
+      <section className="mt-6 grid gap-5 xl:grid-cols-2">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">INVITE SCHOOL STAFF</p>
+          <h2 className="mt-2 font-serif text-2xl text-emerald-950">Invite a teacher or school admin</h2>
+          <form onSubmit={handleInviteSubmit} className="mt-5 grid gap-4">
+            <label className="grid gap-2 text-xs font-bold text-slate-700">
+              <span>Invited email</span>
+              <input value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} type="email" required className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" placeholder="teacher@school.org" />
+            </label>
+            <label className="grid gap-2 text-xs font-bold text-slate-700">
+              <span>Role</span>
+              <select value={inviteRole} onChange={(event) => setInviteRole(event.target.value as "SCHOOL_ADMIN" | "TEACHER")} className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal">
+                <option value="TEACHER">Teacher</option>
+                <option value="SCHOOL_ADMIN">School admin</option>
+              </select>
+            </label>
+            <button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#0b4436] px-5 text-xs font-bold text-white">Create invitation</button>
+          </form>
+          {inviteMessage && <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">{inviteMessage}</p>}
+          {generatedInviteToken && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-[9px] font-black tracking-[.14em] text-emerald-700">ONE-TIME INVITATION CODE</p><div className="mt-3 rounded-lg bg-white px-4 py-3 font-mono text-sm font-black tracking-[.16em] text-emerald-950">{generatedInviteToken}</div></div>}
+          <div className="mt-5 space-y-3">
+            <p className="text-[9px] font-black tracking-[.12em] text-slate-400">RECENT INVITES</p>
+            {staffInvites.length === 0 ? <p className="text-xs text-slate-500">No invitations yet.</p> : staffInvites.map((invite) => <div key={invite.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs"><div><strong className="block text-emerald-900">{invite.email}</strong><span className="text-slate-500">{invite.role} · {invite.status}</span></div><span className="text-slate-400">{new Date(invite.expires_at).toLocaleDateString()}</span></div>)}
+          </div>
+        </article>
+
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">STUDENT JOIN CODES</p>
+          <h2 className="mt-2 font-serif text-2xl text-emerald-950">Create a class join code</h2>
+          <form onSubmit={handleClassCodeSubmit} className="mt-5 grid gap-4">
+            <label className="grid gap-2 text-xs font-bold text-slate-700">
+              <span>Code label</span>
+              <input value={codeLabel} onChange={(event) => setCodeLabel(event.target.value)} className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" placeholder="Grade 7 Science" />
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2 text-xs font-bold text-slate-700">
+                <span>Valid for days</span>
+                <input type="number" min={1} max={180} value={codeExpiryDays} onChange={(event) => setCodeExpiryDays(Number(event.target.value) || 30)} className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" />
+              </label>
+              <label className="grid gap-2 text-xs font-bold text-slate-700">
+                <span>Allowed uses</span>
+                <input type="number" min={1} max={500} value={codeUses} onChange={(event) => setCodeUses(Number(event.target.value) || 40)} className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" />
+              </label>
+            </div>
+            <button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#0b4436] px-5 text-xs font-bold text-white">Generate class code</button>
+          </form>
+          {codeMessage && <p className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">{codeMessage}</p>}
+          {generatedClassCode && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-[9px] font-black tracking-[.14em] text-emerald-700">CLASS JOIN CODE</p><div className="mt-3 rounded-lg bg-white px-4 py-3 font-mono text-lg font-black tracking-[.16em] text-emerald-950">{generatedClassCode}</div></div>}
+          <div className="mt-5 space-y-3">
+            <p className="text-[9px] font-black tracking-[.12em] text-slate-400">ACTIVE CODES</p>
+            {classCodes.length === 0 ? <p className="text-xs text-slate-500">No class codes yet.</p> : classCodes.map((code) => <div key={code.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs"><div><strong className="block text-emerald-900">{code.label}</strong><span className="text-slate-500">{code.code_hint} · {code.use_count}/{code.max_uses} used</span></div><span className="text-slate-400">{new Date(code.expires_at).toLocaleDateString()}</span></div>)}
+          </div>
+        </article>
+      </section>
+
+      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,.7fr)]">
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="flex items-center justify-between border-b border-slate-100 p-5"><div><p className="text-[9px] font-black tracking-[.15em] text-slate-400">SCHOOL EVIDENCE</p><h2 className="mt-1 font-serif text-2xl text-emerald-950">Recent observations</h2></div><span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-800">{dashboard.metrics.expert_review} with experts</span></div><div className="divide-y divide-slate-100">{dashboard.recent_observations.map((observation) => <div key={observation.id} className="grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 p-4 sm:px-5"><span className="grid size-10 place-items-center rounded-xl bg-lime-100 text-emerald-800"><Leaf className="size-4" /></span><span className="min-w-0"><strong className="block truncate text-xs text-emerald-950">{observation.scientific_name || observation.common_name || observation.observation_type}</strong><small className="mt-1 block text-[10px] text-slate-400">{observation.observation_type} · {new Date(observation.observed_at).toLocaleDateString()}</small></span><span className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${observation.verification_status === "VERIFIED" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{stageLabel[observation.review_stage] || observation.verification_status}</span></div>)}</div></article>
-        <aside className="grid gap-5"><article className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="relative h-52 bg-[linear-gradient(135deg,#e8eddc,#c6d7bd)]"><span className="absolute bottom-3 left-3 rounded-md bg-white/90 px-2 py-1 text-[9px] font-bold text-emerald-900">Sensitive records hidden</span></div><div className="p-5"><p className="text-[9px] font-black tracking-[.15em] text-slate-400">PRIVACY-SAFE MAP</p><h2 className="mt-1 font-serif text-xl">School biodiversity map</h2><p className="mt-2 text-xs leading-5 text-slate-500">Only approximate coordinates are returned here. Critical species locations are withheld.</p></div></article><article className="rounded-2xl bg-[#0b4436] p-5 text-white"><p className="text-[9px] font-black tracking-[.15em] text-emerald-100/70">QUICK ACTIONS</p><div className="mt-4 grid gap-2"><Link href="/teacher" className="flex items-center justify-between rounded-lg bg-lime-300 px-4 py-3 text-xs font-bold text-emerald-950">Open teacher queue <ClipboardCheck className="size-4" /></Link></div><div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4 text-[10px] text-emerald-100/65"><FolderKanban className="size-4" />{dashboard.metrics.active_projects} active school projects</div></article></aside>
+
+        <aside className="grid gap-5">
+          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="relative h-52 bg-[linear-gradient(135deg,#e8eddc,#c6d7bd)]"><span className="absolute bottom-3 left-3 rounded-md bg-white/90 px-2 py-1 text-[9px] font-bold text-emerald-900">Sensitive records hidden</span></div>
+            <div className="p-5"><p className="text-[9px] font-black tracking-[.15em] text-slate-400">PRIVACY-SAFE MAP</p><h2 className="mt-1 font-serif text-xl">School biodiversity map</h2><p className="mt-2 text-xs leading-5 text-slate-500">Only approximate coordinates are returned here. Critical species locations are withheld.</p></div>
+          </article>
+          <article className="rounded-2xl bg-[#0b4436] p-5 text-white">
+            <p className="text-[9px] font-black tracking-[.15em] text-emerald-100/70">PENDING STUDENTS</p>
+            <div className="mt-4 space-y-3">{studentRequests.length === 0 ? <p className="text-xs text-emerald-50/80">No student requests right now.</p> : studentRequests.map((request) => <div key={request.id} className="rounded-lg bg-white/5 p-3 text-xs"><strong className="block text-white">{request.student_display_name}</strong><span className="text-emerald-100/75">{request.guardian_email} · {request.consent_status}</span></div>)}</div>
+            <div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4 text-[10px] text-emerald-100/65"><FolderKanban className="size-4" />{dashboard.metrics.active_projects} active school projects</div>
+          </article>
+        </aside>
       </section>
     </div>
   </main>;
