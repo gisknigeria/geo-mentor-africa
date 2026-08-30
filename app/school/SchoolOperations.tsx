@@ -40,6 +40,10 @@ export function SchoolOperations() {
   const [codeExpiryDays, setCodeExpiryDays] = useState(30);
   const [codeMessage, setCodeMessage] = useState<string | null>(null);
   const [generatedClassCode, setGeneratedClassCode] = useState<string | null>(null);
+  const [busyStudentId, setBusyStudentId] = useState<string | null>(null);
+  const [studentMessage, setStudentMessage] = useState<string | null>(null);
+  const [consentConfirmed, setConsentConfirmed] = useState<Record<string, boolean>>({});
+  const [consentMethod, setConsentMethod] = useState<Record<string, string>>({});
 
   const loadSchoolAdminData = useCallback(async (schoolId: string) => {
     const [invitesResult, codesResult, requestsResult] = await Promise.all([
@@ -93,7 +97,22 @@ export function SchoolOperations() {
       return;
     }
 
-    setInviteMessage(`Invitation created for ${inviteEmail.trim()}. Share the one-time code below.`);
+    // Send invitation email
+    const emailResponse = await fetch("/api/notifications/staff-invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        invitedEmail: inviteEmail.trim(),
+        invitedRole: inviteRole,
+        token: token,
+      }),
+    });
+
+    if (emailResponse.ok) {
+      setInviteMessage(`Invitation sent to ${inviteEmail.trim()}. They will receive an email with the acceptance code.`);
+    } else {
+      setInviteMessage(`Invitation created for ${inviteEmail.trim()}, but the email could not be sent. Share this code manually:`);
+    }
     setGeneratedInviteToken(token);
     setInviteEmail("");
     setInviteRole("TEACHER");
@@ -126,6 +145,34 @@ export function SchoolOperations() {
     setCodeUses(40);
     setCodeExpiryDays(30);
     await loadSchoolAdminData(dashboard.school.id);
+  }
+
+  async function reviewStudent(requestId: string, decision: "VERIFIED" | "REJECTED" | "NEEDS_CHANGES") {
+    if (decision === "VERIFIED" && !consentConfirmed[requestId]) {
+      setStudentMessage("Please confirm that you have verified guardian or school consent before approving this student.");
+      return;
+    }
+
+    setBusyStudentId(requestId);
+    setStudentMessage(null);
+    const { error } = await supabase.rpc("review_student_join_request", {
+      request_id: requestId,
+      review_decision: decision,
+      consent_confirmed: Boolean(consentConfirmed[requestId]),
+      consent_method: consentMethod[requestId] || "DIGITAL",
+      notes: null,
+    });
+
+    if (error) {
+      setStudentMessage("The student request could not be reviewed. Confirm your school role and database setup.");
+    } else {
+      setStudentMessage(`Student request marked ${decision.toLowerCase().replace("_", " ")}.`);
+      if (dashboard) await loadSchoolAdminData(dashboard.school.id);
+      setConsentConfirmed({});
+      setConsentMethod({});
+    }
+
+    setBusyStudentId(null);
   }
 
   if (authReady && !user) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School staff sign-in required</h1><p className="mt-3 text-sm text-slate-600">This workspace is restricted to verified teachers and school administrators.</p><Link href="/auth" className="mt-5 inline-block text-sm font-bold text-emerald-800">Sign in securely</Link></section></main>;
@@ -200,6 +247,85 @@ export function SchoolOperations() {
       </section>
 
       <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,.7fr)]">
+        {studentRequests.some((r) => r.consent_status === "PENDING") && (
+          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5">
+            <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">STUDENT ONBOARDING</p>
+            <h2 className="mt-2 font-serif text-2xl text-emerald-950">Approve pending students</h2>
+            {studentMessage && <p className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">{studentMessage}</p>}
+            <div className="mt-5 space-y-4">
+              {studentRequests.length === 0 ? (
+                <p className="text-xs text-slate-500">No student requests.</p>
+              ) : (
+                studentRequests
+                  .filter((r) => r.consent_status === "PENDING")
+                  .map((student) => (
+                    <article key={student.id} className="rounded-xl border border-slate-200 p-4">
+                      <div className="grid gap-4">
+                        <div>
+                          <h3 className="font-bold text-emerald-950">{student.student_display_name}</h3>
+                          <p className="mt-1 text-xs text-slate-500">Guardian: {student.guardian_name}</p>
+                          <p className="text-xs text-slate-500">{student.guardian_email}</p>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          <label className="flex items-center gap-2 text-xs text-slate-700">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(consentConfirmed[student.id])}
+                              onChange={(event) =>
+                                setConsentConfirmed((current) => ({
+                                  ...current,
+                                  [student.id]: event.target.checked,
+                                }))
+                              }
+                              className="size-4 accent-emerald-700"
+                            />
+                            <span>I verified valid consent from guardian or school</span>
+                          </label>
+                          <select
+                            value={consentMethod[student.id] || "DIGITAL"}
+                            onChange={(event) =>
+                              setConsentMethod((current) => ({
+                                ...current,
+                                [student.id]: event.target.value,
+                              }))
+                            }
+                            className="min-h-10 rounded-lg border border-slate-300 px-3 text-xs font-normal"
+                          >
+                            <option value="DIGITAL">Digital consent</option>
+                            <option value="PAPER">Paper consent</option>
+                            <option value="SCHOOL_AUTHORITY">School authority</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            onClick={() => void reviewStudent(student.id, "VERIFIED")}
+                            disabled={busyStudentId === student.id}
+                            className="inline-flex min-h-10 items-center rounded-lg bg-emerald-700 px-4 text-xs font-bold text-white hover:bg-emerald-800 disabled:opacity-50"
+                          >
+                            Approve student
+                          </button>
+                          <button
+                            onClick={() => void reviewStudent(student.id, "NEEDS_CHANGES")}
+                            disabled={busyStudentId === student.id}
+                            className="inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                          >
+                            Request changes
+                          </button>
+                          <button
+                            onClick={() => void reviewStudent(student.id, "REJECTED")}
+                            disabled={busyStudentId === student.id}
+                            className="inline-flex min-h-10 items-center rounded-lg px-4 text-xs font-bold text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))
+              )}
+            </div>
+          </article>
+        )}
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="flex items-center justify-between border-b border-slate-100 p-5"><div><p className="text-[9px] font-black tracking-[.15em] text-slate-400">SCHOOL EVIDENCE</p><h2 className="mt-1 font-serif text-2xl text-emerald-950">Recent observations</h2></div><span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-800">{dashboard.metrics.expert_review} with experts</span></div><div className="divide-y divide-slate-100">{dashboard.recent_observations.map((observation) => <div key={observation.id} className="grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 p-4 sm:px-5"><span className="grid size-10 place-items-center rounded-xl bg-lime-100 text-emerald-800"><Leaf className="size-4" /></span><span className="min-w-0"><strong className="block truncate text-xs text-emerald-950">{observation.scientific_name || observation.common_name || observation.observation_type}</strong><small className="mt-1 block text-[10px] text-slate-400">{observation.observation_type} · {new Date(observation.observed_at).toLocaleDateString()}</small></span><span className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${observation.verification_status === "VERIFIED" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{stageLabel[observation.review_stage] || observation.verification_status}</span></div>)}</div></article>
 
         <aside className="grid gap-5">
@@ -208,8 +334,17 @@ export function SchoolOperations() {
             <div className="p-5"><p className="text-[9px] font-black tracking-[.15em] text-slate-400">PRIVACY-SAFE MAP</p><h2 className="mt-1 font-serif text-xl">School biodiversity map</h2><p className="mt-2 text-xs leading-5 text-slate-500">Only approximate coordinates are returned here. Critical species locations are withheld.</p></div>
           </article>
           <article className="rounded-2xl bg-[#0b4436] p-5 text-white">
-            <p className="text-[9px] font-black tracking-[.15em] text-emerald-100/70">PENDING STUDENTS</p>
-            <div className="mt-4 space-y-3">{studentRequests.length === 0 ? <p className="text-xs text-emerald-50/80">No student requests right now.</p> : studentRequests.map((request) => <div key={request.id} className="rounded-lg bg-white/5 p-3 text-xs"><strong className="block text-white">{request.student_display_name}</strong><span className="text-emerald-100/75">{request.guardian_email} · {request.consent_status}</span></div>)}</div>
+            <p className="text-[9px] font-black tracking-[.15em] text-emerald-100/70">STUDENT STATUS</p>
+            <div className="mt-4 space-y-3">
+              <div>
+                <strong className="block text-xs text-white">Verified students</strong>
+                <span className="mt-1 block font-mono text-lg font-bold text-lime-300">{dashboard.metrics.verified_students}</span>
+              </div>
+              <div className="border-t border-white/10 pt-3">
+                <strong className="block text-xs text-white">Pending approval</strong>
+                <span className="mt-1 block font-mono text-lg font-bold text-amber-300">{studentRequests.filter((r) => r.consent_status === "PENDING").length}</span>
+              </div>
+            </div>
             <div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4 text-[10px] text-emerald-100/65"><FolderKanban className="size-4" />{dashboard.metrics.active_projects} active school projects</div>
           </article>
         </aside>
