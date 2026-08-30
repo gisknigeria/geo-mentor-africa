@@ -35,8 +35,18 @@ alter table public.registration_applications add column if not exists proposed_l
   check (proposed_latitude is null or proposed_latitude between -90 and 90);
 alter table public.registration_applications add column if not exists proposed_longitude numeric(10,7)
   check (proposed_longitude is null or proposed_longitude between -180 and 180);
-alter table public.registration_applications add constraint registration_school_location_pair
-  check ((proposed_latitude is null) = (proposed_longitude is null));
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'registration_school_location_pair'
+      and conrelid = 'public.registration_applications'::regclass
+  ) then
+    alter table public.registration_applications
+      add constraint registration_school_location_pair
+      check ((proposed_latitude is null) = (proposed_longitude is null));
+  end if;
+end $$;
 
 create or replace function public.public_home_impact()
 returns jsonb
