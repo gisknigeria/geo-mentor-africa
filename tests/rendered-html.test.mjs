@@ -38,7 +38,7 @@ async function expectPage(pathname, expectedText) {
 }
 
 const pages = [
-  ["/", /Map what lives\./],
+  ["/", /Africa’s school grounds are/],
   ["/observations", /Evidence, not just identifications\./],
   ["/partner", /Fund the goal\./],
   ["/pilot", /Take your school from interest to a safe first field lesson\./],

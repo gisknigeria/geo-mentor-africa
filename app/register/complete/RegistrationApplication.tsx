@@ -7,6 +7,7 @@ import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { Logo } from "../../../components/app/logo";
 import { Button } from "../../../components/ui/button";
 import { supabase } from "../../../lib/supabase/client";
+import { SchoolRegistrationLocation } from "./SchoolRegistrationLocation";
 
 type ApplicantType = "SCHOOL" | "MENTOR" | "PARTNER";
 
@@ -33,13 +34,27 @@ export function RegistrationApplication() {
     setBusy(true);
     setMessage(null);
     const values = new FormData(event.currentTarget);
+    const latitudeValue = String(values.get("proposedLatitude") || "");
+    const longitudeValue = String(values.get("proposedLongitude") || "");
+    const proposedLatitude = Number(latitudeValue);
+    const proposedLongitude = Number(longitudeValue);
+    const hasProposedPoint = latitudeValue !== "" && longitudeValue !== "" && Number.isFinite(proposedLatitude) && Number.isFinite(proposedLongitude);
+    if (type === "SCHOOL" && !hasProposedPoint) {
+      setMessage("Select your school from the suggestions, or choose “add its location” and place a point on the map.");
+      setBusy(false);
+      return;
+    }
     const { error } = await supabase.from("registration_applications").insert({
       applicant_user_id: user.id,
       application_type: type,
       organization_name: String(values.get("organizationName") || "").trim() || null,
-      country_code: String(values.get("countryCode") || "NG").toUpperCase(),
-      state_region: String(values.get("stateRegion") || "").trim(),
-      city: String(values.get("city") || "").trim(),
+      country_code: String(values.get("catalogCountryCode") || values.get("countryCode") || "NG").toUpperCase(),
+      state_region: String(values.get("catalogStateRegion") || values.get("stateRegion") || "").trim(),
+      city: String(values.get("catalogCity") || values.get("city") || "").trim(),
+      catalog_source: String(values.get("catalogSource") || "").trim() || null,
+      catalog_external_id: String(values.get("catalogExternalId") || "").trim() || null,
+      proposed_latitude: hasProposedPoint && proposedLatitude >= -90 && proposedLatitude <= 90 ? proposedLatitude : null,
+      proposed_longitude: hasProposedPoint && proposedLongitude >= -180 && proposedLongitude <= 180 ? proposedLongitude : null,
       phone: String(values.get("phone") || "").trim() || null,
       website: String(values.get("website") || "").trim() || null,
       credentials_summary: String(values.get("credentials") || "").trim() || null,
@@ -58,7 +73,8 @@ export function RegistrationApplication() {
     <main className="min-h-screen bg-[#f4f6f1] px-4 py-8 text-[#15342d]"><div className="mx-auto max-w-3xl"><Logo /><section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-9"><p className="text-[10px] font-bold tracking-[.18em] text-emerald-700">STEP 2 OF 2 · VERIFIED EMAIL</p><h1 className="mt-3 font-serif text-4xl text-emerald-950">Complete your application</h1><p className="mt-3 text-sm text-slate-600">Signed in as {user.email}. Trusted access is granted only after review.</p>
       <form className="mt-7 grid gap-5" onSubmit={submitApplication}>
         <label className="grid gap-2 text-xs font-bold text-slate-700"><span>Application type</span><select className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" value={type} onChange={(event) => setType(event.target.value as ApplicantType)}><option value="SCHOOL">School</option><option value="MENTOR">Geo-Mentor</option><option value="PARTNER">Geo-Partner</option></select></label>
-        {(type === "SCHOOL" || type === "PARTNER") && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>{type === "SCHOOL" ? "School or institution name" : "Partner organization name"}</span><input name="organizationName" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required minLength={2} maxLength={180} /></label>}
+        {type === "SCHOOL" && <SchoolRegistrationLocation />}
+        {type === "PARTNER" && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>Partner organization name</span><input name="organizationName" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required minLength={2} maxLength={180} /></label>}
         <div className="grid gap-4 sm:grid-cols-3"><label className="grid gap-2 text-xs font-bold text-slate-700"><span>Country code</span><input name="countryCode" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal uppercase" defaultValue="NG" required minLength={2} maxLength={2} /></label><label className="grid gap-2 text-xs font-bold text-slate-700"><span>State or region</span><input name="stateRegion" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required maxLength={120} /></label><label className="grid gap-2 text-xs font-bold text-slate-700"><span>City</span><input name="city" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" required maxLength={120} /></label></div>
         <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-xs font-bold text-slate-700"><span>Phone <em className="font-normal text-slate-400">Optional</em></span><input name="phone" type="tel" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" maxLength={30} /></label><label className="grid gap-2 text-xs font-bold text-slate-700"><span>Website or professional profile <em className="font-normal text-slate-400">Optional</em></span><input name="website" type="url" className="min-h-12 rounded-lg border border-slate-300 px-3 text-sm font-normal" maxLength={300} /></label></div>
         {type !== "SCHOOL" && <label className="grid gap-2 text-xs font-bold text-slate-700"><span>{type === "MENTOR" ? "Qualifications and relevant experience" : "Partnership capacity and proposed support"}</span><textarea name="credentials" className="min-h-28 rounded-lg border border-slate-300 p-3 text-sm font-normal" required minLength={30} maxLength={2000} placeholder={type === "MENTOR" ? "Qualification level, discipline, research, industry, conservation, GIS or education experience…" : "Funding, materials, software, excursions, scholarships, equipment or technical collaboration…"} /></label>}
