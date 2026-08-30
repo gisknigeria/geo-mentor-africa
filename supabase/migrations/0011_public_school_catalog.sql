@@ -156,7 +156,7 @@ declare
   created_org uuid;
   created_school uuid;
   assigned_role public.app_role;
-  proposed_location geometry(Point, 4326);
+  proposed_location public.geometry(Point, 4326);
 begin
   if not private.is_platform_admin() then raise exception 'Platform administrator role required'; end if;
   if review_decision not in ('VERIFIED', 'REJECTED', 'NEEDS_CHANGES') then raise exception 'Invalid review decision'; end if;
