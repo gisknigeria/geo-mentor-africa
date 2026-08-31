@@ -1,6 +1,13 @@
 export type Coordinates = { latitude: number; longitude: number };
 
 export function decodeGeometry(value: unknown): Coordinates | null {
+  if (value && typeof value === "object" && "coordinates" in value) {
+    const coordinates = (value as { coordinates?: unknown }).coordinates;
+    if (Array.isArray(coordinates) && coordinates.length >= 2) {
+      return validCoordinates(Number(coordinates[1]), Number(coordinates[0]));
+    }
+  }
+
   if (typeof value !== "string") return null;
 
   const wkt = value.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);

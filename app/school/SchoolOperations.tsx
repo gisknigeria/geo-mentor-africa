@@ -231,9 +231,9 @@ export function SchoolOperations() {
           <h2 className="mt-2 font-serif text-2xl text-emerald-950">Live field captures</h2>
           <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]">
             {mapUrl && <iframe title="Live school activity map" src={mapUrl} className="absolute inset-0 size-full border-0 opacity-80" loading="lazy" />}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.6),transparent_35%),linear-gradient(150deg,rgba(255,255,255,0.5)_12%,transparent_12.5%,transparent_87%,rgba(255,255,255,0.5)_87.5%)] bg-[length:54px_94px]" />
-            <div className="absolute left-[18%] top-[24%] h-[44%] w-[42%] rotate-[-8deg] rounded-[44%_35%_40%_30%] border-2 border-emerald-700/45 bg-lime-300/30" />
-            <div className="absolute bottom-[10%] right-[10%] h-[20%] w-[22%] rounded-lg border border-slate-400 bg-slate-300/45" />
+            <div className="pointer-events-none absolute inset-0 bg-white/10" />
+            <div className="pointer-events-none absolute left-[18%] top-[24%] h-[44%] w-[42%] rotate-[-8deg] rounded-[44%_35%_40%_30%] border-2 border-emerald-700/45 bg-lime-300/30" />
+            <div className="pointer-events-none absolute bottom-[10%] right-[10%] h-[20%] w-[22%] rounded-lg border border-slate-400 bg-slate-300/45" />
             {mapObservations.map((item) => {
               const lat = item.latitude ?? 0;
               const lng = item.longitude ?? 0;
