@@ -65,6 +65,7 @@ export function MentorWorkspace() {
   const [showPlanner, setShowPlanner] = useState(false);
   const [showGuidanceQueue, setShowGuidanceQueue] = useState(false);
   const [showSessionPlan, setShowSessionPlan] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const refreshDashboard = useCallback(async (mentorId: string) => {
     const { data: assignmentRows, error: assignmentError } = await supabase
@@ -154,21 +155,13 @@ export function MentorWorkspace() {
     setIsSearchingSchools(true);
     setSchoolNotice(null);
 
-    let builder = supabase
+    const { data, error } = await supabase
       .from("schools")
-      .select("id, name, organization_id, city, state_region, country_code")
+      .select("id, name, organization_id, city, state_region, country_code, location")
       .eq("verification_status", "VERIFIED")
       .not("location", "is", null)
-      .limit(12);
+      .limit(200);
 
-    if (query) {
-      const safeQuery = query.replace(/[%_]/g, "");
-      builder = builder.or(
-        `name.ilike.%${safeQuery}%,city.ilike.%${safeQuery}%,state_region.ilike.%${safeQuery}%,district_lga.ilike.%${safeQuery}%`,
-      );
-    }
-
-    const { data, error } = await builder;
     setIsSearchingSchools(false);
 
     if (error) {
@@ -177,9 +170,81 @@ export function MentorWorkspace() {
       return;
     }
 
-    setSchoolResults((data ?? []) as SchoolOption[]);
-    if (!data || data.length === 0) setSchoolNotice("No schools matched your search. Try a city, state, or school name.");
-  }, [schoolQuery]);
+    const rows = (data ?? []) as Array<SchoolOption & { location: unknown }>;
+    const normalizedQuery = query.toLowerCase();
+    const matches = rows.filter((school) => {
+      const text = [school.name, school.city, school.state_region, school.country_code].filter(Boolean).join(" ").toLowerCase();
+      if (!normalizedQuery) return true;
+      return text.includes(normalizedQuery);
+    });
+
+    const withDistance = matches
+      .map((school) => {
+        const point = school.location && typeof school.location === "object" && "x" in school.location && "y" in school.location
+          ? { latitude: Number((school.location as { y: number }).y), longitude: Number((school.location as { x: number }).x) }
+          : null;
+
+        let distanceKm: number | null = null;
+        if (userLocation && point) {
+          const toRad = (value: number) => (value * Math.PI) / 180;
+          const earthRadiusKm = 6371;
+          const dLat = toRad(point.latitude - userLocation.latitude);
+          const dLon = toRad(point.longitude - userLocation.longitude);
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(userLocation.latitude)) * Math.cos(toRad(point.latitude)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          distanceKm = 2 * earthRadiusKm * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        return { school, distanceKm };
+      })
+      .filter(({ school, distanceKm }) => {
+        if (!normalizedQuery && userLocation && distanceKm !== null) return distanceKm <= 250;
+        return true;
+      })
+      .sort((a, b) => {
+        if (a.distanceKm === null && b.distanceKm === null) return 0;
+        if (a.distanceKm === null) return 1;
+        if (b.distanceKm === null) return -1;
+        return a.distanceKm - b.distanceKm;
+      })
+      .slice(0, 12)
+      .map(({ school }) => ({
+        id: school.id,
+        name: school.name,
+        organization_id: school.organization_id,
+        city: school.city,
+        state_region: school.state_region,
+        country_code: school.country_code,
+      }));
+
+    setSchoolResults(withDistance);
+
+    if (withDistance.length === 0) {
+      setSchoolNotice(query ? "No schools matched your school name or area. Try another name or use Nearby schools." : "No nearby schools were found. Try a city or school name search.");
+    }
+  }, [schoolQuery, userLocation]);
+
+  const findNearbySchools = useCallback(() => {
+    if (!navigator.geolocation) {
+      setSchoolNotice("This browser does not support location-based school search.");
+      return;
+    }
+
+    setSchoolNotice("Finding schools near your location...");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setUserLocation({ latitude: coords.latitude, longitude: coords.longitude });
+        setSchoolQuery("");
+        void searchSchools("");
+      },
+      () => {
+        setSchoolNotice("Location access was denied. You can still search by school name or area.");
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  }, [searchSchools]);
 
   const handleAssignSchool = useCallback(async (schoolId: string) => {
     if (!user) {
@@ -353,22 +418,29 @@ export function MentorWorkspace() {
                   <input
                     value={schoolQuery}
                     onChange={(event) => setSchoolQuery(event.target.value)}
-                    placeholder="Search city, state, region or school name"
+                    onFocus={() => {
+                      setShowSchoolSearch(true);
+                      void searchSchools("");
+                    }}
+                    placeholder="Search by school name, city, state or area"
                     className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
                   />
                 </label>
-                <button type="button" onClick={() => void searchSchools()} className="rounded-lg bg-[#0b4436] px-4 py-2 text-xs font-bold text-white">Search area</button>
+                <button type="button" onClick={findNearbySchools} className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-800">
+                  <MapPin className="size-3.5" /> School around me
+                </button>
+                <button type="button" onClick={() => void searchSchools()} className="rounded-lg bg-[#0b4436] px-4 py-2 text-xs font-bold text-white">Search</button>
               </div>
               {schoolNotice && <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">{schoolNotice}</p>}
               <div className="mt-4 grid gap-3">
                 {isSearchingSchools ? (
                   <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-600">
                     <LoaderCircle className="size-4 animate-spin text-emerald-700" />
-                    Searching schools...
+                    Loading suggested schools...
                   </div>
                 ) : schoolResults.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-xs text-slate-500">
-                    No schools found yet. Try a city like Lagos, KwaZulu-Natal, or a school name.
+                    Suggestions will appear here as you search or use your current location.
                   </div>
                 ) : (
                   schoolResults.map((school) => (
