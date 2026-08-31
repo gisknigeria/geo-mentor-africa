@@ -159,7 +159,6 @@ export function MentorWorkspace() {
         .from("schools")
         .select("id, name, organization_id, city, state_region, country_code, location")
         .eq("verification_status", "VERIFIED")
-        .not("location", "is", null)
         .limit(200);
 
       if (error) {
