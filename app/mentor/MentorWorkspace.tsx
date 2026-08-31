@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import type { User } from "@supabase/supabase-js";
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
@@ -85,6 +85,7 @@ export function MentorWorkspace() {
   const [recordNotice, setRecordNotice] = useState<string | null>(null);
   const [isSavingObservation, setIsSavingObservation] = useState(false);
   const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
+  const [recordImages, setRecordImages] = useState<Record<string, string[]>>({});
 
   const loadSchoolObservations = useCallback(async (schoolId: string) => {
     const { data, error } = await supabase
@@ -97,11 +98,32 @@ export function MentorWorkspace() {
     if (error) {
       setRecordNotice(error.message || "The school capture list could not be loaded.");
       setSchoolObservations([]);
+      setRecordImages({});
       return;
     }
 
     const nextRecords = (data ?? []) as SchoolObservation[];
+    const imageMap: Record<string, string[]> = {};
+
+    await Promise.all(
+      nextRecords.map(async (record) => {
+        const paths = (record.observation_media ?? []).map((media) => media.storage_path).filter(Boolean);
+        if (!paths.length) return;
+
+        const signedUrls = await Promise.all(
+          paths.map(async (storagePath) => {
+            const { data: signedData } = await supabase.storage.from("observation-evidence").createSignedUrl(storagePath, 3600);
+            return signedData?.signedUrl ?? null;
+          }),
+        );
+
+        imageMap[record.id] = signedUrls.filter((url): url is string => Boolean(url));
+      }),
+    );
+
     setSchoolObservations(nextRecords);
+    setRecordImages(imageMap);
+
     if (!nextRecords.length) {
       setSelectedObservationId(null);
       setRecordForm({ common_name: "", scientific_name: "", notes: "" });
@@ -350,7 +372,7 @@ export function MentorWorkspace() {
     }
   }, [loadSchoolObservations, recordForm, selectedObservationId, selectedSchoolId]);
 
-  const handleEvidenceUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEvidenceUpload = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     if (!files.length || !selectedObservationId) return;
 
@@ -463,6 +485,7 @@ export function MentorWorkspace() {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ") || "Mentor";
 
+  const selectedRecord = schoolObservations.find((record) => record.id === selectedObservationId) ?? null;
   const sessionSchool = dashboard.schools[0]?.school_name ?? "No school assigned yet";
 
   if (authReady && !user) {
@@ -764,12 +787,29 @@ export function MentorWorkspace() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">SELECTED CAPTURE</p>
-                        <h3 className="mt-1 font-serif text-2xl text-emerald-950">{schoolObservations.find((item) => item.id === selectedObservationId)?.common_name || schoolObservations.find((item) => item.id === selectedObservationId)?.scientific_name || "School evidence"}</h3>
+                        <h3 className="mt-1 font-serif text-2xl text-emerald-950">{selectedRecord?.common_name || selectedRecord?.scientific_name || selectedRecord?.observation_type || "School evidence"}</h3>
                       </div>
                       <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-800">
-                        {schoolObservations.find((item) => item.id === selectedObservationId)?.verification_status || "READY"}
+                        {selectedRecord?.verification_status || "READY"}
                       </span>
                     </div>
+
+                    {selectedRecord && (
+                      <div className="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
+                        <div>
+                          <small className="block text-[10px] font-black tracking-[.14em] text-slate-500">TYPE</small>
+                          <strong className="mt-1 block text-sm text-emerald-950">{selectedRecord.observation_type}</strong>
+                        </div>
+                        <div>
+                          <small className="block text-[10px] font-black tracking-[.14em] text-slate-500">STATUS</small>
+                          <strong className="mt-1 block text-sm text-emerald-950">{selectedRecord.verification_status}</strong>
+                        </div>
+                        <div>
+                          <small className="block text-[10px] font-black tracking-[.14em] text-slate-500">DATE</small>
+                          <strong className="mt-1 block text-sm text-emerald-950">{new Date(selectedRecord.observed_at).toLocaleString()}</strong>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-4 grid gap-3 md:grid-cols-2">
                       <label className="grid gap-1 text-xs font-bold text-slate-700">
@@ -800,6 +840,17 @@ export function MentorWorkspace() {
                     </div>
 
                     {recordNotice && <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">{recordNotice}</p>}
+
+                    {selectedRecord && (recordImages[selectedRecord.id]?.length ?? 0) > 0 && (
+                      <div className="mt-5 rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">IMAGE EVIDENCE</p>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                          {(recordImages[selectedRecord.id] ?? []).map((url, index) => (
+                            <img key={`${selectedRecord.id}-${index}`} src={url} alt={`${selectedRecord.common_name || "School biodiversity"} evidence ${index + 1}`} className="h-40 w-full rounded-lg border border-slate-200 object-cover" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-5 grid gap-3 md:grid-cols-2">
                       {schoolObservations.length === 0 ? (
