@@ -44,10 +44,14 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, bo
           iconSize: [34, 34],
           iconAnchor: [17, 17],
         });
-        L.marker([schoolLocation.latitude, schoolLocation.longitude], { icon: schoolIcon })
+        const schoolMarker = L.marker([schoolLocation.latitude, schoolLocation.longitude], { icon: schoolIcon, draggable: true })
           .addTo(layer.current)
           .bindTooltip(schoolName, { direction: "top", offset: [0, -16] })
           .bindPopup(`<strong>${schoolName}</strong><br />School location`);
+        schoolMarker.on("dragend", () => {
+          const position = schoolMarker.getLatLng();
+          onChoose?.({ latitude: position.lat, longitude: position.lng });
+        });
       }
     });
     return () => { cancelled = true; };
