@@ -18,7 +18,7 @@ export async function GET() {
   if (error) return NextResponse.json({ error: "Live observations are temporarily unavailable" }, { status: 502 });
 
   const records = (data ?? []).map((item) => {
-    const location = typeof item.location === "string" ? item.location.match(/POINT\\s*\\(\\s*([-\\d.]+)\\s+([-\\d.]+)\\s*\\)/i) : null;
+    const location = typeof item.location === "string" ? item.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i) : null;
     const longitude = location ? Number(location[1]) : NaN;
     const latitude = location ? Number(location[2]) : NaN;
     const school = Array.isArray(item.schools) ? item.schools[0] : item.schools;

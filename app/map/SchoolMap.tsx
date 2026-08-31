@@ -102,7 +102,7 @@ export function SchoolMap() {
         if (error) throw error;
 
         const mapped: MapObservation[] = (data ?? []).map((item) => {
-          const match = typeof item.location === "string" ? item.location.match(/POINT\\s*\\(\\s*([-\\d.]+)\\s+([-\\d.]+)\\s*\\)/i) : null;
+          const match = typeof item.location === "string" ? item.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i) : null;
           return { ...item, longitude: match ? Number(match[1]) : null, latitude: match ? Number(match[2]) : null };
         })
           .filter((item) => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude)))

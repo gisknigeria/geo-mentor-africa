@@ -27,7 +27,7 @@ export function TeacherReview() {
     const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(name), observation_media(storage_path)").eq("review_stage", "TEACHER_REVIEW").eq("verification_status", "PENDING").order("created_at");
     if (!error) {
       setRecords((data ?? []).map((item) => {
-        const match = typeof item.location === "string" ? item.location.match(/POINT\\s*\\(\\s*([-\\d.]+)\\s+([-\\d.]+)\\s*\\)/i) : null;
+        const match = typeof item.location === "string" ? item.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i) : null;
         return { ...item, school: Array.isArray(item.schools) ? item.schools[0] : item.schools, latitude: match ? Number(match[2]) : null, longitude: match ? Number(match[1]) : null };
       }) as Observation[]);
       setSelected(0);
