@@ -32,7 +32,8 @@ export function StudentObservationMap({ observations, selectedId, onSelect, onMo
       }
 
       observations.forEach((point) => {
-        const marker = L.marker([point.latitude, point.longitude], { draggable: true }).addTo(layer.current!);
+        const biodiversityIcon = L.divIcon({ className: "biodiversity-map-marker", html: "<span aria-hidden=\"true\">✦</span>", iconSize: [34, 34], iconAnchor: [17, 17] });
+        const marker = L.marker([point.latitude, point.longitude], { draggable: true, icon: biodiversityIcon }).addTo(layer.current!);
         marker.bindTooltip(point.label, { direction: "top" });
         marker.bindPopup(`<strong>${point.label}</strong><br />Drag this marker to correct the capture location.`);
         marker.on("click", () => onSelect(point.id));

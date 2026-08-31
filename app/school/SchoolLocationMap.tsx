@@ -5,7 +5,7 @@ import type { LayerGroup, Map as LeafletMap } from "leaflet";
 
 type Point = { latitude: number; longitude: number; id?: string };
 
-export function SchoolLocationMap({ observations, schoolLocation, schoolName, onChoose }: { observations: Point[]; schoolLocation: Point | null; schoolName: string; onChoose?: (point: Point) => void }) {
+export function SchoolLocationMap({ observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint }: { observations: Point[]; schoolLocation: Point | null; schoolName: string; boundary?: Point[]; boundaryMode?: boolean; boundaryPoints?: Point[]; onChoose?: (point: Point) => void; onBoundaryPoint?: (point: Point) => void }) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
@@ -17,8 +17,13 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, on
       if (!map.current) {
         map.current = L.map(element.current, { zoomControl: true }).setView([7.412, 3.904], 15);
         L.tileLayer(process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>', maxZoom: 19 }).addTo(map.current);
-        map.current.on("click", (event) => onChoose?.({ latitude: event.latlng.lat, longitude: event.latlng.lng }));
       }
+      map.current.off("click");
+      map.current.on("click", (event) => {
+        const point = { latitude: event.latlng.lat, longitude: event.latlng.lng };
+        if (boundaryMode) onBoundaryPoint?.(point);
+        else onChoose?.(point);
+      });
       layer.current?.remove();
       layer.current = L.layerGroup().addTo(map.current);
       const points = [...observations, ...(schoolLocation ? [schoolLocation] : [])];
@@ -27,6 +32,11 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, on
         map.current.fitBounds(bounds, { padding: [35, 35], maxZoom: 18 });
       }
       observations.forEach((point) => L.circleMarker([point.latitude, point.longitude], { radius: 7, color: "#fff", weight: 3, fillColor: "#0b4436", fillOpacity: 0.95 }).addTo(layer.current!).bindTooltip("Biodiversity capture"));
+      const shape = boundaryPoints?.length ? boundaryPoints : boundary;
+      if (shape && shape.length >= 3) {
+        L.polygon(shape.map((point) => [point.latitude, point.longitude] as [number, number]), { color: "#dc7b26", weight: 3, fillColor: "#f5a623", fillOpacity: 0.2 }).addTo(layer.current).bindTooltip("School boundary");
+      }
+      boundaryPoints?.forEach((point, index) => L.circleMarker([point.latitude, point.longitude], { radius: 5, color: "#fff", weight: 2, fillColor: "#dc7b26", fillOpacity: 1 }).addTo(layer.current!).bindTooltip(`Boundary point ${index + 1}`));
       if (schoolLocation) {
         const schoolIcon = L.divIcon({
           className: "school-map-marker",
@@ -41,7 +51,7 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, on
       }
     });
     return () => { cancelled = true; };
-  }, [observations, schoolLocation, onChoose]);
+  }, [observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint]);
 
   useEffect(() => () => { map.current?.remove(); map.current = null; }, []);
   return <div ref={element} className="absolute inset-0" aria-label="Interactive school map. Click to set the school location." />;

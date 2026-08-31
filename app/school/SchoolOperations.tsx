@@ -48,6 +48,9 @@ export function SchoolOperations() {
   const [consentMethod, setConsentMethod] = useState<Record<string, string>>({});
   const [schoolCoordinates, setSchoolCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [schoolBoundary, setSchoolBoundary] = useState<Array<{ latitude: number; longitude: number }>>([]);
+  const [boundaryMode, setBoundaryMode] = useState(false);
+  const [boundaryDraft, setBoundaryDraft] = useState<Array<{ latitude: number; longitude: number }>>([]);
 
   const loadSchoolAdminData = useCallback(async (schoolId: string) => {
     const [invitesResult, codesResult, requestsResult] = await Promise.all([
@@ -70,8 +73,10 @@ export function SchoolOperations() {
 
     const nextDashboard = data as Dashboard;
     setDashboard(nextDashboard);
-    const { data: schoolLocation } = await supabase.from("schools").select("location").eq("id", nextDashboard.school.id).maybeSingle();
+    const { data: schoolLocation } = await supabase.from("schools").select("location, boundary").eq("id", nextDashboard.school.id).maybeSingle();
     setSchoolCoordinates(decodeGeometry(schoolLocation?.location));
+    const boundary = schoolLocation?.boundary && typeof schoolLocation.boundary === "object" && "coordinates" in schoolLocation.boundary ? (schoolLocation.boundary as { coordinates: unknown[][] }).coordinates?.[0] : [];
+    setSchoolBoundary(Array.isArray(boundary) ? boundary.slice(0, -1).flatMap((point) => Array.isArray(point) && point.length >= 2 ? [{ latitude: Number(point[1]), longitude: Number(point[0]) }] : []) : []);
     await loadSchoolAdminData(nextDashboard.school.id);
   }, [loadSchoolAdminData]);
 
@@ -214,6 +219,20 @@ export function SchoolOperations() {
     setLocationMessage("School location saved.");
   }
 
+  async function saveBoundary() {
+    if (!dashboard || boundaryDraft.length < 3) return;
+    const points = [...boundaryDraft, boundaryDraft[0]].map((point) => `${point.longitude} ${point.latitude}`).join(",");
+    const { error } = await supabase.from("schools").update({ boundary: `SRID=4326;POLYGON((${points}))` }).eq("id", dashboard.school.id);
+    if (error) {
+      setLocationMessage("The school boundary could not be saved. Check your school admin permissions.");
+      return;
+    }
+    setSchoolBoundary(boundaryDraft);
+    setBoundaryDraft([]);
+    setBoundaryMode(false);
+    setLocationMessage("School boundary saved.");
+  }
+
   if (authReady && !user) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School staff sign-in required</h1><p className="mt-3 text-sm text-slate-600">This workspace is restricted to verified teachers and school administrators.</p><Link href="/auth" className="mt-5 inline-block text-sm font-bold text-emerald-800">Sign in securely</Link></section></main>;
   if (!authReady || !dashboard) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School data unavailable</h1><p className="mt-3 text-sm leading-6 text-slate-600">{loadError || "Loading your live school dashboard..."}</p><Link href="/portal" className="mt-5 inline-block text-sm font-bold text-emerald-800">Return to portal</Link></section></main>;
 
@@ -236,10 +255,11 @@ export function SchoolOperations() {
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">SCHOOL ACTIVITY MAP</p>
           <h2 className="mt-2 font-serif text-2xl text-emerald-950">Live field captures</h2>
-          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]"><SchoolLocationMap observations={mapObservations.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, latitude: item.latitude, longitude: item.longitude }] : [])} schoolLocation={schoolCoordinates} schoolName={dashboard.school.name} onChoose={(point) => void saveSchoolLocation(point.latitude, point.longitude)} /></div>
+          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]"><SchoolLocationMap observations={mapObservations.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, latitude: item.latitude, longitude: item.longitude }] : [])} schoolLocation={schoolCoordinates} schoolName={dashboard.school.name} boundary={schoolBoundary} boundaryMode={boundaryMode} boundaryPoints={boundaryDraft} onChoose={(point) => void saveSchoolLocation(point.latitude, point.longitude)} onBoundaryPoint={(point) => setBoundaryDraft((current) => [...current, point])} /></div>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">School staff can see captured record locations, pending review items and verified observation coverage in one map view.</p>
           <button type="button" onClick={captureSchoolLocation} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-950 px-4 text-xs font-bold text-white"><MapPin className="size-4" />Use my current location</button>
           <p className="mt-2 text-[10px] text-slate-500">Or click anywhere on the map to set the school location.</p>
+          <div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => { setBoundaryMode(true); setBoundaryDraft([]); setLocationMessage("Click around the school perimeter to add boundary points."); }} className="min-h-10 rounded-lg border border-orange-300 bg-orange-50 px-4 text-xs font-bold text-orange-800">Map school boundary</button>{boundaryMode && <button type="button" onClick={() => void saveBoundary()} disabled={boundaryDraft.length < 3} className="min-h-10 rounded-lg bg-orange-600 px-4 text-xs font-bold text-white disabled:opacity-50">Save boundary ({boundaryDraft.length} points)</button>}{boundaryMode && <button type="button" onClick={() => { setBoundaryMode(false); setBoundaryDraft([]); }} className="min-h-10 rounded-lg border border-slate-300 px-4 text-xs font-bold text-slate-600">Cancel</button>}</div>
           {schoolCoordinates && <p className="mt-2 text-[10px] text-emerald-700">{schoolCoordinates.latitude.toFixed(5)}, {schoolCoordinates.longitude.toFixed(5)}</p>}
           {locationMessage && <p className="mt-2 text-[10px] text-slate-500">{locationMessage}</p>}
         </article>
