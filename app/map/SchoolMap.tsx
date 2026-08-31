@@ -200,9 +200,9 @@ export function SchoolMap() {
   const saveObservationLocation = async () => {
     if (!selected) return;
     setLocationMessage("Saving location...");
-    const { error } = await supabase.from("observations").update({ location: `SRID=4326;POINT(${selected.longitude} ${selected.latitude})` }).eq("id", selected.id).eq("verification_status", "PENDING");
-    if (error) {
-      setLocationMessage("The location could not be saved. Only your pending observations can be corrected.");
+    const { data, error } = await supabase.from("observations").update({ location: `SRID=4326;POINT(${selected.longitude} ${selected.latitude})`, updated_at: new Date().toISOString() }).eq("id", selected.id).eq("verification_status", "PENDING").select("id").maybeSingle();
+    if (error || !data) {
+      setLocationMessage(error?.message || "The location could not be saved. Only your pending observations can be corrected.");
       return;
     }
     setLocationChanged(false);

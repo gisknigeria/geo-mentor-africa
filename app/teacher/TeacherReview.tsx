@@ -140,19 +140,22 @@ export function TeacherReview() {
     if (!record || record.latitude === null || record.longitude === null)
       return;
     setLocationMessage("Saving location...");
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("observations")
       .update({
         location: `SRID=4326;POINT(${record.longitude} ${record.latitude})`,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", record.id)
-      .eq("verification_status", "PENDING");
+      .eq("verification_status", "PENDING")
+      .select("id")
+      .maybeSingle();
     setLocationMessage(
-      error
-        ? "The location could not be saved. Check your teacher permissions."
+      error || !data
+        ? error?.message || "The location could not be saved. Check your teacher permissions."
         : "Location saved.",
     );
-    if (!error) setLocationChanged(false);
+    if (!error && data) setLocationChanged(false);
   }
 
   if (authReady && !user)
