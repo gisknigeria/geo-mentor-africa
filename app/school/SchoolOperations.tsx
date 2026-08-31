@@ -11,6 +11,7 @@ import { decodeGeometry } from "../../lib/geo";
 import { SchoolLocationMap } from "./SchoolLocationMap";
 
 type Observation = { id: string; observation_type: string; common_name: string | null; scientific_name: string | null; verification_status: string; review_stage: string; observed_at: string; sensitivity_level: string; latitude: number | null; longitude: number | null };
+type SchoolMapObservation = Observation & { location?: unknown };
 type Dashboard = { school: { id: string; name: string; country_code: string }; role: string; metrics: { verified_students: number; pending_students: number; teacher_review: number; expert_review: number; verified_observations: number; active_projects: number }; recent_observations: Observation[] };
 type StaffInvite = { id: string; email: string; role: string; status: string; expires_at: string; created_at: string };
 type ClassJoinCode = { id: string; label: string; code_hint: string; expires_at: string; max_uses: number; use_count: number; active: boolean; created_at: string };
@@ -51,6 +52,7 @@ export function SchoolOperations() {
   const [schoolBoundary, setSchoolBoundary] = useState<Array<{ latitude: number; longitude: number }>>([]);
   const [boundaryMode, setBoundaryMode] = useState(false);
   const [boundaryDraft, setBoundaryDraft] = useState<Array<{ latitude: number; longitude: number }>>([]);
+  const [allSchoolObservations, setAllSchoolObservations] = useState<Observation[]>([]);
 
   const loadSchoolAdminData = useCallback(async (schoolId: string) => {
     const [invitesResult, codesResult, requestsResult] = await Promise.all([
@@ -62,6 +64,18 @@ export function SchoolOperations() {
     if (!invitesResult.error) setStaffInvites((invitesResult.data ?? []) as StaffInvite[]);
     if (!codesResult.error) setClassCodes((codesResult.data ?? []) as ClassJoinCode[]);
     if (!requestsResult.error) setStudentRequests((requestsResult.data ?? []) as StudentJoinRequest[]);
+  }, []);
+
+  const loadAllSchoolObservations = useCallback(async (schoolId: string) => {
+    const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, scientific_name, verification_status, review_stage, observed_at, sensitivity_level, location").eq("school_id", schoolId).order("observed_at", { ascending: false }).limit(1000);
+    if (error) {
+      setLoadError(error.message);
+      return;
+    }
+    setAllSchoolObservations((data as SchoolMapObservation[] ?? []).map((item) => {
+      const coordinates = decodeGeometry(item.location);
+      return { ...item, latitude: coordinates?.latitude ?? null, longitude: coordinates?.longitude ?? null };
+    }));
   }, []);
 
   const loadDashboard = useCallback(async () => {
@@ -77,8 +91,9 @@ export function SchoolOperations() {
     setSchoolCoordinates(decodeGeometry(schoolLocation?.location));
     const boundary = schoolLocation?.boundary && typeof schoolLocation.boundary === "object" && "coordinates" in schoolLocation.boundary ? (schoolLocation.boundary as { coordinates: unknown[][] }).coordinates?.[0] : [];
     setSchoolBoundary(Array.isArray(boundary) ? boundary.slice(0, -1).flatMap((point) => Array.isArray(point) && point.length >= 2 ? [{ latitude: Number(point[1]), longitude: Number(point[0]) }] : []) : []);
+    await loadAllSchoolObservations(nextDashboard.school.id);
     await loadSchoolAdminData(nextDashboard.school.id);
-  }, [loadSchoolAdminData]);
+  }, [loadAllSchoolObservations, loadSchoolAdminData]);
 
   useEffect(() => {
     void supabase.auth.getUser().then(async ({ data }) => {
@@ -157,6 +172,17 @@ export function SchoolOperations() {
     setCodeLabel("Class code");
     setCodeUses(40);
     setCodeExpiryDays(30);
+    await loadSchoolAdminData(dashboard.school.id);
+  }
+
+  async function clearInvite(inviteId: string) {
+    if (!dashboard || !window.confirm("Remove this staff invitation?")) return;
+    const { error } = await supabase.from("staff_invitations").delete().eq("id", inviteId).eq("school_id", dashboard.school.id);
+    if (error) {
+      setInviteMessage(error.message || "The invitation could not be removed.");
+      return;
+    }
+    setInviteMessage("Invitation removed.");
     await loadSchoolAdminData(dashboard.school.id);
   }
 
@@ -243,7 +269,7 @@ export function SchoolOperations() {
     ["Verified records", dashboard.metrics.verified_observations, CheckCircle2, "bg-emerald-100 text-emerald-800"],
   ] as const;
 
-  const mapObservations = dashboard.recent_observations.filter((item) => item.latitude !== null && item.longitude !== null);
+  const mapObservations = allSchoolObservations.filter((item) => item.latitude !== null && item.longitude !== null);
 
   return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-7"><div className="mx-auto flex max-w-7xl items-center justify-between gap-4"><Logo /><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-800 sm:block">{dashboard.role.replaceAll("_", " ")}</span><AccountMenu /></div></div></header>
@@ -255,7 +281,7 @@ export function SchoolOperations() {
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">SCHOOL ACTIVITY MAP</p>
           <h2 className="mt-2 font-serif text-2xl text-emerald-950">Live field captures</h2>
-          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]"><SchoolLocationMap observations={mapObservations.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, latitude: item.latitude, longitude: item.longitude }] : [])} schoolLocation={schoolCoordinates} schoolName={dashboard.school.name} boundary={schoolBoundary} boundaryMode={boundaryMode} boundaryPoints={boundaryDraft} onChoose={(point) => void saveSchoolLocation(point.latitude, point.longitude)} onBoundaryPoint={(point) => setBoundaryDraft((current) => [...current, point])} /></div>
+          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]"><SchoolLocationMap observations={mapObservations.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, latitude: item.latitude, longitude: item.longitude, label: item.common_name || item.observation_type, details: `${item.observation_type} · ${stageLabel[item.review_stage] || item.verification_status} · ${new Date(item.observed_at).toLocaleDateString()}` }] : [])} schoolLocation={schoolCoordinates} schoolName={dashboard.school.name} boundary={schoolBoundary} boundaryMode={boundaryMode} boundaryPoints={boundaryDraft} onChoose={(point) => void saveSchoolLocation(point.latitude, point.longitude)} onBoundaryPoint={(point) => setBoundaryDraft((current) => [...current, point])} /></div>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">School staff can see captured record locations, pending review items and verified observation coverage in one map view.</p>
           <button type="button" onClick={captureSchoolLocation} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-950 px-4 text-xs font-bold text-white"><MapPin className="size-4" />Use my current location</button>
           <p className="mt-2 text-[10px] text-slate-500">Drag the school marker to move it, or click anywhere on the map to set the location.</p>
@@ -284,7 +310,7 @@ export function SchoolOperations() {
           {generatedInviteToken && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-[9px] font-black tracking-[.14em] text-emerald-700">ONE-TIME INVITATION CODE</p><div className="mt-3 rounded-lg bg-white px-4 py-3 font-mono text-sm font-black tracking-[.16em] text-emerald-950">{generatedInviteToken}</div></div>}
           <div className="mt-5 space-y-3">
             <p className="text-[9px] font-black tracking-[.12em] text-slate-400">RECENT INVITES</p>
-            {staffInvites.length === 0 ? <p className="text-xs text-slate-500">No invitations yet.</p> : staffInvites.map((invite) => <div key={invite.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs"><div><strong className="block text-emerald-900">{invite.email}</strong><span className="text-slate-500">{invite.role} · {invite.status}</span></div><span className="text-slate-400">{new Date(invite.expires_at).toLocaleDateString()}</span></div>)}
+            {staffInvites.length === 0 ? <p className="text-xs text-slate-500">No invitations yet.</p> : staffInvites.map((invite) => <div key={invite.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs"><div><strong className="block text-emerald-900">{invite.email}</strong><span className="text-slate-500">{invite.role} · {invite.status}</span></div><div className="flex items-center gap-3"><span className="text-slate-400">{new Date(invite.expires_at).toLocaleDateString()}</span><button type="button" onClick={() => void clearInvite(invite.id)} className="font-bold text-rose-700">Clear</button></div></div>)}
           </div>
         </article>
 

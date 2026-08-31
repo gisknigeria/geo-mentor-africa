@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
 
-type Point = { latitude: number; longitude: number; id?: string };
+type Point = { latitude: number; longitude: number; id?: string; label?: string; details?: string };
 
 export function SchoolLocationMap({ observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint }: { observations: Point[]; schoolLocation: Point | null; schoolName: string; boundary?: Point[]; boundaryMode?: boolean; boundaryPoints?: Point[]; onChoose?: (point: Point) => void; onBoundaryPoint?: (point: Point) => void }) {
   const element = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, bo
         const bounds = L.latLngBounds(points.map((point) => [point.latitude, point.longitude] as [number, number]));
         map.current.fitBounds(bounds, { padding: [35, 35], maxZoom: 18 });
       }
-      observations.forEach((point) => L.circleMarker([point.latitude, point.longitude], { radius: 7, color: "#fff", weight: 3, fillColor: "#0b4436", fillOpacity: 0.95 }).addTo(layer.current!).bindTooltip("Biodiversity capture"));
+      observations.forEach((point) => L.circleMarker([point.latitude, point.longitude], { radius: 7, color: "#fff", weight: 3, fillColor: "#0b4436", fillOpacity: 0.95 }).addTo(layer.current!).bindTooltip(point.label || "Biodiversity capture").bindPopup(`<strong>${point.label || "Biodiversity capture"}</strong><br />${point.details || "Live school observation"}`));
       const shape = boundaryPoints?.length ? boundaryPoints : boundary;
       if (shape && shape.length >= 3) {
         L.polygon(shape.map((point) => [point.latitude, point.longitude] as [number, number]), { color: "#dc7b26", weight: 3, fillColor: "#f5a623", fillOpacity: 0.2 }).addTo(layer.current).bindTooltip("School boundary");
