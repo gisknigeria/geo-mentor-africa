@@ -34,7 +34,7 @@ async function expectPage(pathname, expectedText) {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, expectedText);
-  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
+  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton|Dr\. Kemi Adeyemi|Staff School, Ibadan|American Christian Academy/i);
 }
 
 const pages = [

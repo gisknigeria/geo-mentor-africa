@@ -16,6 +16,7 @@ type Dashboard = { school: { id: string; name: string; country_code: string }; r
 type StaffInvite = { id: string; email: string; role: string; status: string; expires_at: string; created_at: string };
 type ClassJoinCode = { id: string; label: string; code_hint: string; expires_at: string; max_uses: number; use_count: number; active: boolean; created_at: string };
 type StudentJoinRequest = { id: string; student_display_name: string; guardian_name: string; guardian_email: string; consent_status: string; created_at: string };
+type SchoolMember = { user_id: string; display_name: string; role: string; status: string; suspended_at: string | null; joined_at: string };
 
 const stageLabel: Record<string, string> = { TEACHER_REVIEW: "Teacher review", EXPERT_REVIEW: "Expert review", STUDENT_REVISION: "Student revision", CLOSED: "Closed" };
 
@@ -53,17 +54,21 @@ export function SchoolOperations() {
   const [boundaryMode, setBoundaryMode] = useState(false);
   const [boundaryDraft, setBoundaryDraft] = useState<Array<{ latitude: number; longitude: number }>>([]);
   const [allSchoolObservations, setAllSchoolObservations] = useState<Observation[]>([]);
+  const [schoolMembers, setSchoolMembers] = useState<SchoolMember[]>([]);
+  const [memberActionMessage, setMemberActionMessage] = useState<string | null>(null);
 
   const loadSchoolAdminData = useCallback(async (schoolId: string) => {
-    const [invitesResult, codesResult, requestsResult] = await Promise.all([
+    const [invitesResult, codesResult, requestsResult, rosterResult] = await Promise.all([
       supabase.from("staff_invitations").select("id,email,role,status,expires_at,created_at").eq("school_id", schoolId).order("created_at", { ascending: false }),
       supabase.from("class_join_codes").select("id,label,code_hint,expires_at,max_uses,use_count,active,created_at").eq("school_id", schoolId).order("created_at", { ascending: false }),
       supabase.from("student_join_requests").select("id,student_display_name,guardian_name,guardian_email,consent_status,created_at").eq("school_id", schoolId).order("created_at", { ascending: false }),
+      supabase.rpc("get_school_member_roster"),
     ]);
 
     if (!invitesResult.error) setStaffInvites((invitesResult.data ?? []) as StaffInvite[]);
     if (!codesResult.error) setClassCodes((codesResult.data ?? []) as ClassJoinCode[]);
     if (!requestsResult.error) setStudentRequests((requestsResult.data ?? []) as StudentJoinRequest[]);
+    if (!rosterResult.error) setSchoolMembers((rosterResult.data ?? []) as SchoolMember[]);
   }, []);
 
   const loadAllSchoolObservations = useCallback(async (schoolId: string) => {
@@ -424,6 +429,40 @@ export function SchoolOperations() {
           </article>
         )}
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="flex items-center justify-between border-b border-slate-100 p-5"><div><p className="text-[9px] font-black tracking-[.15em] text-slate-400">SCHOOL EVIDENCE</p><h2 className="mt-1 font-serif text-2xl text-emerald-950">Recent observations</h2></div><span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-800">{dashboard.metrics.expert_review} with experts</span></div><div className="divide-y divide-slate-100">{dashboard.recent_observations.map((observation) => <div key={observation.id} className="grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 p-4 sm:px-5"><span className="grid size-10 place-items-center rounded-xl bg-lime-100 text-emerald-800"><Leaf className="size-4" /></span><span className="min-w-0"><strong className="block truncate text-xs text-emerald-950">{observation.scientific_name || observation.common_name || observation.observation_type}</strong><small className="mt-1 block text-[10px] text-slate-400">{observation.observation_type} · {new Date(observation.observed_at).toLocaleDateString()}</small></span><span className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${observation.verification_status === "VERIFIED" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{stageLabel[observation.review_stage] || observation.verification_status}</span></div>)}</div></article>
+
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">SCHOOL ROSTER</p>
+              <h2 className="mt-1 font-serif text-2xl text-emerald-950">Students and teachers</h2>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[9px] font-bold text-slate-700">{schoolMembers.length} members</span>
+          </div>
+          {memberActionMessage && <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">{memberActionMessage}</p>}
+          <div className="mt-4 space-y-3">
+            {schoolMembers.length === 0 ? (
+              <p className="text-xs text-slate-500">No verified members are visible yet for this school.</p>
+            ) : (
+              schoolMembers.map((member) => (
+                <div key={member.user_id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <strong className="block text-sm text-emerald-900">{member.display_name}</strong>
+                    <span className="text-[11px] text-slate-500">{member.role} · {member.status}</span>
+                    {member.suspended_at && <div className="text-[10px] text-rose-700">Suspended</div>}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {member.suspended_at ? (
+                      <button type="button" onClick={() => void manageSchoolMember(member.user_id, "REACTIVATE")} className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-800">Reactivate</button>
+                    ) : (
+                      <button type="button" onClick={() => void manageSchoolMember(member.user_id, "SUSPEND")} className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-[10px] font-bold text-amber-800">Suspend</button>
+                    )}
+                    <button type="button" onClick={() => void manageSchoolMember(member.user_id, "REMOVE")} className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-[10px] font-bold text-rose-700">Remove</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
 
         <aside className="grid gap-5">
           <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
