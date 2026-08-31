@@ -8,8 +8,8 @@ export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const resendKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!supabaseUrl || !serviceRoleKey || !resendKey || !from || !token) return NextResponse.json({ error: "Email service is not configured" }, { status: 503 });
+  const from = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || "GeoMentor <onboarding@resend.dev>";
+  if (!supabaseUrl || !serviceRoleKey || !resendKey || !from || !token) return NextResponse.json({ error: "Email service is not configured. Add RESEND_API_KEY and RESEND_FROM_EMAIL in Vercel." }, { status: 503 });
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
   const { data: authData, error: authError } = await adminClient.auth.getUser(token);

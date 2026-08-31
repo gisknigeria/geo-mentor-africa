@@ -187,6 +187,12 @@ export function SchoolOperations() {
     ["Verified records", dashboard.metrics.verified_observations, CheckCircle2, "bg-emerald-100 text-emerald-800"],
   ] as const;
 
+  const mapObservations = dashboard.recent_observations.filter((item) => item.latitude !== null && item.longitude !== null);
+  const mapMinLat = Math.min(...mapObservations.map((item) => item.latitude ?? 0), 0);
+  const mapMaxLat = Math.max(...mapObservations.map((item) => item.latitude ?? 0), 0);
+  const mapMinLng = Math.min(...mapObservations.map((item) => item.longitude ?? 0), 0);
+  const mapMaxLng = Math.max(...mapObservations.map((item) => item.longitude ?? 0), 0);
+
   return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-7"><div className="mx-auto flex max-w-7xl items-center justify-between gap-4"><Logo /><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-800 sm:block">{dashboard.role.replaceAll("_", " ")}</span><AccountMenu /></div></div></header>
     <div className="mx-auto max-w-7xl px-4 py-7 sm:px-7">
@@ -194,6 +200,25 @@ export function SchoolOperations() {
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(([label,value,Icon,tone]) => <article key={label} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5"><span className={`grid size-12 place-items-center rounded-xl ${tone}`}><Icon className="size-5" /></span><div><small className="text-[9px] font-black tracking-[.12em] text-slate-400">{label.toUpperCase()}</small><strong className="mt-1 block font-serif text-3xl text-emerald-950">{value}</strong></div></article>)}</section>
 
       <section className="mt-6 grid gap-5 xl:grid-cols-2">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">SCHOOL ACTIVITY MAP</p>
+          <h2 className="mt-2 font-serif text-2xl text-emerald-950">Live field captures</h2>
+          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(255,255,255,0.6),transparent_35%),linear-gradient(150deg,rgba(255,255,255,0.5)_12%,transparent_12.5%,transparent_87%,rgba(255,255,255,0.5)_87.5%)] bg-[length:54px_94px]" />
+            <div className="absolute left-[18%] top-[24%] h-[44%] w-[42%] rotate-[-8deg] rounded-[44%_35%_40%_30%] border-2 border-emerald-700/45 bg-lime-300/30" />
+            <div className="absolute bottom-[10%] right-[10%] h-[20%] w-[22%] rounded-lg border border-slate-400 bg-slate-300/45" />
+            {mapObservations.map((item) => {
+              const lat = item.latitude ?? 0;
+              const lng = item.longitude ?? 0;
+              const rangeLat = Math.max(mapMaxLat - mapMinLat, 1e-6);
+              const rangeLng = Math.max(mapMaxLng - mapMinLng, 1e-6);
+              const x = 10 + ((lng - mapMinLng) / rangeLng) * 78;
+              const y = 82 - ((lat - mapMinLat) / rangeLat) * 66;
+              return <span key={item.id} className="absolute grid size-5 place-items-center rounded-full border-4 border-white bg-emerald-700 text-[8px] font-black text-white shadow" style={{ left: `${x}%`, top: `${y}%` }}>•</span>;
+            })}
+          </div>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">School staff can see captured record locations, pending review items and verified observation coverage in one map view.</p>
+        </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">INVITE SCHOOL STAFF</p>
           <h2 className="mt-2 font-serif text-2xl text-emerald-950">Invite a teacher or school admin</h2>

@@ -15,8 +15,8 @@ type Draft = {
   notes: string;
   observedAt: string;
   coordinates: Coordinates | null;
-  photoName: string | null;
-  photo: { blob: Blob; type: string; name: string; size: number } | null;
+  photoNames: string[];
+  photos: Array<{ blob: Blob; type: string; name: string; size: number }>;
   updatedAt: string;
 };
 
@@ -62,8 +62,8 @@ export function FieldCapture() {
   const [notes, setNotes] = useState("");
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [gpsState, setGpsState] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const online = useSyncExternalStore(subscribeToConnectivity, () => navigator.onLine, () => true);
@@ -72,9 +72,9 @@ export function FieldCapture() {
 
   useEffect(() => {
     return () => {
-      if (photoUrl) URL.revokeObjectURL(photoUrl);
+      for (const url of photoUrls) URL.revokeObjectURL(url);
     };
-  }, [photoUrl]);
+  }, [photoUrls]);
 
   function createDraft(): Draft {
     return {
@@ -84,8 +84,8 @@ export function FieldCapture() {
       notes: notes.trim(),
       observedAt,
       coordinates,
-      photoName: photo?.name ?? null,
-      photo: photo ? { blob: photo, type: photo.type, name: photo.name, size: photo.size } : null,
+      photoNames: photos.map((photo) => photo.name),
+      photos: photos.map((photo) => ({ blob: photo, type: photo.type, name: photo.name, size: photo.size })),
       updatedAt: new Date().toISOString(),
     };
   }
@@ -116,22 +116,35 @@ export function FieldCapture() {
   }
 
   function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
-    const selected = event.target.files?.[0] ?? null;
+    const files = Array.from(event.target.files ?? []);
     setMessage(null);
-    if (!selected) return;
-    if (!selected.type.startsWith("image/")) {
-      setMessage("Choose an image file captured by your camera or photo library.");
+    if (!files.length) return;
+
+    const validFiles: File[] = [];
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        setMessage("Choose image files captured by your camera or photo library.");
+        event.target.value = "";
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setMessage("One of the files is larger than 10 MB. Choose smaller images before continuing.");
+        event.target.value = "";
+        return;
+      }
+      validFiles.push(file);
+    }
+
+    if (photos.length + validFiles.length > 5) {
+      setMessage("You can submit up to 5 photos for one observation.");
       event.target.value = "";
       return;
     }
-    if (selected.size > 10 * 1024 * 1024) {
-      setMessage("That photo is larger than 10 MB. Choose a smaller image before continuing.");
-      event.target.value = "";
-      return;
-    }
-    if (photoUrl) URL.revokeObjectURL(photoUrl);
-    setPhoto(selected);
-    setPhotoUrl(URL.createObjectURL(selected));
+
+    const nextUrls = validFiles.map((file) => URL.createObjectURL(file));
+    setPhotos((current) => [...current, ...validFiles]);
+    setPhotoUrls((current) => [...current, ...nextUrls]);
+    event.target.value = "";
   }
 
   async function saveDraft() {
@@ -149,8 +162,8 @@ export function FieldCapture() {
 
   async function submitForReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!photo || !coordinates) {
-      setMessage("Add a photo and capture your GPS location before submitting for teacher review.");
+    if (!photos.length || !coordinates) {
+      setMessage("Add at least one photo and capture your GPS location before submitting for teacher review.");
       return;
     }
     if (!navigator.onLine) {
@@ -201,30 +214,32 @@ export function FieldCapture() {
       });
       if (observationError) throw observationError;
 
-      const extension = photo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const storagePath = `${authData.user.id}/${observationId}/evidence.${extension}`;
-      const { error: uploadError } = await supabase.storage.from("observation-evidence").upload(storagePath, photo, { contentType: photo.type, upsert: false });
-      if (uploadError) throw uploadError;
+      for (const photo of photos) {
+        const extension = photo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const storagePath = `${authData.user.id}/${observationId}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage.from("observation-evidence").upload(storagePath, photo, { contentType: photo.type, upsert: false });
+        if (uploadError) throw uploadError;
 
-      const digest = await crypto.subtle.digest("SHA-256", await photo.arrayBuffer());
-      const sha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-      const { error: mediaError } = await supabase.from("observation_media").insert({
-        observation_id: observationId,
-        storage_path: storagePath,
-        content_type: photo.type,
-        size_bytes: photo.size,
-        sha256,
-      });
-      if (mediaError) throw mediaError;
+        const digest = await crypto.subtle.digest("SHA-256", await photo.arrayBuffer());
+        const sha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+        const { error: mediaError } = await supabase.from("observation_media").insert({
+          observation_id: observationId,
+          storage_path: storagePath,
+          content_type: photo.type,
+          size_bytes: photo.size,
+          sha256,
+        });
+        if (mediaError) throw mediaError;
+      }
 
       setMessage("Observation submitted securely. A teacher must review it before expert verification.");
       setCommonName("");
       setNotes("");
       setCoordinates(null);
       setGpsState("idle");
-      setPhoto(null);
-      if (photoUrl) URL.revokeObjectURL(photoUrl);
-      setPhotoUrl(null);
+      setPhotos([]);
+      for (const url of photoUrls) URL.revokeObjectURL(url);
+      setPhotoUrls([]);
     } catch (error) {
       await saveDraftRecord(createDraft());
       const reason = error instanceof Error ? error.message : "";
@@ -263,16 +278,22 @@ export function FieldCapture() {
 
         <form className="capture-form" onSubmit={submitForReview}>
           <div className="form-section">
-            <div className="form-heading"><span>1</span><div><h2>Add a field photo</h2><p>Use one clear image without identifiable people.</p></div></div>
-            <label className={`photo-dropzone ${photoUrl ? "has-photo" : ""}`}>
-              {photoUrl ? (
-                // A temporary object URL from the user-selected local file cannot use the image optimizer.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoUrl} alt="Selected field observation preview" />
+            <div className="form-heading"><span>1</span><div><h2>Add field photos</h2><p>Attach up to 5 clear images without identifiable people.</p></div></div>
+            <label className={`photo-dropzone ${photoUrls.length ? "has-photo" : ""}`}>
+              {photoUrls.length ? (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {photoUrls.map((url, index) => (
+                    <div key={`${url}-${index}`} className="overflow-hidden rounded-xl border border-white/40 bg-white/20">
+                      {/* A temporary object URL from the user-selected local file cannot use the image optimizer. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`Observation preview ${index + 1}`} className="h-28 w-full object-cover" />
+                    </div>
+                  ))}
+                </div>
               ) : <span className="camera-symbol">◎</span>}
-              <strong>{photo ? "Replace photo" : "Take or choose a photo"}</strong>
-              <small>JPG, PNG or WebP · maximum 10 MB</small>
-              <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={handlePhoto} />
+              <strong>{photos.length ? "Add more photos" : "Take or choose photos"}</strong>
+              <small>JPG, PNG or WebP · maximum 10 MB each</small>
+              <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" multiple onChange={handlePhoto} />
             </label>
           </div>
 

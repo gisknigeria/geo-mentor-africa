@@ -201,12 +201,6 @@ export function StudentDashboard() {
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Link className="hidden rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 sm:block" href="/teacher">
-              Teacher
-            </Link>
-            <Link className="hidden rounded-md bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 sm:block" href="/mentor">
-              Mentor
-            </Link>
             <button className="relative grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Notifications">
               <Bell className="size-[18px]" />
               <span className="absolute right-2 top-2 size-1.5 rounded-full bg-orange-500" />
@@ -292,20 +286,6 @@ export function StudentDashboard() {
                   ))
                 )}
               </div>
-            </article>
-            <article className="rounded-xl bg-[radial-gradient(circle_at_88%_5%,rgba(197,222,104,.26),transparent_30%),linear-gradient(145deg,#194e3e,#0d392e)] p-6 text-white" id="field">
-              <p className="text-[9px] font-bold tracking-[.15em] text-emerald-100/70">THIS WEEK'S MISSION</p>
-              <h2 className="mt-3 font-serif text-2xl">Record what you discover</h2>
-              <p className="mt-3 text-xs leading-relaxed text-emerald-50/75">
-                Walk your school grounds. Photograph any plants, insects, or animals you notice. Submit for teacher review.
-              </p>
-              <div className="mt-5 flex gap-2">
-                <Badge className="bg-white/10 text-emerald-50">+15 points</Badge>
-                <Badge className="bg-white/10 text-emerald-50">Ongoing</Badge>
-              </div>
-              <Link href="/field" className="mt-6 inline-flex items-center gap-1 text-xs font-bold text-lime-300">
-                Start capture <ChevronRight className="size-4" />
-              </Link>
             </article>
           </section>
         </main>

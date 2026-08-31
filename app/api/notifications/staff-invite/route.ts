@@ -5,18 +5,16 @@ export async function POST(request: Request) {
   const { invitedEmail, invitedRole, token } = await request.json();
 
   const resendKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || "GeoMentor <onboarding@resend.dev>";
+  const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  if (!resendKey) {
-    return NextResponse.json({ error: "Email service is not configured" }, { status: 503 });
+  if (!resendKey || !fromEmail) {
+    return NextResponse.json({ error: "Email service is not configured. Add RESEND_API_KEY and RESEND_FROM_EMAIL in Vercel." }, { status: 503 });
   }
 
   const resend = new Resend(resendKey);
-  const acceptUrl = `${request.headers.get("origin")}/invite?token=${encodeURIComponent(token)}`;
+  const acceptUrl = `${origin.replace(/\/$/, "")}/invite?token=${encodeURIComponent(token)}`;
   const roleLabel = invitedRole === "SCHOOL_ADMIN" ? "School Administrator" : "Teacher";
-
-  // Use custom domain from env if set, otherwise default to Resend's testing domain
-  const customFromEmail = process.env.RESEND_FROM_EMAIL;
-  const fromEmail = customFromEmail || "GeoMentor <onboarding@resend.dev>";
 
   const { error: sendError } = await resend.emails.send({
     from: fromEmail,

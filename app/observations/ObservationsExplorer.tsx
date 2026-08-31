@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BadgeCheck, Bird, CheckCircle2, ChevronDown, Leaf, MapPin, MessageSquare, Microscope, Search, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, TreePine } from "lucide-react";
 import { Logo } from "../../components/app/logo";
 
 type Status = "Specialist verified" | "Mentor reviewed" | "AI suggestion";
 type Category = "All" | "Plants" | "Animals" | "Microbial";
-type RecordItem = { id:string; common:string; scientific:string; category:Exclude<Category,"All">; status:Status; confidence?:number; school:string; place:string; date:string; note:string; icon:typeof Leaf; tone:string; x:number; y:number };
+type RecordItem = { id:string; common:string; scientific:string; category:Exclude<Category,"All">; status:Status; confidence?:number; school:string; place:string; date:string; note:string; icon:typeof Leaf; tone:string; x:number; y:number; latitude:number; longitude:number };
 
-const records: RecordItem[] = [
+const demoRecords: RecordItem[] = [
   {id:"GMA-0294",common:"African tulip tree",scientific:"Spathodea campanulata",category:"Plants",status:"Specialist verified",school:"Staff School",place:"Ibadan, Nigeria",date:"28 Aug 2026",note:"Mature tree mapped beside the assembly lawn. Flowers observed attracting sunbirds.",icon:TreePine,tone:"from-[#193f32] to-[#718a4c]",x:43,y:47},
   {id:"GMA-0301",common:"Plain tiger butterfly",scientific:"Danaus chrysippus",category:"Animals",status:"Mentor reviewed",school:"Bodija College",place:"Ibadan, Nigeria",date:"29 Aug 2026",note:"Four-minute observation on milkweed. Wing pattern is consistent; specialist review requested.",icon:Bird,tone:"from-[#6a3d24] to-[#d48635]",x:61,y:58},
   {id:"GMA-0308",common:"Neem",scientific:"Azadirachta indica",category:"Plants",status:"AI suggestion",confidence:76,school:"Community Primary",place:"Oyo State, Nigeria",date:"30 Aug 2026",note:"Young roadside tree. Leaf and bark photographs need a clearer scale reference.",icon:Leaf,tone:"from-[#174c39] to-[#9bb857]",x:31,y:65},
@@ -25,12 +25,34 @@ const statusStyle: Record<Status,string> = {
 };
 
 export function ObservationsExplorer() {
+  const [records, setRecords] = useState<RecordItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [category,setCategory] = useState<Category>("All");
   const [query,setQuery] = useState("");
-  const [selected,setSelected] = useState(records[1].id);
+  const [selected,setSelected] = useState<string | null>(null);
   const [votes,setVotes] = useState({agree:18,disagree:2,user:""});
+  useEffect(() => {
+    void fetch("/api/public/observations")
+      .then(async response => response.ok ? response.json() : { records: [] })
+      .then(({ records: liveRecords = [] }) => {
+        const typedRecords = (liveRecords as Array<RecordItem & { category: Exclude<Category,"All"> }>).map((record, index, all) => {
+          const latitudes = all.map(item => item.latitude);
+          const longitudes = all.map(item => item.longitude);
+          const minLat = Math.min(...latitudes);
+          const minLon = Math.min(...longitudes);
+          const latRange = Math.max(Math.max(...latitudes) - minLat, 0.000001);
+          const lonRange = Math.max(Math.max(...longitudes) - minLon, 0.000001);
+          const icon = record.category === "Plants" ? Leaf : record.category === "Microbial" ? Microscope : Bird;
+          return { ...record, status: "Specialist verified" as const, icon, tone: "from-[#193f32] to-[#718a4c]", x: 10 + ((record.longitude - minLon) / lonRange) * 80, y: 82 - ((record.latitude - minLat) / latRange) * 64 };
+        });
+        setRecords(typedRecords);
+        setSelected(typedRecords[0]?.id ?? null);
+      })
+      .catch(() => setRecords([]))
+      .finally(() => setLoading(false));
+  }, []);
   const filtered = useMemo(() => records.filter(r => (category === "All" || r.category === category) && `${r.common} ${r.scientific} ${r.school}`.toLowerCase().includes(query.toLowerCase())),[category,query]);
-  const active = records.find(r => r.id === selected) || records[0];
+  const active = records.find(r => r.id === selected) || records[0] || ({} as RecordItem);
   const vote = (choice:"agree"|"disagree") => setVotes(v => ({...v,[choice]:v[choice] + (v.user === choice ? -1 : 1), ...(v.user && v.user !== choice ? {[v.user]:v[v.user as "agree"|"disagree"]-1}:{}),user:v.user === choice ? "" : choice}));
 
   return <main className="min-h-screen bg-[#f2f3ed] text-[#17332c]"><header className="sticky top-0 z-30 border-b border-white/10 bg-[#082f27] px-4 py-3.5 text-white sm:px-7"><div className="mx-auto flex max-w-[1500px] items-center justify-between"><Logo /><nav className="flex items-center gap-2 text-[11px] font-bold"><Link className="hidden rounded-md px-3 py-2 text-emerald-100/70 sm:block" href="/">Home</Link><Link className="rounded-md bg-lime-300 px-4 py-2.5 text-emerald-950" href="/field">Add observation</Link></nav></div></header>

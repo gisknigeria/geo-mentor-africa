@@ -8,7 +8,7 @@ import { Logo } from "../../components/app/logo";
 import { Button } from "../../components/ui/button";
 import { supabase } from "../../lib/supabase/client";
 
-type Observation = { id: string; observation_type: string; common_name: string | null; notes: string; observed_at: string; coordinate_accuracy_m: number | null; school?: { name?: string } | null; observation_media?: Array<{ storage_path: string }> };
+type Observation = { id: string; observation_type: string; common_name: string | null; notes: string; observed_at: string; coordinate_accuracy_m: number | null; latitude: number | null; longitude: number | null; school?: { name?: string } | null; observation_media?: Array<{ storage_path: string }> };
 
 export function TeacherReview() {
   const [user, setUser] = useState<User | null>(null);
@@ -24,9 +24,12 @@ export function TeacherReview() {
   const record = records[selected] ?? null;
 
   const loadQueue = useCallback(async () => {
-    const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, schools(name), observation_media(storage_path)").eq("review_stage", "TEACHER_REVIEW").eq("verification_status", "PENDING").order("created_at");
+    const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(name), observation_media(storage_path)").eq("review_stage", "TEACHER_REVIEW").eq("verification_status", "PENDING").order("created_at");
     if (!error) {
-      setRecords((data ?? []).map((item) => ({ ...item, school: Array.isArray(item.schools) ? item.schools[0] : item.schools })) as Observation[]);
+      setRecords((data ?? []).map((item) => {
+        const match = typeof item.location === "string" ? item.location.match(/POINT\\s*\\(\\s*([-\\d.]+)\\s+([-\\d.]+)\\s*\\)/i) : null;
+        return { ...item, school: Array.isArray(item.schools) ? item.schools[0] : item.schools, latitude: match ? Number(match[2]) : null, longitude: match ? Number(match[1]) : null };
+      }) as Observation[]);
       setSelected(0);
     }
   }, []);
