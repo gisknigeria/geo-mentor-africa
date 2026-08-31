@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { User } from "@supabase/supabase-js";
-import { ArrowRight, CheckCircle2, ClipboardCheck, FolderKanban, Leaf, MapPin, ShieldAlert, UserCheck, Users } from "lucide-react";
+import { ArrowRight, Ban, CheckCircle2, ClipboardCheck, FolderKanban, Leaf, MapPin, RotateCcw, ShieldAlert, Trash2, UserCheck, Users } from "lucide-react";
 import { Logo } from "../../components/app/logo";
 import { AccountMenu } from "../../components/app/account-menu";
 import { supabase } from "../../lib/supabase/client";
@@ -471,11 +471,11 @@ export function SchoolOperations() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {member.suspended_at ? (
-                      <button type="button" onClick={() => void manageSchoolMember(member.user_id, "REACTIVATE")} className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-800">Reactivate</button>
+                      <button type="button" title="Reactivate member" onClick={() => void manageSchoolMember(member.user_id, "REACTIVATE")} aria-label="Reactivate member" className="grid size-9 place-items-center rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 transition hover:bg-emerald-100"><RotateCcw className="size-4" /></button>
                     ) : (
-                      <button type="button" onClick={() => void manageSchoolMember(member.user_id, "SUSPEND")} className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-[10px] font-bold text-amber-800">Suspend</button>
+                      <button type="button" title="Suspend member" onClick={() => void manageSchoolMember(member.user_id, "SUSPEND")} aria-label="Suspend member" className="grid size-9 place-items-center rounded-lg border border-amber-300 bg-amber-50 text-amber-800 transition hover:bg-amber-100"><Ban className="size-4" /></button>
                     )}
-                    <button type="button" onClick={() => void manageSchoolMember(member.user_id, "REMOVE")} className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-[10px] font-bold text-rose-700">Remove</button>
+                    <button type="button" title="Remove member" onClick={() => void manageSchoolMember(member.user_id, "REMOVE")} aria-label="Remove member" className="grid size-9 place-items-center rounded-lg border border-rose-300 bg-rose-50 text-rose-700 transition hover:bg-rose-100"><Trash2 className="size-4" /></button>
                   </div>
                 </div>
               ))
