@@ -9,15 +9,6 @@ type Status = "Specialist verified" | "Mentor reviewed" | "AI suggestion";
 type Category = "All" | "Plants" | "Animals" | "Microbial";
 type RecordItem = { id:string; common:string; scientific:string; category:Exclude<Category,"All">; status:Status; confidence?:number; school:string; place:string; date:string; note:string; icon:typeof Leaf; tone:string; x:number; y:number; latitude:number; longitude:number };
 
-const demoRecords: RecordItem[] = [
-  {id:"GMA-0294",common:"African tulip tree",scientific:"Spathodea campanulata",category:"Plants",status:"Specialist verified",school:"Staff School",place:"Ibadan, Nigeria",date:"28 Aug 2026",note:"Mature tree mapped beside the assembly lawn. Flowers observed attracting sunbirds.",icon:TreePine,tone:"from-[#193f32] to-[#718a4c]",x:43,y:47},
-  {id:"GMA-0301",common:"Plain tiger butterfly",scientific:"Danaus chrysippus",category:"Animals",status:"Mentor reviewed",school:"Bodija College",place:"Ibadan, Nigeria",date:"29 Aug 2026",note:"Four-minute observation on milkweed. Wing pattern is consistent; specialist review requested.",icon:Bird,tone:"from-[#6a3d24] to-[#d48635]",x:61,y:58},
-  {id:"GMA-0308",common:"Neem",scientific:"Azadirachta indica",category:"Plants",status:"AI suggestion",confidence:76,school:"Community Primary",place:"Oyo State, Nigeria",date:"30 Aug 2026",note:"Young roadside tree. Leaf and bark photographs need a clearer scale reference.",icon:Leaf,tone:"from-[#174c39] to-[#9bb857]",x:31,y:65},
-  {id:"GMA-0310",common:"Soil fungal network",scientific:"Identification pending",category:"Microbial",status:"AI suggestion",confidence:51,school:"University Demo School",place:"Ibadan, Nigeria",date:"30 Aug 2026",note:"Classroom microscope image from moist leaf litter. Culture or microscopy review is needed.",icon:Microscope,tone:"from-[#324c50] to-[#89aaa2]",x:70,y:34},
-  {id:"GMA-0314",common:"Village weaver",scientific:"Ploceus cucullatus",category:"Animals",status:"Specialist verified",school:"Greenfield School",place:"Ibadan, Nigeria",date:"30 Aug 2026",note:"Adult male photographed near two suspended nests; location generalized for wildlife protection.",icon:Bird,tone:"from-[#343153] to-[#b1a54f]",x:52,y:42},
-  {id:"GMA-0318",common:"Sensitive fern",scientific:"Onoclea sensibilis",category:"Plants",status:"Mentor reviewed",school:"Lakeside Secondary",place:"Lagos, Nigeria",date:"30 Aug 2026",note:"Observed in a shaded damp area. Mentor recommends checking sori before confirmation.",icon:Leaf,tone:"from-[#20493e] to-[#65a67b]",x:37,y:31},
-];
-
 const statusStyle: Record<Status,string> = {
   "Specialist verified":"bg-emerald-100 text-emerald-800",
   "Mentor reviewed":"bg-indigo-100 text-indigo-800",
