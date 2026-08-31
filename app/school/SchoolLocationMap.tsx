@@ -5,7 +5,7 @@ import type { LayerGroup, Map as LeafletMap } from "leaflet";
 
 type Point = { latitude: number; longitude: number; id?: string; label?: string; details?: string };
 
-export function SchoolLocationMap({ observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint }: { observations: Point[]; schoolLocation: Point | null; schoolName: string; boundary?: Point[]; boundaryMode?: boolean; boundaryPoints?: Point[]; onChoose?: (point: Point) => void; onBoundaryPoint?: (point: Point) => void }) {
+export function SchoolLocationMap({ observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint, onBoundaryChange }: { observations: Point[]; schoolLocation: Point | null; schoolName: string; boundary?: Point[]; boundaryMode?: boolean; boundaryPoints?: Point[]; onChoose?: (point: Point) => void; onBoundaryPoint?: (point: Point) => void; onBoundaryChange?: (points: Point[]) => void }) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
@@ -40,7 +40,17 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, bo
       if (shape && shape.length >= 3) {
         L.polygon(shape.map((point) => [point.latitude, point.longitude] as [number, number]), { color: "#dc7b26", weight: 3, fillColor: "#f5a623", fillOpacity: 0.2 }).addTo(layer.current).bindTooltip("School boundary");
       }
-      boundaryPoints?.forEach((point, index) => L.circleMarker([point.latitude, point.longitude], { radius: 5, color: "#fff", weight: 2, fillColor: "#dc7b26", fillOpacity: 1 }).addTo(layer.current!).bindTooltip(`Boundary point ${index + 1}`));
+      if (boundaryMode) {
+        boundaryPoints?.forEach((point, index) => {
+          const vertex = L.marker([point.latitude, point.longitude], { draggable: true, icon: L.divIcon({ className: "boundary-map-marker", html: "<span aria-hidden=\"true\"></span>", iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(layer.current!).bindTooltip(`Boundary point ${index + 1}`);
+          vertex.on("dragend", () => {
+            const position = vertex.getLatLng();
+            onBoundaryChange?.(boundaryPoints.map((item, itemIndex) => itemIndex === index ? { latitude: position.lat, longitude: position.lng } : item));
+          });
+        });
+      } else {
+        boundaryPoints?.forEach((point, index) => L.circleMarker([point.latitude, point.longitude], { radius: 5, color: "#fff", weight: 2, fillColor: "#dc7b26", fillOpacity: 1 }).addTo(layer.current!).bindTooltip(`Boundary point ${index + 1}`));
+      }
       if (schoolLocation) {
         const schoolIcon = L.divIcon({
           className: "school-map-marker",
@@ -59,7 +69,7 @@ export function SchoolLocationMap({ observations, schoolLocation, schoolName, bo
       }
     });
     return () => { cancelled = true; };
-  }, [observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint]);
+  }, [observations, schoolLocation, schoolName, boundary, boundaryMode, boundaryPoints, onChoose, onBoundaryPoint, onBoundaryChange]);
 
   useEffect(() => () => { map.current?.remove(); map.current = null; }, []);
   return <div ref={element} className="absolute inset-0" aria-label="Interactive school map. Click to set the school location." />;
