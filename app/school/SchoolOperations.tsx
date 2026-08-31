@@ -264,6 +264,25 @@ export function SchoolOperations() {
     setLocationMessage("School boundary saved.");
   }
 
+  async function manageSchoolMember(memberUserId: string, action: "SUSPEND" | "REACTIVATE" | "REMOVE") {
+    if (!dashboard) return;
+
+    const actionLabel = action === "SUSPEND" ? "suspended" : action === "REACTIVATE" ? "reactivated" : "removed";
+    const { error } = await supabase.rpc("school_admin_manage_member", {
+      p_user_id: memberUserId,
+      p_action: action,
+      p_reason: null,
+    });
+
+    if (error) {
+      setMemberActionMessage(error.message || `The member could not be ${actionLabel}.`);
+      return;
+    }
+
+    setMemberActionMessage(`Member ${actionLabel}. The roster was refreshed.`);
+    await loadSchoolAdminData(dashboard.school.id);
+  }
+
   if (authReady && !user) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School staff sign-in required</h1><p className="mt-3 text-sm text-slate-600">This workspace is restricted to verified teachers and school administrators.</p><Link href="/auth" className="mt-5 inline-block text-sm font-bold text-emerald-800">Sign in securely</Link></section></main>;
   if (!authReady || !dashboard) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School data unavailable</h1><p className="mt-3 text-sm leading-6 text-slate-600">{loadError || "Loading your live school dashboard..."}</p><Link href="/portal" className="mt-5 inline-block text-sm font-bold text-emerald-800">Return to portal</Link></section></main>;
 
