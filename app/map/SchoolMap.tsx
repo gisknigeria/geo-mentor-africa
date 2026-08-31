@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Bird, Check, Eye, EyeOff, Filter, Flower2, Leaf, Map as MapIcon, MapPin, ShieldCheck, Sparkles, Trees, Waves } from "lucide-react";
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
+import { decodeGeometry } from "../../lib/geo";
 
 type Layer = "Trees" | "Pollinators" | "Birds" | "Water & soil" | "Conservation";
 
@@ -102,8 +103,8 @@ export function SchoolMap() {
         if (error) throw error;
 
         const mapped: MapObservation[] = (data ?? []).map((item) => {
-          const match = typeof item.location === "string" ? item.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i) : null;
-          return { ...item, longitude: match ? Number(match[1]) : null, latitude: match ? Number(match[2]) : null };
+          const coordinates = decodeGeometry(item.location);
+          return { ...item, longitude: coordinates?.longitude ?? null, latitude: coordinates?.latitude ?? null };
         })
           .filter((item) => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude)))
           .map((item) => {
@@ -182,6 +183,7 @@ export function SchoolMap() {
   );
 
   const selected = filtered.find((item) => item.id === selectedId) || filtered[0] || null;
+  const mapUrl = records.length ? `https://www.openstreetmap.org/export/embed.html?bbox=${Math.min(...records.map((item) => item.longitude ?? 0)) - 0.01}%2C${Math.min(...records.map((item) => item.latitude ?? 0)) - 0.01}%2C${Math.max(...records.map((item) => item.longitude ?? 0)) + 0.01}%2C${Math.max(...records.map((item) => item.latitude ?? 0)) + 0.01}&layer=mapnik` : null;
 
   const toggleLayer = (layer: Layer) => {
     setVisible((current) => current.includes(layer) ? current.filter((item) => item !== layer) : [...current, layer]);
@@ -259,7 +261,9 @@ export function SchoolMap() {
               <span className="flex items-center gap-2 text-[9px] font-black text-emerald-700"><ShieldCheck className="size-4" />LOCATIONS GENERALIZED</span>
             </div>
 
-            <div className="relative min-h-[570px] overflow-hidden bg-[#e5eadc] bg-[linear-gradient(30deg,rgba(255,255,255,.45)_12%,transparent_12.5%,transparent_87%,rgba(255,255,255,.45)_87.5%),linear-gradient(150deg,rgba(255,255,255,.45)_12%,transparent_12.5%,transparent_87%,rgba(255,255,255,.45)_87.5%)] bg-[length:54px_94px]">
+            <div className="relative min-h-[570px] overflow-hidden bg-[#e5eadc]">
+              {mapUrl && <iframe title="Live school observation map" src={mapUrl} className="absolute inset-0 size-full border-0 opacity-80" loading="lazy" />}
+              <div className="absolute inset-0 bg-white/10" />
               <span className="absolute -left-[8%] top-[18%] h-5 w-[120%] rotate-[-8deg] border-y border-slate-300 bg-[#faf9ef]" />
               <span className="absolute left-[52%] top-[-8%] h-[120%] w-4 rotate-[13deg] border-x border-slate-300 bg-[#faf9ef]" />
               <div className="absolute left-[17%] top-[23%] h-[48%] w-[45%] rotate-[-5deg] rounded-[44%_35%_40%_30%] border-2 border-emerald-700/50 bg-lime-300/30">

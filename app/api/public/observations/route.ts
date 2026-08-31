@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { publicDataClient } from "../_supabase";
+import { decodeGeometry } from "../../../../lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,7 @@ export async function GET() {
   if (error) return NextResponse.json({ error: "Live observations are temporarily unavailable" }, { status: 502 });
 
   const records = (data ?? []).map((item) => {
-    const location = typeof item.location === "string" ? item.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i) : null;
-    const longitude = location ? Number(location[1]) : NaN;
-    const latitude = location ? Number(location[2]) : NaN;
+    const coordinates = decodeGeometry(item.location);
     const school = Array.isArray(item.schools) ? item.schools[0] : item.schools;
     return {
       id: item.id,
@@ -31,8 +30,8 @@ export async function GET() {
       place: [school?.city, school?.country_code].filter(Boolean).join(", "),
       date: item.observed_at,
       note: item.notes,
-      latitude,
-      longitude,
+      latitude: coordinates?.latitude ?? NaN,
+      longitude: coordinates?.longitude ?? NaN,
     };
   }).filter((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude));
 
