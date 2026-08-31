@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { Button } from "../../components/ui/button";
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
 import { LoaderCircle, MapPin, Plus, Search, ShieldAlert } from "lucide-react";
@@ -155,74 +154,92 @@ export function MentorWorkspace() {
     setIsSearchingSchools(true);
     setSchoolNotice(null);
 
-    const { data, error } = await supabase
-      .from("schools")
-      .select("id, name, organization_id, city, state_region, country_code, location")
-      .eq("verification_status", "VERIFIED")
-      .not("location", "is", null)
-      .limit(200);
+    try {
+      const { data, error } = await supabase
+        .from("schools")
+        .select("id, name, organization_id, city, state_region, country_code, location")
+        .eq("verification_status", "VERIFIED")
+        .not("location", "is", null)
+        .limit(200);
 
-    setIsSearchingSchools(false);
+      if (error) {
+        throw error;
+      }
 
-    if (error) {
-      setSchoolNotice(error.message || "The school search is unavailable right now.");
+      const rows = (data ?? []) as Array<{
+        id: string;
+        name: string;
+        organization_id: string;
+        city: string | null;
+        state_region: string | null;
+        country_code: string;
+        location: unknown;
+      }>;
+
+      const parsed = rows
+        .map((school) => {
+          const location = school.location && typeof school.location === "object" && "coordinates" in school.location
+            ? (school.location as { coordinates?: [number, number] }).coordinates
+            : null;
+
+          let latitude: number | null = null;
+          let longitude: number | null = null;
+          if (Array.isArray(location) && location.length >= 2) {
+            longitude = Number(location[0]);
+            latitude = Number(location[1]);
+          }
+
+          let distanceKm: number | null = null;
+          if (userLocation && latitude !== null && longitude !== null) {
+            const toRad = (value: number) => (value * Math.PI) / 180;
+            const earthRadiusKm = 6371;
+            const dLat = toRad(latitude - userLocation.latitude);
+            const dLon = toRad(longitude - userLocation.longitude);
+            const a =
+              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(userLocation.latitude)) * Math.cos(toRad(latitude)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            distanceKm = 2 * earthRadiusKm * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          }
+
+          return { ...school, latitude, longitude, distanceKm };
+        })
+        .filter((school) => {
+          if (!query) {
+            if (!userLocation) return true;
+            return school.distanceKm !== null && school.distanceKm <= 250;
+          }
+
+          const haystack = [school.name, school.city, school.state_region, school.country_code].filter(Boolean).join(" ").toLowerCase();
+          return haystack.includes(query.toLowerCase());
+        })
+        .sort((a, b) => {
+          if (a.distanceKm === null && b.distanceKm === null) return a.name.localeCompare(b.name);
+          if (a.distanceKm === null) return 1;
+          if (b.distanceKm === null) return -1;
+          return a.distanceKm - b.distanceKm;
+        })
+        .slice(0, 12)
+        .map((school) => ({
+          id: school.id,
+          name: school.name,
+          organization_id: school.organization_id,
+          city: school.city,
+          state_region: school.state_region,
+          country_code: school.country_code,
+        }));
+
+      setSchoolResults(parsed);
+
+      if (!parsed.length) {
+        setSchoolNotice(query ? "No schools matched your school name or area. Try another name or use Nearby schools." : "No suggested schools were found. Try a school name or the Nearby schools button.");
+      }
+    } catch (error) {
+      console.error("School search failed", error);
+      setSchoolNotice("The school search is unavailable right now.");
       setSchoolResults([]);
-      return;
-    }
-
-    const rows = (data ?? []) as Array<SchoolOption & { location: unknown }>;
-    const normalizedQuery = query.toLowerCase();
-    const matches = rows.filter((school) => {
-      const text = [school.name, school.city, school.state_region, school.country_code].filter(Boolean).join(" ").toLowerCase();
-      if (!normalizedQuery) return true;
-      return text.includes(normalizedQuery);
-    });
-
-    const withDistance = matches
-      .map((school) => {
-        const point = school.location && typeof school.location === "object" && "x" in school.location && "y" in school.location
-          ? { latitude: Number((school.location as { y: number }).y), longitude: Number((school.location as { x: number }).x) }
-          : null;
-
-        let distanceKm: number | null = null;
-        if (userLocation && point) {
-          const toRad = (value: number) => (value * Math.PI) / 180;
-          const earthRadiusKm = 6371;
-          const dLat = toRad(point.latitude - userLocation.latitude);
-          const dLon = toRad(point.longitude - userLocation.longitude);
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(userLocation.latitude)) * Math.cos(toRad(point.latitude)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-          distanceKm = 2 * earthRadiusKm * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        }
-
-        return { school, distanceKm };
-      })
-      .filter(({ school, distanceKm }) => {
-        if (!normalizedQuery && userLocation && distanceKm !== null) return distanceKm <= 250;
-        return true;
-      })
-      .sort((a, b) => {
-        if (a.distanceKm === null && b.distanceKm === null) return 0;
-        if (a.distanceKm === null) return 1;
-        if (b.distanceKm === null) return -1;
-        return a.distanceKm - b.distanceKm;
-      })
-      .slice(0, 12)
-      .map(({ school }) => ({
-        id: school.id,
-        name: school.name,
-        organization_id: school.organization_id,
-        city: school.city,
-        state_region: school.state_region,
-        country_code: school.country_code,
-      }));
-
-    setSchoolResults(withDistance);
-
-    if (withDistance.length === 0) {
-      setSchoolNotice(query ? "No schools matched your school name or area. Try another name or use Nearby schools." : "No nearby schools were found. Try a city or school name search.");
+    } finally {
+      setIsSearchingSchools(false);
     }
   }, [schoolQuery, userLocation]);
 
@@ -312,10 +329,6 @@ export function MentorWorkspace() {
       active = false;
     };
   }, [refreshDashboard]);
-
-  useEffect(() => {
-    if (user) void searchSchools("");
-  }, [user, searchSchools]);
 
   const mentorName = user?.email ? user.email.split("@")[0].replace(/[._-]+/g, " ") : "mentor";
   const titleName = mentorName
@@ -486,7 +499,10 @@ export function MentorWorkspace() {
                   <span className="eyebrow">YOUR PORTFOLIO</span>
                   <h2>Assigned schools</h2>
                 </div>
-                <button type="button" onClick={() => setShowSchoolSearch(true)} className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800">
+                <button type="button" onClick={() => {
+                  setShowSchoolSearch(true);
+                  void searchSchools("");
+                }} className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800">
                   <Plus className="size-3.5" /> Add school
                 </button>
               </div>
