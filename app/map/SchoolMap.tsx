@@ -53,6 +53,7 @@ export function SchoolMap() {
   const [loading, setLoading] = useState(true);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
   const [locationChanged, setLocationChanged] = useState(false);
+  const [school, setSchool] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
     const loadObservations = async () => {
@@ -82,7 +83,7 @@ export function SchoolMap() {
 
         const { data: schoolData, error: schoolError } = await supabase
           .from("schools")
-          .select("id, name")
+          .select("id, name, location")
           .eq("organization_id", membershipData.organization_id)
           .limit(1)
           .maybeSingle();
@@ -93,6 +94,8 @@ export function SchoolMap() {
           setLoading(false);
           return;
         }
+
+        setSchool({ name: schoolData.name, ...(decodeGeometry(schoolData.location) ?? { latitude: 0, longitude: 0 }) });
 
         const { data, error } = await supabase
           .from("observations")
@@ -283,7 +286,7 @@ export function SchoolMap() {
             </div>
 
             <div className="relative min-h-[570px] overflow-hidden bg-[#e5eadc]">
-              {!loading && filtered.length > 0 && <StudentObservationMap observations={filtered.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, label: item.common_name ?? item.observation_type, latitude: item.latitude, longitude: item.longitude }] : [])} selectedId={selected?.id ?? null} onSelect={setSelectedId} onMove={moveObservation} />}
+              {!loading && filtered.length > 0 && <StudentObservationMap observations={filtered.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, label: item.common_name ?? item.observation_type, latitude: item.latitude, longitude: item.longitude }] : [])} school={school?.latitude && school.longitude ? school : null} selectedId={selected?.id ?? null} onSelect={setSelectedId} onMove={moveObservation} />}
               {loading && <div className="absolute inset-0 z-10 grid place-items-center bg-white/60 text-sm text-slate-500">Loading school observation map…</div>}
               {!loading && filtered.length === 0 && <div className="absolute inset-0 grid place-items-center bg-white/55 text-center"><div><EyeOff className="mx-auto size-8 text-slate-400" /><p className="mt-3 text-sm font-bold text-slate-600">No live observations match these filters yet.</p></div></div>}
               <div className="pointer-events-none absolute bottom-3 left-3 z-10 rounded-lg border border-white/60 bg-white/90 px-3 py-2 text-[9px] font-bold text-slate-600 shadow">Drag a capture marker to correct its location</div>

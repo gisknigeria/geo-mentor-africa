@@ -10,7 +10,9 @@ type ObservationPoint = {
   longitude: number;
 };
 
-export function StudentObservationMap({ observations, selectedId, onSelect, onMove }: { observations: ObservationPoint[]; selectedId: string | null; onSelect: (id: string) => void; onMove: (id: string, latitude: number, longitude: number) => void }) {
+type SchoolPoint = { name: string; latitude: number; longitude: number };
+
+export function StudentObservationMap({ observations, selectedId, school, onSelect, onMove }: { observations: ObservationPoint[]; selectedId: string | null; school?: SchoolPoint | null; onSelect: (id: string) => void; onMove: (id: string, latitude: number, longitude: number) => void }) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
@@ -30,8 +32,9 @@ export function StudentObservationMap({ observations, selectedId, onSelect, onMo
 
       layer.current?.remove();
       layer.current = L.layerGroup().addTo(map.current);
-      if (observations.length) {
-        const bounds = L.latLngBounds(observations.map((point) => [point.latitude, point.longitude] as [number, number]));
+      const points = [...observations, ...(school ? [school] : [])];
+      if (points.length) {
+        const bounds = L.latLngBounds(points.map((point) => [point.latitude, point.longitude] as [number, number]));
         map.current.fitBounds(bounds, { padding: [45, 45], maxZoom: 18 });
       }
 
@@ -47,9 +50,13 @@ export function StudentObservationMap({ observations, selectedId, onSelect, onMo
         });
         if (point.id === selectedId) marker.openPopup();
       });
+      if (school) {
+        const schoolIcon = L.divIcon({ className: "school-map-marker", html: "<span aria-hidden=\"true\">S</span>", iconSize: [34, 34], iconAnchor: [17, 17] });
+        L.marker([school.latitude, school.longitude], { icon: schoolIcon }).addTo(layer.current!).bindTooltip(school.name, { direction: "top", offset: [0, -16] }).bindPopup(`<strong>${school.name}</strong><br />School location`);
+      }
     });
     return () => { cancelled = true; };
-  }, [observations, selectedId, onMove, onSelect]);
+  }, [observations, selectedId, school, onMove, onSelect]);
 
   useEffect(() => () => { map.current?.remove(); map.current = null; }, []);
   return <div ref={element} className="absolute inset-0" aria-label="Interactive biodiversity map. Drag a capture marker to correct its location." />;

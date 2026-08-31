@@ -13,7 +13,7 @@ import {
 import { Logo } from "../../components/app/logo";
 import { Button } from "../../components/ui/button";
 import { supabase } from "../../lib/supabase/client";
-import { decodeGeometry } from "../../lib/geo";
+import { decodeGeometry, type Coordinates } from "../../lib/geo";
 import { StudentObservationMap } from "../map/StudentObservationMap";
 
 type Observation = {
@@ -25,7 +25,7 @@ type Observation = {
   coordinate_accuracy_m: number | null;
   latitude: number | null;
   longitude: number | null;
-  school?: { name?: string } | null;
+  school?: { name?: string; location?: Coordinates | null } | null;
   observation_media?: Array<{ storage_path: string }>;
 };
 
@@ -48,7 +48,7 @@ export function TeacherReview() {
     const { data, error } = await supabase
       .from("observations")
       .select(
-        "id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(name), observation_media(storage_path)",
+        "id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(name, location), observation_media(storage_path)",
       )
       .in("review_stage", ["TEACHER_REVIEW", "STUDENT_REVISION"])
       .in("verification_status", ["PENDING", "NEEDS_CHANGES"])
@@ -59,9 +59,10 @@ export function TeacherReview() {
           const coordinates = decodeGeometry(item.location);
           return {
             ...item,
-            school: Array.isArray(item.schools)
-              ? item.schools[0]
-              : item.schools,
+            school: (() => {
+              const school = Array.isArray(item.schools) ? item.schools[0] : item.schools;
+              return school ? { ...school, location: decodeGeometry(school.location) } : null;
+            })(),
             latitude: coordinates?.latitude ?? null,
             longitude: coordinates?.longitude ?? null,
           };
@@ -306,6 +307,7 @@ export function TeacherReview() {
               <article className="relative h-72 overflow-hidden rounded-2xl border border-slate-200 bg-[#e7efe1]">
                 <StudentObservationMap
                   observations={record.latitude !== null && record.longitude !== null ? [{ id: record.id, label: record.common_name || record.observation_type, latitude: record.latitude, longitude: record.longitude }] : []}
+                  school={record.school?.location ? { name: record.school.name || "School", latitude: record.school.location.latitude, longitude: record.school.location.longitude } : null}
                   selectedId={record.id}
                   onSelect={() => undefined}
                   onMove={moveObservation}
