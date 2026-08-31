@@ -1,11 +1,12 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bird, Check, Eye, EyeOff, Filter, Flower2, Leaf, Map as MapIcon, MapPin, ShieldCheck, Sparkles, Trees, Waves } from "lucide-react";
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
 import { decodeGeometry } from "../../lib/geo";
+import { StudentObservationMap } from "./StudentObservationMap";
 
 type Layer = "Trees" | "Pollinators" | "Birds" | "Water & soil" | "Conservation";
 
@@ -50,6 +51,8 @@ export function SchoolMap() {
   const [records, setRecords] = useState<MapObservation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [locationChanged, setLocationChanged] = useState(false);
 
   useEffect(() => {
     const loadObservations = async () => {
@@ -183,7 +186,25 @@ export function SchoolMap() {
   );
 
   const selected = filtered.find((item) => item.id === selectedId) || filtered[0] || null;
-  const mapUrl = records.length ? `https://www.openstreetmap.org/export/embed.html?bbox=${Math.min(...records.map((item) => item.longitude ?? 0)) - 0.01}%2C${Math.min(...records.map((item) => item.latitude ?? 0)) - 0.01}%2C${Math.max(...records.map((item) => item.longitude ?? 0)) + 0.01}%2C${Math.max(...records.map((item) => item.latitude ?? 0)) + 0.01}&layer=mapnik` : null;
+
+  const moveObservation = useCallback((id: string, latitude: number, longitude: number) => {
+    setSelectedId(id);
+    setRecords((current) => current.map((item) => item.id === id ? { ...item, latitude, longitude } : item));
+    setLocationChanged(true);
+    setLocationMessage("Location moved. Select Save location to keep this correction.");
+  }, []);
+
+  const saveObservationLocation = async () => {
+    if (!selected) return;
+    setLocationMessage("Saving location...");
+    const { error } = await supabase.from("observations").update({ location: `SRID=4326;POINT(${selected.longitude} ${selected.latitude})` }).eq("id", selected.id).eq("verification_status", "PENDING");
+    if (error) {
+      setLocationMessage("The location could not be saved. Only your pending observations can be corrected.");
+      return;
+    }
+    setLocationChanged(false);
+    setLocationMessage("Location saved.");
+  };
 
   const toggleLayer = (layer: Layer) => {
     setVisible((current) => current.includes(layer) ? current.filter((item) => item !== layer) : [...current, layer]);
@@ -262,40 +283,10 @@ export function SchoolMap() {
             </div>
 
             <div className="relative min-h-[570px] overflow-hidden bg-[#e5eadc]">
-              {mapUrl && <iframe title="Live school observation map" src={mapUrl} className="absolute inset-0 size-full border-0 opacity-80" loading="lazy" />}
-              <div className="pointer-events-none absolute inset-0 bg-white/10" />
-              {filtered.map((item) => {
-                const layer = layers.find((entry) => entry.name === item.layer)!;
-                const Icon = layer.icon;
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setSelectedId(item.id)}
-                    aria-label={`View ${item.common_name ?? item.observation_type}`}
-                    className={`absolute z-10 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-4 border-white text-white shadow-lg transition hover:scale-110 focus:outline-none focus:ring-4 focus:ring-lime-300 ${selected?.id === item.id ? "scale-110 ring-4 ring-lime-300" : ""}`}
-                    style={{ left: `${item.x}%`, top: `${item.y}%`, backgroundColor: layer.color }}
-                  >
-                    <Icon className="size-4" />
-                    {item.sensitive && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-amber-300 text-[9px] font-black text-amber-950">!</span>}
-                  </button>
-                );
-              })}
-
-              {loading && <div className="absolute inset-0 grid place-items-center bg-white/60 text-sm text-slate-500">Loading school observation map…</div>}
-              {!loading && filtered.length === 0 && (
-                <div className="absolute inset-0 grid place-items-center bg-white/55 text-center">
-                  <div>
-                    <EyeOff className="mx-auto size-8 text-slate-400" />
-                    <p className="mt-3 text-sm font-bold text-slate-600">No live observations match these filters yet.</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="absolute bottom-3 left-3 rounded-lg border border-white/60 bg-white/90 px-3 py-2 text-[9px] font-bold text-slate-600 shadow">
-                Approximate display · not for navigation
-              </div>
+              {!loading && filtered.length > 0 && <StudentObservationMap observations={filtered.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, label: item.common_name ?? item.observation_type, latitude: item.latitude, longitude: item.longitude }] : [])} selectedId={selected?.id ?? null} onSelect={setSelectedId} onMove={moveObservation} />}
+              {loading && <div className="absolute inset-0 z-10 grid place-items-center bg-white/60 text-sm text-slate-500">Loading school observation map…</div>}
+              {!loading && filtered.length === 0 && <div className="absolute inset-0 grid place-items-center bg-white/55 text-center"><div><EyeOff className="mx-auto size-8 text-slate-400" /><p className="mt-3 text-sm font-bold text-slate-600">No live observations match these filters yet.</p></div></div>}
+              <div className="pointer-events-none absolute bottom-3 left-3 z-10 rounded-lg border border-white/60 bg-white/90 px-3 py-2 text-[9px] font-bold text-slate-600 shadow">Drag a capture marker to correct its location</div>
             </div>
           </section>
 
@@ -320,6 +311,9 @@ export function SchoolMap() {
                     {selected.sensitive ? "Withheld for wildlife protection" : `${selected.latitude?.toFixed(4) ?? "-"}, ${selected.longitude?.toFixed(4) ?? "-"}`}
                   </strong>
                 </div>
+
+                {locationChanged && <button type="button" onClick={() => void saveObservationLocation()} className="mt-4 flex min-h-11 w-full items-center justify-center rounded-lg bg-orange-600 px-4 text-xs font-black text-white">Save location</button>}
+                {locationMessage && <p className="mt-3 text-xs text-slate-500">{locationMessage}</p>}
 
                 <Link href="/field" className="mt-5 flex min-h-11 items-center justify-center rounded-lg bg-[#0b4436] px-4 text-xs font-black text-white">Record another observation</Link>
               </article>
