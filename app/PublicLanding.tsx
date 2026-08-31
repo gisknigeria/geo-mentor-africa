@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight, BadgeCheck, Banknote, Binoculars, Camera, Check,
   FlaskConical, Handshake, Leaf,
@@ -8,6 +11,27 @@ import {
 import { LandingHeader } from "./LandingHeader";
 import { LiveHomeHero } from "./LiveHomeHero";
 import { LiveSchoolMap } from "./LiveSchoolMap";
+
+type PublicImpact = {
+  schools: number;
+  countries: number | null;
+  observations: number;
+  media_uploads: number;
+  verified_observations: number;
+  awaiting_review: number;
+  updated_at: string;
+};
+
+type PublicObservation = {
+  id: string;
+  common: string;
+  scientific: string;
+  category: "Plants" | "Animals" | "Microbial";
+  school: string;
+  place: string;
+  date: string;
+  note: string;
+};
 
 const roles = [
   {
@@ -35,12 +59,74 @@ const workflow = [
 ];
 
 export function PublicLanding() {
+  const [impact, setImpact] = useState<PublicImpact | null>(null);
+  const [recentRecords, setRecentRecords] = useState<PublicObservation[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    void Promise.all([
+      fetch("/api/public/impact", { signal: controller.signal, cache: "no-store" }),
+      fetch("/api/public/observations", { signal: controller.signal, cache: "no-store" }),
+    ])
+      .then(async ([impactResponse, observationResponse]) => {
+        const impactData = impactResponse.ok ? ((await impactResponse.json()) as PublicImpact) : null;
+        const observationData = observationResponse.ok ? ((await observationResponse.json()) as { records?: PublicObservation[] }) : null;
+
+        setImpact(impactData);
+        setRecentRecords((observationData?.records ?? []).slice(0, 4));
+      })
+      .catch(() => {
+        setImpact(null);
+        setRecentRecords([]);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const summaryStats = useMemo(() => [
+    { label: "Verified schools", value: impact?.schools ?? 0, detail: "approved programme members" },
+    { label: "Field records", value: impact?.observations ?? 0, detail: "submitted biodiversity observations" },
+    { label: "Images attached", value: impact?.media_uploads ?? 0, detail: "photographs attached to records" },
+    { label: "Expert-reviewed", value: impact?.verified_observations ?? 0, detail: "completed human review" },
+  ], [impact]);
+
   return <main className="min-h-screen bg-[#f2f3ed] text-[#17332c]">
     <LandingHeader />
 
     <LiveHomeHero />
 
     <section className="px-5 py-20 sm:px-8" id="roles"><div className="mx-auto max-w-[1440px]"><div className="grid gap-6 lg:grid-cols-[.72fr_1.28fr] lg:items-end"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">THREE ROLES. ONE ACCOUNTABLE SYSTEM.</p><h2 className="mt-4 max-w-xl font-serif text-4xl leading-tight tracking-tight text-emerald-950 sm:text-6xl">Designed around how the programme actually works.</h2></div><p className="max-w-2xl text-sm leading-7 text-slate-600 lg:justify-self-end">Schools remain responsible for young people and learning. Geo-Mentors extend professional capacity. Geo-Partners make high-value activities possible. Teachers and students participate through their registered school.</p></div><div className="mt-10 grid gap-4 xl:grid-cols-3">{roles.map(({ title,eyebrow,icon:Icon,text,actions,href }, index) => <article key={title} className={`group flex min-h-[420px] flex-col overflow-hidden rounded-2xl border p-7 transition hover:-translate-y-1 hover:shadow-xl ${index === 1 ? "border-emerald-900 bg-[#0b4436] text-white" : "border-slate-200 bg-white"}`}><div className="flex items-start justify-between"><span className={`grid size-12 place-items-center rounded-xl ${index === 1 ? "bg-lime-300 text-emerald-950" : "bg-[#edf4d4] text-emerald-800"}`}><Icon className="size-5" /></span><span className={`font-mono text-xs ${index === 1 ? "text-emerald-100/45" : "text-slate-300"}`}>0{index + 1}</span></div><p className={`mt-7 text-[9px] font-black tracking-[.16em] ${index === 1 ? "text-lime-200" : "text-emerald-700"}`}>{eyebrow}</p><h3 className="mt-2 font-serif text-3xl">{title}</h3><p className={`mt-3 text-xs leading-6 ${index === 1 ? "text-emerald-50/65" : "text-slate-500"}`}>{text}</p><ul className={`mt-6 grid gap-3 border-t pt-5 text-[11px] ${index === 1 ? "border-white/10 text-emerald-50/75" : "border-slate-100 text-slate-600"}`}>{actions.map(item => <li key={item} className="flex gap-2"><Check className={`mt-0.5 size-3.5 shrink-0 ${index === 1 ? "text-lime-300" : "text-emerald-600"}`} />{item}</li>)}</ul><Link href={href} className={`mt-auto flex items-center gap-2 pt-7 text-xs font-black ${index === 1 ? "text-lime-200" : "text-emerald-800"}`}>Enter {title.toLowerCase()} pathway <ArrowRight className="size-4 transition group-hover:translate-x-1" /></Link></article>)}</div></div></section>
+
+    {recentRecords.length > 0 && (
+      <section className="bg-[#eef3dd] px-5 py-20 sm:px-8" id="latest-records">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">LATEST SCHOOL EVIDENCE</p>
+              <h2 className="mt-3 font-serif text-4xl leading-tight text-emerald-950 sm:text-5xl">Live biodiversity records from real schools</h2>
+            </div>
+            <Link href="/observations" className="inline-flex items-center gap-2 text-xs font-black text-emerald-800">Browse all records <ArrowRight className="size-4" /></Link>
+          </div>
+          <div className="mt-8 grid gap-4 lg:grid-cols-4">
+            {recentRecords.map((record) => (
+              <article key={record.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[8px] font-black text-emerald-800">{record.category}</span>
+                <h3 className="mt-4 font-serif text-2xl text-emerald-950">{record.common}</h3>
+                <p className="mt-1 text-[10px] italic text-slate-400">{record.scientific}</p>
+                <p className="mt-4 text-[11px] leading-5 text-slate-600">{record.note}</p>
+                <div className="mt-5 border-t border-slate-100 pt-4 text-[9px] text-slate-500">
+                  <strong className="block text-emerald-950">{record.school}</strong>
+                  <span>{record.place}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section className="bg-white px-5 py-20 sm:px-8" id="impact"><div className="mx-auto max-w-[1440px]"><div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">REAL DATA IN MOTION</p><h2 className="mt-4 font-serif text-5xl leading-tight text-emerald-950 sm:text-6xl">Schools are turning field learning into evidence.</h2><p className="mt-5 max-w-xl text-sm leading-7 text-slate-600">Every verified observation, image and review decision joins a school's learning trail. The programme moves from classroom curiosity to measurable environmental understanding.</p></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{summaryStats.map(({ label, value, detail }) => <article key={label} className="rounded-2xl border border-slate-200 bg-[#f9faf6] p-5"><p className="text-[9px] font-black tracking-[.16em] text-slate-400">{label}</p><strong className="mt-4 block font-serif text-4xl text-emerald-950">{value}</strong><small className="mt-2 block text-[10px] leading-5 text-slate-500">{detail}</small></article>)}</div></div></div></section>
 
     <LiveSchoolMap />
 
