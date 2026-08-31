@@ -47,7 +47,7 @@ const pages = [
   ["/student/missions", /Discover one living neighbour\./],
   ["/field", /Record what you observe\./],
   ["/map", /Explore what lives around your school\./],
-  ["/mentor", /Assigned schools/],
+  ["/mentor", /Assigned schools.*School record viewer|School record viewer.*Assigned schools/s],
   ["/expert", /Review observations/],
   ["/teacher", /Teacher review queue/],
   ["/teacher/projects/new", /Plan a safe first biodiversity project\./],

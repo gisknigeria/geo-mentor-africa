@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { Logo } from "../../components/app/logo";
 import { supabase } from "../../lib/supabase/client";
-import { LoaderCircle, MapPin, Plus, Search, ShieldAlert } from "lucide-react";
+import { LoaderCircle, MapPin, Plus, Search, ShieldAlert, Upload, PencilLine } from "lucide-react";
 
 type AssignedSchool = {
   school_id: string;
@@ -14,6 +14,19 @@ type AssignedSchool = {
   observations: number;
   pending_guidance: number;
   health: "On track" | "Needs attention" | "Review";
+};
+
+type SchoolObservation = {
+  id: string;
+  observation_type: string;
+  common_name: string | null;
+  scientific_name: string | null;
+  notes: string;
+  verification_status: string;
+  review_stage: string;
+  observed_at: string;
+  created_at: string;
+  observation_media: Array<{ id: string; storage_path: string; content_type: string; created_at: string }>;
 };
 
 type GuidanceRequest = {
@@ -65,6 +78,44 @@ export function MentorWorkspace() {
   const [showGuidanceQueue, setShowGuidanceQueue] = useState(false);
   const [showSessionPlan, setShowSessionPlan] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
+  const [schoolObservations, setSchoolObservations] = useState<SchoolObservation[]>([]);
+  const [selectedObservationId, setSelectedObservationId] = useState<string | null>(null);
+  const [recordForm, setRecordForm] = useState({ common_name: "", scientific_name: "", notes: "" });
+  const [recordNotice, setRecordNotice] = useState<string | null>(null);
+  const [isSavingObservation, setIsSavingObservation] = useState(false);
+  const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
+
+  const loadSchoolObservations = useCallback(async (schoolId: string) => {
+    const { data, error } = await supabase
+      .from("observations")
+      .select("id, observation_type, common_name, scientific_name, notes, verification_status, review_stage, observed_at, created_at, observation_media(id, storage_path, content_type, created_at)")
+      .eq("school_id", schoolId)
+      .order("observed_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      setRecordNotice(error.message || "The school capture list could not be loaded.");
+      setSchoolObservations([]);
+      return;
+    }
+
+    const nextRecords = (data ?? []) as SchoolObservation[];
+    setSchoolObservations(nextRecords);
+    if (!nextRecords.length) {
+      setSelectedObservationId(null);
+      setRecordForm({ common_name: "", scientific_name: "", notes: "" });
+      return;
+    }
+
+    const activeRecord = nextRecords.find((record) => record.id === selectedObservationId) ?? nextRecords[0];
+    setSelectedObservationId(activeRecord.id);
+    setRecordForm({
+      common_name: activeRecord.common_name ?? "",
+      scientific_name: activeRecord.scientific_name ?? "",
+      notes: activeRecord.notes ?? "",
+    });
+  }, [selectedObservationId]);
 
   const refreshDashboard = useCallback(async (mentorId: string) => {
     const { data: assignmentRows, error: assignmentError } = await supabase
@@ -261,6 +312,82 @@ export function MentorWorkspace() {
       { enableHighAccuracy: true, timeout: 15000 },
     );
   }, [searchSchools]);
+
+  const handleOpenSchool = useCallback(async (schoolId: string) => {
+    setSelectedSchoolId(schoolId);
+    setRecordNotice(null);
+    await loadSchoolObservations(schoolId);
+  }, [loadSchoolObservations]);
+
+  const handleRecordSave = useCallback(async () => {
+    if (!selectedObservationId || !selectedSchoolId) return;
+    setIsSavingObservation(true);
+    setRecordNotice(null);
+
+    try {
+      const { error } = await supabase
+        .from("observations")
+        .update({
+          common_name: recordForm.common_name.trim() || null,
+          scientific_name: recordForm.scientific_name.trim() || null,
+          notes: recordForm.notes.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", selectedObservationId)
+        .eq("school_id", selectedSchoolId)
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      setRecordNotice("Observation updated. You can keep refining the field notes and supporting evidence.");
+      await loadSchoolObservations(selectedSchoolId);
+    } catch (error) {
+      console.error("Observation update failed", error);
+      setRecordNotice("The observation could not be updated. Check the field notes and try again.");
+    } finally {
+      setIsSavingObservation(false);
+    }
+  }, [loadSchoolObservations, recordForm, selectedObservationId, selectedSchoolId]);
+
+  const handleEvidenceUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length || !selectedObservationId) return;
+
+    setIsUploadingEvidence(true);
+    setRecordNotice(null);
+
+    try {
+      for (const file of files) {
+        const trimmed = file.name.trim();
+        if (!trimmed) continue;
+        const extension = (trimmed.split(".").pop() || "jpg").toLowerCase();
+        const storagePath = `${user?.id ?? "mentor"}/${selectedObservationId}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage.from("observation-evidence").upload(storagePath, file, { contentType: file.type || "image/jpeg", upsert: false });
+        if (uploadError) throw uploadError;
+
+        const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+        const sha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+        const { error: mediaError } = await supabase.from("observation_media").insert({
+          observation_id: selectedObservationId,
+          storage_path: storagePath,
+          content_type: file.type || "image/jpeg",
+          size_bytes: file.size,
+          sha256,
+        });
+        if (mediaError) throw mediaError;
+      }
+
+      setRecordNotice("Images were attached successfully to the observation record.");
+      await loadSchoolObservations(selectedSchoolId!);
+    } catch (error) {
+      console.error("Evidence upload failed", error);
+      setRecordNotice("One or more image files could not be uploaded. Please check the file size and format.");
+    } finally {
+      setIsUploadingEvidence(false);
+      event.target.value = "";
+    }
+  }, [loadSchoolObservations, selectedObservationId, selectedSchoolId, user]);
 
   const handleAssignSchool = useCallback(async (schoolId: string) => {
     if (!user) {
@@ -601,21 +728,106 @@ export function MentorWorkspace() {
             <div className="role-panel-heading">
               <div>
                 <span className="eyebrow">READY TO TEACH</span>
-                <h2>Mentoring resources</h2>
+                <h2>School record viewer</h2>
               </div>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                <MapPin className="mb-2 size-4 text-emerald-700" />
-                Place-based field planning
+            <div className="mt-4 grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">CAPTURES</p>
+                {dashboard.schools.length === 0 ? (
+                  <p className="mt-3 text-xs text-slate-500">Add a school to begin reviewing captures.</p>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {dashboard.schools.map((school) => (
+                      <button
+                        key={school.school_id}
+                        type="button"
+                        onClick={() => void handleOpenSchool(school.school_id)}
+                        className={`w-full rounded-lg border px-3 py-2 text-left text-xs ${selectedSchoolId === school.school_id ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-slate-200 bg-white text-slate-700"}`}
+                      >
+                        <strong className="block font-bold">{school.school_name}</strong>
+                        <span className="mt-1 block text-[10px] text-slate-500">{school.observations} captures</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                <Search className="mb-2 size-4 text-emerald-700" />
-                Student evidence review
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                <ShieldAlert className="mb-2 size-4 text-emerald-700" />
-                Safeguarding checklists
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                {selectedSchoolId && schoolObservations.length === 0 ? (
+                  <div>
+                    <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">NO CAPTURES YET</p>
+                    <p className="mt-3 text-sm text-slate-600">This school is assigned, but it does not yet have any field captures to review.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">SELECTED CAPTURE</p>
+                        <h3 className="mt-1 font-serif text-2xl text-emerald-950">{schoolObservations.find((item) => item.id === selectedObservationId)?.common_name || schoolObservations.find((item) => item.id === selectedObservationId)?.scientific_name || "School evidence"}</h3>
+                      </div>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-800">
+                        {schoolObservations.find((item) => item.id === selectedObservationId)?.verification_status || "READY"}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <label className="grid gap-1 text-xs font-bold text-slate-700">
+                        <span>Common name</span>
+                        <input value={recordForm.common_name} onChange={(event) => setRecordForm((current) => ({ ...current, common_name: event.target.value }))} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm font-normal text-slate-800" placeholder="e.g. African mahogany" />
+                      </label>
+
+                      <label className="grid gap-1 text-xs font-bold text-slate-700">
+                        <span>Scientific name</span>
+                        <input value={recordForm.scientific_name} onChange={(event) => setRecordForm((current) => ({ ...current, scientific_name: event.target.value }))} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm font-normal text-slate-800" placeholder="e.g. Khaya senegalensis" />
+                      </label>
+                    </div>
+
+                    <label className="mt-4 grid gap-1 text-xs font-bold text-slate-700">
+                      <span>Field notes</span>
+                      <textarea value={recordForm.notes} onChange={(event) => setRecordForm((current) => ({ ...current, notes: event.target.value }))} rows={6} className="rounded-lg border border-slate-300 bg-white p-3 text-sm font-normal leading-6 text-slate-800" placeholder="Add habitat, health, condition, location notes, and any extra context from the field capture." />
+                    </label>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => void handleRecordSave()} disabled={isSavingObservation} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-xs font-bold text-white disabled:opacity-60">
+                        <PencilLine className="size-3.5" /> {isSavingObservation ? "Saving..." : "Save record"}
+                      </button>
+
+                      <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-800">
+                        <Upload className="size-3.5" /> {isUploadingEvidence ? "Uploading..." : "Add images"}
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={(event) => void handleEvidenceUpload(event)} />
+                      </label>
+                    </div>
+
+                    {recordNotice && <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">{recordNotice}</p>}
+
+                    <div className="mt-5 grid gap-3 md:grid-cols-2">
+                      {schoolObservations.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-slate-300 p-4 text-xs text-slate-500">No observations are currently available for this school.</div>
+                      ) : (
+                        schoolObservations.map((record) => (
+                          <button
+                            key={record.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedObservationId(record.id);
+                              setRecordForm({
+                                common_name: record.common_name ?? "",
+                                scientific_name: record.scientific_name ?? "",
+                                notes: record.notes ?? "",
+                              });
+                            }}
+                            className={`rounded-xl border p-3 text-left ${selectedObservationId === record.id ? "border-emerald-700 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}
+                          >
+                            <strong className="block text-sm text-emerald-900">{record.common_name || record.scientific_name || record.observation_type}</strong>
+                            <span className="mt-1 block text-[10px] text-slate-500">{new Date(record.observed_at).toLocaleDateString()} · {record.observation_type}</span>
+                            <span className="mt-2 block text-[10px] font-bold text-slate-600">{record.observation_media.length} image{record.observation_media.length === 1 ? "" : "s"}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </section>
