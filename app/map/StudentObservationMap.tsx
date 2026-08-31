@@ -21,7 +21,11 @@ export function StudentObservationMap({ observations, selectedId, onSelect, onMo
       if (cancelled || !element.current) return;
       if (!map.current) {
         map.current = L.map(element.current, { zoomControl: true }).setView([7.412, 3.904], 15);
-        L.tileLayer(process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>', maxZoom: 19 }).addTo(map.current);
+        const street = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 });
+        const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { attribution: "Tiles &copy; Esri", maxZoom: 19 });
+        const terrain = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenTopoMap contributors', maxZoom: 17 });
+        street.addTo(map.current);
+        L.control.layers({ "Street map": street, Satellite: satellite, Terrain: terrain }, undefined, { position: "topright" }).addTo(map.current);
       }
 
       layer.current?.remove();

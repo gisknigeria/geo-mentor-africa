@@ -50,8 +50,8 @@ export function TeacherReview() {
       .select(
         "id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(name), observation_media(storage_path)",
       )
-      .eq("review_stage", "TEACHER_REVIEW")
-      .eq("verification_status", "PENDING")
+      .in("review_stage", ["TEACHER_REVIEW", "STUDENT_REVISION"])
+      .in("verification_status", ["PENDING", "NEEDS_CHANGES"])
       .order("created_at");
     if (!error) {
       setRecords(
@@ -68,8 +68,18 @@ export function TeacherReview() {
         }) as Observation[],
       );
       setSelected(0);
+    } else {
+      setMessage(`Could not load the teacher queue: ${error.message}`);
     }
   }, []);
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(async ({ data }) => {
+      setUser(data.user);
+      if (data.user) await loadQueue();
+      setAuthReady(true);
+    });
+  }, [loadQueue]);
 
   useEffect(() => {
     let active = true;
@@ -198,9 +208,10 @@ export function TeacherReview() {
           )}
           <div className="mt-5 grid gap-2">
             {records.length === 0 ? (
-              <p className="rounded-lg bg-slate-50 p-4 text-xs text-slate-500">
-                No observations are awaiting teacher review.
-              </p>
+              <div className="rounded-lg bg-slate-50 p-4 text-xs text-slate-500">
+                <p>{message || "No observations are awaiting teacher review."}</p>
+                {message && <button type="button" onClick={() => void loadQueue()} className="mt-3 font-bold text-emerald-800">Try again</button>}
+              </div>
             ) : (
               records.map((item, index) => (
                 <button
