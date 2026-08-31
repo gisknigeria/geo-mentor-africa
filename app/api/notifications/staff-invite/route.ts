@@ -5,15 +5,18 @@ export async function POST(request: Request) {
   const { invitedEmail, invitedRole, token } = await request.json();
 
   const resendKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL;
 
-  if (!resendKey || !fromEmail) {
+  if (!resendKey) {
     return NextResponse.json({ error: "Email service is not configured" }, { status: 503 });
   }
 
   const resend = new Resend(resendKey);
   const acceptUrl = `${request.headers.get("origin")}/invite?token=${encodeURIComponent(token)}`;
   const roleLabel = invitedRole === "SCHOOL_ADMIN" ? "School Administrator" : "Teacher";
+
+  // Use custom domain from env if set, otherwise default to Resend's testing domain
+  const customFromEmail = process.env.RESEND_FROM_EMAIL;
+  const fromEmail = customFromEmail || "GeoMentor <onboarding@resend.dev>";
 
   const { error: sendError } = await resend.emails.send({
     from: fromEmail,
@@ -44,7 +47,8 @@ export async function POST(request: Request) {
   });
 
   if (sendError) {
-    return NextResponse.json({ error: "Email delivery failed" }, { status: 502 });
+    console.error("Resend email error:", sendError);
+    return NextResponse.json({ error: `Email delivery failed: ${sendError.message}` }, { status: 502 });
   }
 
   return NextResponse.json({ success: true });

@@ -109,9 +109,11 @@ export function SchoolOperations() {
     });
 
     if (emailResponse.ok) {
-      setInviteMessage(`Invitation sent to ${inviteEmail.trim()}. They will receive an email with the acceptance code.`);
+      setInviteMessage(`✅ Invitation sent to ${inviteEmail.trim()}. They will receive an email with the acceptance code.`);
     } else {
-      setInviteMessage(`Invitation created for ${inviteEmail.trim()}, but the email could not be sent. Share this code manually:`);
+      const errorData = await emailResponse.json().catch(() => ({ error: "Unknown error" }));
+      console.error("Email API error:", errorData);
+      setInviteMessage(`⚠️ Invitation created but email could not be sent. Error: ${errorData.error || "Email service unavailable"}. Share this code manually with the teacher:`);
     }
     setGeneratedInviteToken(token);
     setInviteEmail("");
