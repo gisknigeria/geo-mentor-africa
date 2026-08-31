@@ -67,7 +67,7 @@ export function SchoolOperations() {
   }, []);
 
   const loadAllSchoolObservations = useCallback(async (schoolId: string) => {
-    const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, scientific_name, verification_status, review_stage, observed_at, sensitivity_level, location").eq("school_id", schoolId).order("observed_at", { ascending: false }).limit(1000);
+    const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, scientific_name, verification_status, review_stage, observed_at, sensitivity_level, location").eq("school_id", schoolId).neq("verification_status", "REJECTED").order("observed_at", { ascending: false }).limit(1000);
     if (error) {
       setLoadError(error.message);
       return;

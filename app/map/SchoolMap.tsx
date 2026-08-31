@@ -103,6 +103,7 @@ export function SchoolMap() {
             "id, observation_type, common_name, scientific_name, notes, verification_status, review_stage, observed_at, sensitivity_level, location",
           )
           .eq("school_id", schoolData.id)
+          .neq("verification_status", "REJECTED")
           .order("observed_at", { ascending: false })
           .limit(25);
 

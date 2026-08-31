@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { Binoculars, CalendarDays, Check, ClipboardCheck, MapPin, Save, ShieldCheck, Users } from "lucide-react";
 import { Logo } from "../../../../components/app/logo";
+import { supabase } from "../../../../lib/supabase/client";
 
 const themes = ["Plants & trees", "Pollinators", "Birds", "Soil & water", "Habitats", "Conservation actions"];
 const storageKey = "geomentor-pilot-project-draft-v1";
@@ -28,7 +29,69 @@ export function ProjectSetup() {
   const readiness = useMemo(() => [draft.title, draft.className, draft.learnerCount, draft.startDate, draft.learningGoal, draft.safeArea, draft.themes.length].filter(Boolean).length, [draft]);
   function update<K extends keyof Draft>(key: K, value: Draft[K]) { setDraft((current) => ({ ...current, [key]: value })); setMessage(null); }
   function toggleTheme(theme: string) { update("themes", draft.themes.includes(theme) ? draft.themes.filter((item) => item !== theme) : [...draft.themes, theme]); }
-  function save(event: FormEvent<HTMLFormElement>) { event.preventDefault(); localStorage.setItem(storageKey, JSON.stringify(draft)); setMessage("Project setup saved on this device. It can be connected to the school workspace after database activation."); }
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      setMessage("Please sign in as a verified teacher before saving a project.");
+      return;
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("organization_memberships")
+      .select("organization_id")
+      .eq("user_id", authData.user.id)
+      .eq("role", "TEACHER")
+      .eq("status", "VERIFIED")
+      .limit(1)
+      .maybeSingle();
+    if (membershipError || !membership) {
+      setMessage("A verified teacher school membership is required to save this project.");
+      return;
+    }
+
+    const { data: school, error: schoolError } = await supabase
+      .from("schools")
+      .select("id")
+      .eq("organization_id", membership.organization_id)
+      .limit(1)
+      .maybeSingle();
+    if (schoolError || !school) {
+      setMessage("Your teacher school workspace is not configured yet.");
+      return;
+    }
+
+    const description = [
+      `Class: ${draft.className}`,
+      `Learners: ${draft.learnerCount}`,
+      `Start date: ${draft.startDate}`,
+      `Duration: ${draft.duration} weeks`,
+      `Learning goal: ${draft.learningGoal}`,
+      `Approved area: ${draft.safeArea}`,
+      `Safety notes: ${draft.safetyNotes}`,
+      `Themes: ${draft.themes.join(", ")}`,
+      `Mentor support: ${draft.mentorSupport ? "requested" : "not requested"}`,
+      `Expert support: ${draft.expertSupport ? "requested" : "not requested"}`,
+    ].join("\n");
+    const { error: projectError } = await supabase.from("projects").insert({
+      organization_id: membership.organization_id,
+      school_id: school.id,
+      title: draft.title,
+      project_type: "BIODIVERSITY_BASELINE",
+      description,
+      status: "DRAFT",
+      visibility: "SCHOOL",
+      created_by: authData.user.id,
+    });
+    if (projectError) {
+      setMessage(`Project could not be saved: ${projectError.message}`);
+      return;
+    }
+
+    localStorage.removeItem(storageKey);
+    setMessage("Project setup saved to your school workspace.");
+  }
 
   return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
     <header className="border-b border-white/10 bg-[#0b4436] px-4 py-4 text-white sm:px-7"><div className="mx-auto flex max-w-7xl items-center justify-between gap-4"><Logo /><Link href="/teacher" className="rounded-lg bg-white/10 px-4 py-2.5 text-xs font-bold">Teacher review</Link></div></header>

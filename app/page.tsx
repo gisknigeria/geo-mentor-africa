@@ -18,8 +18,9 @@ import { supabase } from "../lib/supabase/client";
 
 type School = { id: string; name: string };
 type Observation = { id: string; scientific_name: string | null; common_name: string | null; observation_type: string; verification_status: string; review_stage: string; observed_at: string };
-type StudentProfile = { display_name: string };
+type StudentProfile = { id: string; display_name: string };
 type Stats = { verified_observations: number; pending_observations: number; active_projects: number; student_count: number };
+type Notification = { id: string; title: string; body: string; kind: string; observation_id: string | null; read_at: string | null; created_at: string };
 
 const navigation = [
   { label: "Overview", href: "#overview", icon: LayoutDashboard, active: true },
@@ -44,6 +45,8 @@ export function StudentDashboard() {
     student_count: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     const loadStudentData = async () => {
@@ -59,7 +62,9 @@ export function StudentDashboard() {
           .single();
 
         if (profileData) {
-          setStudent({ display_name: profileData.display_name || "Student" });
+          setStudent({ id: user.id, display_name: profileData.display_name || "Student" });
+          const { data: notificationData } = await supabase.from("notifications").select("id,title,body,kind,observation_id,read_at,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+          setNotifications((notificationData ?? []) as Notification[]);
 
           // Get student's school
           const { data: membershipData } = await supabase
@@ -201,10 +206,11 @@ export function StudentDashboard() {
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <button className="relative grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Notifications">
+            <button className="relative grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Notifications" onClick={() => setNotificationsOpen((open) => !open)}>
               <Bell className="size-[18px]" />
-              <span className="absolute right-2 top-2 size-1.5 rounded-full bg-orange-500" />
+              {notifications.some((notification) => !notification.read_at) && <span className="absolute right-2 top-2 size-1.5 rounded-full bg-orange-500" />}
             </button>
+            {notificationsOpen && <div className="absolute right-4 top-14 z-40 w-[min(360px,calc(100vw-2rem))] rounded-xl border border-slate-200 bg-white p-4 text-left shadow-xl"><div className="flex items-center justify-between"><strong className="text-sm text-emerald-950">Notifications</strong><button type="button" className="text-[10px] font-bold text-emerald-700" onClick={async () => { await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", student.id).is("read_at", null); setNotifications((current) => current.map((notification) => ({ ...notification, read_at: notification.read_at || new Date().toISOString() }))); }}>Mark all read</button></div><div className="mt-3 grid max-h-80 gap-2 overflow-y-auto">{notifications.length === 0 ? <p className="text-xs text-slate-500">No review notifications yet.</p> : notifications.map((notification) => <button type="button" key={notification.id} onClick={async () => { if (!notification.read_at) { await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id).eq("user_id", student.id); setNotifications((current) => current.map((item) => item.id === notification.id ? { ...item, read_at: new Date().toISOString() } : item)); } }} className={`rounded-lg border p-3 text-left ${notification.read_at ? "border-slate-100 bg-slate-50" : "border-lime-300 bg-lime-50"}`}><strong className="block text-xs text-emerald-950">{notification.title}</strong><span className="mt-1 block text-[11px] leading-5 text-slate-600">{notification.body}</span><small className="mt-2 block text-[9px] text-slate-400">{new Date(notification.created_at).toLocaleDateString()}</small></button>)}</div></div>}
             <button className="hidden min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 md:flex">
               <CircleHelp className="size-4" />
               Need help?
