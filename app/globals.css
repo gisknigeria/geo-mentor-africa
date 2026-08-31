@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+.school-map-marker {
+  display: grid;
+  place-items: center;
+  border: 3px solid #ffffff;
+  border-radius: 9999px;
+  background: #dc7b26;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(21, 52, 45, 0.35);
+  font-size: 14px;
+  font-weight: 900;
+}
+
 :root { --ink:#15342d; --muted:#698078; --green:#0e6b4f; --green-dark:#0a4939; --paper:#f4f6f1; --white:#fff; --line:#dfe6df; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }

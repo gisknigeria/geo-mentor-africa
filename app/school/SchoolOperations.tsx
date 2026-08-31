@@ -8,6 +8,7 @@ import { Logo } from "../../components/app/logo";
 import { AccountMenu } from "../../components/app/account-menu";
 import { supabase } from "../../lib/supabase/client";
 import { decodeGeometry } from "../../lib/geo";
+import { SchoolLocationMap } from "./SchoolLocationMap";
 
 type Observation = { id: string; observation_type: string; common_name: string | null; scientific_name: string | null; verification_status: string; review_stage: string; observed_at: string; sensitivity_level: string; latitude: number | null; longitude: number | null };
 type Dashboard = { school: { id: string; name: string; country_code: string }; role: string; metrics: { verified_students: number; pending_students: number; teacher_review: number; expert_review: number; verified_observations: number; active_projects: number }; recent_observations: Observation[] };
@@ -201,6 +202,18 @@ export function SchoolOperations() {
     }, () => setLocationMessage("We could not read your location. Allow location access and try again."), { enableHighAccuracy: true, timeout: 15000 });
   }
 
+  async function saveSchoolLocation(latitude: number, longitude: number) {
+    if (!dashboard) return;
+    setLocationMessage("Saving school location...");
+    const { error } = await supabase.from("schools").update({ location: `SRID=4326;POINT(${longitude} ${latitude})` }).eq("id", dashboard.school.id);
+    if (error) {
+      setLocationMessage("The school location could not be saved. Check your school admin permissions.");
+      return;
+    }
+    setSchoolCoordinates({ latitude, longitude });
+    setLocationMessage("School location saved.");
+  }
+
   if (authReady && !user) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School staff sign-in required</h1><p className="mt-3 text-sm text-slate-600">This workspace is restricted to verified teachers and school administrators.</p><Link href="/auth" className="mt-5 inline-block text-sm font-bold text-emerald-800">Sign in securely</Link></section></main>;
   if (!authReady || !dashboard) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-9 text-amber-600" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">School data unavailable</h1><p className="mt-3 text-sm leading-6 text-slate-600">{loadError || "Loading your live school dashboard..."}</p><Link href="/portal" className="mt-5 inline-block text-sm font-bold text-emerald-800">Return to portal</Link></section></main>;
 
@@ -212,12 +225,6 @@ export function SchoolOperations() {
   ] as const;
 
   const mapObservations = dashboard.recent_observations.filter((item) => item.latitude !== null && item.longitude !== null);
-  const mapMinLat = Math.min(...mapObservations.map((item) => item.latitude ?? 0), 0);
-  const mapMaxLat = Math.max(...mapObservations.map((item) => item.latitude ?? 0), 0);
-  const mapMinLng = Math.min(...mapObservations.map((item) => item.longitude ?? 0), 0);
-  const mapMaxLng = Math.max(...mapObservations.map((item) => item.longitude ?? 0), 0);
-  const mapPoints = schoolCoordinates ? [...mapObservations, { latitude: schoolCoordinates.latitude, longitude: schoolCoordinates.longitude }] : mapObservations;
-  const mapUrl = mapPoints.length ? `https://www.openstreetmap.org/export/embed.html?bbox=${Math.min(...mapPoints.map((item) => item.longitude ?? 0)) - 0.01}%2C${Math.min(...mapPoints.map((item) => item.latitude ?? 0)) - 0.01}%2C${Math.max(...mapPoints.map((item) => item.longitude ?? 0)) + 0.01}%2C${Math.max(...mapPoints.map((item) => item.latitude ?? 0)) + 0.01}&layer=mapnik` : null;
 
   return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-7"><div className="mx-auto flex max-w-7xl items-center justify-between gap-4"><Logo /><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-800 sm:block">{dashboard.role.replaceAll("_", " ")}</span><AccountMenu /></div></div></header>
@@ -229,23 +236,10 @@ export function SchoolOperations() {
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-[9px] font-black tracking-[.15em] text-emerald-700">SCHOOL ACTIVITY MAP</p>
           <h2 className="mt-2 font-serif text-2xl text-emerald-950">Live field captures</h2>
-          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]">
-            {mapUrl && <iframe title="Live school activity map" src={mapUrl} className="absolute inset-0 size-full border-0 opacity-80" loading="lazy" />}
-            <div className="pointer-events-none absolute inset-0 bg-white/10" />
-            <div className="pointer-events-none absolute left-[18%] top-[24%] h-[44%] w-[42%] rotate-[-8deg] rounded-[44%_35%_40%_30%] border-2 border-emerald-700/45 bg-lime-300/30" />
-            <div className="pointer-events-none absolute bottom-[10%] right-[10%] h-[20%] w-[22%] rounded-lg border border-slate-400 bg-slate-300/45" />
-            {mapObservations.map((item) => {
-              const lat = item.latitude ?? 0;
-              const lng = item.longitude ?? 0;
-              const rangeLat = Math.max(mapMaxLat - mapMinLat, 1e-6);
-              const rangeLng = Math.max(mapMaxLng - mapMinLng, 1e-6);
-              const x = 10 + ((lng - mapMinLng) / rangeLng) * 78;
-              const y = 82 - ((lat - mapMinLat) / rangeLat) * 66;
-              return <span key={item.id} className="absolute grid size-5 place-items-center rounded-full border-4 border-white bg-emerald-700 text-[8px] font-black text-white shadow" style={{ left: `${x}%`, top: `${y}%` }}>•</span>;
-            })}
-          </div>
+          <div className="relative mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 bg-[#e7efe1]"><SchoolLocationMap observations={mapObservations.flatMap((item) => item.latitude !== null && item.longitude !== null ? [{ id: item.id, latitude: item.latitude, longitude: item.longitude }] : [])} schoolLocation={schoolCoordinates} schoolName={dashboard.school.name} onChoose={(point) => void saveSchoolLocation(point.latitude, point.longitude)} /></div>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">School staff can see captured record locations, pending review items and verified observation coverage in one map view.</p>
-          <button type="button" onClick={captureSchoolLocation} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-950 px-4 text-xs font-bold text-white"><MapPin className="size-4" />{schoolCoordinates ? "Update school location" : "Add school location"}</button>
+          <button type="button" onClick={captureSchoolLocation} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-950 px-4 text-xs font-bold text-white"><MapPin className="size-4" />Use my current location</button>
+          <p className="mt-2 text-[10px] text-slate-500">Or click anywhere on the map to set the school location.</p>
           {schoolCoordinates && <p className="mt-2 text-[10px] text-emerald-700">{schoolCoordinates.latitude.toFixed(5)}, {schoolCoordinates.longitude.toFixed(5)}</p>}
           {locationMessage && <p className="mt-2 text-[10px] text-slate-500">{locationMessage}</p>}
         </article>

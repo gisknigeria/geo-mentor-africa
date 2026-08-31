@@ -264,15 +264,6 @@ export function SchoolMap() {
             <div className="relative min-h-[570px] overflow-hidden bg-[#e5eadc]">
               {mapUrl && <iframe title="Live school observation map" src={mapUrl} className="absolute inset-0 size-full border-0 opacity-80" loading="lazy" />}
               <div className="pointer-events-none absolute inset-0 bg-white/10" />
-              <span className="pointer-events-none absolute -left-[8%] top-[18%] h-5 w-[120%] rotate-[-8deg] border-y border-slate-300 bg-[#faf9ef]" />
-              <span className="pointer-events-none absolute left-[52%] top-[-8%] h-[120%] w-4 rotate-[13deg] border-x border-slate-300 bg-[#faf9ef]" />
-              <div className="pointer-events-none absolute left-[17%] top-[23%] h-[48%] w-[45%] rotate-[-5deg] rounded-[44%_35%_40%_30%] border-2 border-emerald-700/50 bg-lime-300/30">
-                <span className="absolute left-[35%] top-[42%] rounded-lg bg-white/75 px-3 py-2 text-[9px] font-black text-emerald-900">SCHOOL GARDEN</span>
-              </div>
-              <div className="pointer-events-none absolute bottom-[8%] right-[8%] h-[22%] w-[25%] rounded-lg border border-slate-400 bg-slate-300/45">
-                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-black text-slate-600">CLASSROOMS</span>
-              </div>
-
               {filtered.map((item) => {
                 const layer = layers.find((entry) => entry.name === item.layer)!;
                 const Icon = layer.icon;
