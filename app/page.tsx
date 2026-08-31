@@ -21,6 +21,7 @@ type Observation = { id: string; scientific_name: string | null; common_name: st
 type StudentProfile = { id: string; display_name: string };
 type Stats = { verified_observations: number; pending_observations: number; active_projects: number; student_count: number };
 type Notification = { id: string; title: string; body: string; kind: string; observation_id: string | null; read_at: string | null; created_at: string };
+type Project = { id: string; title: string; description: string; status: string; created_at: string };
 
 const navigation = [
   { label: "Overview", href: "#overview", icon: LayoutDashboard, active: true },
@@ -47,6 +48,7 @@ export function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     const loadStudentData = async () => {
@@ -85,6 +87,9 @@ export function StudentDashboard() {
 
             if (schoolData) {
               setSchool(schoolData);
+
+              const { data: projectData } = await supabase.from("projects").select("id,title,description,status,created_at").eq("school_id", schoolData.id).in("status", ["DRAFT", "ACTIVE"]).order("created_at", { ascending: false });
+              setProjects((projectData ?? []) as Project[]);
 
               // Get observations for this school
               const { data: obsData } = await supabase
@@ -251,6 +256,11 @@ export function StudentDashboard() {
                 </div>
               </article>
             ))}
+          </section>
+
+          <section className="mt-4 rounded-xl border border-slate-200 bg-white p-5" id="projects">
+            <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-bold tracking-[.15em] text-slate-400">SCHOOL PROJECTS</p><h2 className="mt-1 font-serif text-xl">Your school projects</h2></div><FolderKanban className="size-5 text-emerald-700" /></div>
+            {projects.length === 0 ? <p className="mt-4 text-xs text-slate-500">No school projects are available yet.</p> : <div className="mt-4 grid gap-3 md:grid-cols-2">{projects.map((project) => <article key={project.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4"><div className="flex items-start justify-between gap-3"><h3 className="font-serif text-lg text-emerald-950">{project.title}</h3><span className="rounded-full bg-lime-100 px-2 py-1 text-[9px] font-bold text-emerald-800">{project.status}</span></div><p className="mt-2 line-clamp-3 whitespace-pre-line text-xs leading-5 text-slate-600">{project.description}</p></article>)}</div>}
           </section>
 
           <section className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(290px,.75fr)]" id="reviews">

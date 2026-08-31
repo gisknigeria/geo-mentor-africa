@@ -28,6 +28,7 @@ type Observation = {
   school?: { name?: string; location?: Coordinates | null } | null;
   observation_media?: Array<{ storage_path: string }>;
 };
+type Project = { id: string; title: string; description: string; status: string; created_at: string };
 
 export function TeacherReview() {
   const [user, setUser] = useState<User | null>(null);
@@ -42,13 +43,14 @@ export function TeacherReview() {
   const [evidenceUrl, setEvidenceUrl] = useState<string | null>(null);
   const [locationChanged, setLocationChanged] = useState(false);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const record = records[selected] ?? null;
 
   const loadQueue = useCallback(async () => {
     const { data, error } = await supabase
       .from("observations")
       .select(
-        "id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(name, location), observation_media(storage_path)",
+        "id, observation_type, common_name, notes, observed_at, coordinate_accuracy_m, location, schools(id, name, location), observation_media(storage_path)",
       )
       .in("review_stage", ["TEACHER_REVIEW", "STUDENT_REVISION"])
       .in("verification_status", ["PENDING", "NEEDS_CHANGES"])
@@ -69,6 +71,11 @@ export function TeacherReview() {
         }) as Observation[],
       );
       setSelected(0);
+      const schoolId = Array.isArray(data?.[0]?.schools) ? data?.[0]?.schools[0]?.id : null;
+      if (schoolId) {
+        const { data: projectData } = await supabase.from("projects").select("id,title,description,status,created_at").eq("school_id", schoolId).order("created_at", { ascending: false });
+        setProjects((projectData ?? []) as Project[]);
+      }
     } else {
       setMessage(`Could not load the teacher queue: ${error.message}`);
     }
@@ -246,6 +253,10 @@ export function TeacherReview() {
                 </button>
               ))
             )}
+          </div>
+          <div className="mt-6 border-t border-slate-200 pt-5">
+            <p className="text-[9px] font-black tracking-[.16em] text-emerald-700">SCHOOL PROJECTS</p>
+            {projects.length === 0 ? <p className="mt-3 text-xs text-slate-500">No projects have been submitted yet.</p> : <div className="mt-3 grid gap-2">{projects.map((project) => <article key={project.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3"><strong className="block text-xs text-emerald-950">{project.title}</strong><span className="mt-1 block text-[10px] text-slate-500">{project.status} · {new Date(project.created_at).toLocaleDateString()}</span></article>)}</div>}
           </div>
         </aside>
         <section className="min-w-0">
