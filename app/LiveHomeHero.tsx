@@ -71,13 +71,16 @@ export function LiveHomeHero() {
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,42,34,.98),rgba(5,42,34,.9)_52%,rgba(5,42,34,.76))]" />
       <div className="relative mx-auto grid min-h-[690px] max-w-[1440px] items-center gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[1.02fr_.98fr]">
         <div className="max-w-3xl">
-        
-          <h1 className="mt-6 font-serif text-5xl leading-[.98] tracking-[-.04em] sm:text-7xl xl:text-[5.4rem]">
-            Geo Mentor
-            <span className="text-lime-200">Africa</span>
+          <p className="text-[10px] font-black tracking-[.18em] text-lime-200">
+            Home
+          </p>
+          <h1 className="mt-4 font-serif text-5xl leading-[.98] tracking-[-.04em] sm:text-7xl xl:text-[5.4rem]">
+            Overview of GeoMentor Africa
           </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-emerald-50/75 sm:text-lg">
+            Home: Overview of GeoMentor Africa, key programmes, impact indicators and latest activities.
+          </p>
           <p className="mt-6 max-w-2xl text-base leading-7 text-emerald-50/75 sm:text-lg">
-            Africa’s school grounds are alive with observation, learning and action.
             GeoMentor Africa connects schools, students, teachers, Geo-Mentors
             and partners through field observation, GIS mapping, expert review
             and measurable conservation action.
