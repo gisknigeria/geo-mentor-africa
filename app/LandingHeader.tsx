@@ -12,9 +12,8 @@ const links = [
   { label: "Home", href: "/" },
   { label: "Biodiversity", href: "/observations" },
   { label: "School map", href: "/#map" },
-  { label: "Programme", href: "/pilot" },
+  { label: "Programme & safety", href: "/pilot" },
   { label: "Partners", href: "/partner" },
-  { label: "Trust & safety", href: "/trust" },
 ];
 
 export function LandingHeader() {
@@ -72,7 +71,7 @@ export function LandingHeader() {
           {ready && !signedIn && (
             <Link
               href="/register"
-              className="hidden min-h-10 items-center rounded-lg bg-lime-300 px-4 text-[11px] font-black text-emerald-950 hover:bg-lime-200 sm:inline-flex"
+              className="hidden min-h-10 items-center rounded-lg bg-lime-300 px-4 text-[11px] font-black text-white hover:bg-lime-400 sm:inline-flex"
             >
               Join
             </Link>
@@ -101,7 +100,7 @@ export function LandingHeader() {
               aria-current={active(link.href) ? "page" : undefined}
               className={`rounded-lg px-4 py-3 text-sm font-bold ${
                 active(link.href)
-                  ? "bg-lime-300 text-emerald-950"
+                  ? "bg-lime-300 text-white"
                   : "text-emerald-50/80 hover:bg-white/10"
               }`}
             >

@@ -38,7 +38,7 @@ export function AccountMenu() {
 
   return (
     <div className="flex items-center gap-2">
-      <Link href="/portal" className="hidden rounded-lg bg-lime-300 px-3 py-2 text-xs font-bold text-emerald-950 hover:bg-lime-200 lg:inline-flex">My portal</Link>
+      <Link href="/portal" className="hidden rounded-lg bg-lime-300 px-3 py-2 text-xs font-bold text-white hover:bg-lime-400 lg:inline-flex">My portal</Link>
       <span className="hidden max-w-40 items-center gap-2 truncate rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white md:flex" title={user.email}><UserRound className="size-4 shrink-0" />{user.email}</span>
       <button type="button" onClick={() => void supabase.auth.signOut()} className="grid size-9 place-items-center rounded-lg text-white/75 hover:bg-white/15 hover:text-white" aria-label="Sign out"><LogOut className="size-4" /></button>
     </div>

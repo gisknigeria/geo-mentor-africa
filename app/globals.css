@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Keep every green interactive control high-contrast and consistent. */
+a.bg-lime-300,
+button.bg-lime-300 {
+  color: #ffffff;
+}
+
 .school-map-marker {
   display: grid;
   place-items: center;
