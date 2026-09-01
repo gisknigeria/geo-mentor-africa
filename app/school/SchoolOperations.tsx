@@ -295,9 +295,9 @@ export function SchoolOperations() {
 
   const mapObservations = allSchoolObservations.filter((item) => item.latitude !== null && item.longitude !== null);
 
-  return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
+  return <main className="workspace-surface">
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-7"><div className="mx-auto flex max-w-7xl items-center justify-between gap-4"><Logo /><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-800 sm:block">{dashboard.role.replaceAll("_", " ")}</span><AccountMenu /></div></div></header>
-    <div className="mx-auto max-w-7xl px-4 py-7 sm:px-7">
+    <div className="workspace-frame">
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">SCHOOL OPERATIONS</p><h1 className="mt-2 font-serif text-4xl text-emerald-950">{dashboard.school.name}</h1><p className="mt-2 text-sm text-slate-500">Student access, evidence review and biodiversity progress in one protected workspace.</p></div><Link href="/teacher" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#0b4436] px-5 text-xs font-bold text-white">Open teacher queue <ArrowRight className="size-4" /></Link></section>
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(([label,value,Icon,tone]) => <article key={label} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5"><span className={`grid size-12 place-items-center rounded-xl ${tone}`}><Icon className="size-5" /></span><div><small className="text-[9px] font-black tracking-[.12em] text-slate-400">{label.toUpperCase()}</small><strong className="mt-1 block font-serif text-3xl text-emerald-950">{value}</strong></div></article>)}</section>
 

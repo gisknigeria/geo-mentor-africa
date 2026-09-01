@@ -187,7 +187,7 @@ export function TeacherReview() {
     );
 
   return (
-    <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
+    <main className="workspace-surface">
       <header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-7">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Logo />

@@ -156,13 +156,13 @@ export function StudentDashboard() {
 
   const statItems = [
     { label: "Verified records", value: stats.verified_observations, note: "School-wide", icon: Leaf, tone: "bg-lime-100 text-lime-800" },
-    { label: "Awaiting review", value: stats.pending_observations, note: "Usually under 24h", icon: ClipboardCheck, tone: "bg-amber-100 text-amber-800" },
+    { label: "Awaiting review", value: stats.pending_observations, note: "Live queue", icon: ClipboardCheck, tone: "bg-amber-100 text-amber-800" },
     { label: "Active projects", value: stats.active_projects, note: "School initiatives", icon: FolderKanban, tone: "bg-violet-100 text-violet-700" },
     { label: "Student observers", value: stats.student_count, note: "Including you", icon: Users, tone: "bg-emerald-100 text-emerald-800" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#f4f6f1] text-[#15342d] lg:flex">
+    <div className="workspace-surface lg:flex">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-[#0b4436] px-5 py-7 text-white lg:flex">
         <Logo />
         <nav className="mt-12 grid gap-1.5" aria-label="Primary navigation">
@@ -197,7 +197,7 @@ export function StudentDashboard() {
       </aside>
 
       <div className="min-w-0 flex-1 lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-7">
+        <header className="workspace-topbar sticky top-0 z-20 flex h-16 items-center justify-between px-4 sm:px-7">
           <div className="lg:hidden">
             <Logo compact />
           </div>
@@ -224,7 +224,7 @@ export function StudentDashboard() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1440px] px-4 py-7 pb-24 sm:px-7 lg:px-9" id="overview">
+        <main className="workspace-frame pb-24" id="overview">
           <section className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
             <div>
               <p className="text-[10px] font-bold tracking-[.18em] text-slate-400">

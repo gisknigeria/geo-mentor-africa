@@ -626,17 +626,17 @@ export function MentorWorkspace() {
           <section className="mentor-kpis" aria-label="Mentor summary">
             <article>
               <small>ASSIGNED SCHOOLS</small>
-              <strong>{loading ? 0 : dashboard.assigned_schools}</strong>
+              <strong>{loading ? "—" : dashboard.assigned_schools}</strong>
               <em>{dashboard.students ? `${dashboard.students} student observers` : "No active roster yet"}</em>
             </article>
             <article>
               <small>AWAITING GUIDANCE</small>
-              <strong>{loading ? 0 : dashboard.pending_guidance}</strong>
+              <strong>{loading ? "—" : dashboard.pending_guidance}</strong>
               <em>{dashboard.pending_guidance ? `${dashboard.pending_guidance} active review items` : "No open review items"}</em>
             </article>
             <article>
               <small>VERIFIED THIS TERM</small>
-              <strong>{loading ? 0 : dashboard.verified_this_term}</strong>
+              <strong>{loading ? "—" : dashboard.verified_this_term}</strong>
               <em>Across live school observations</em>
             </article>
           </section>

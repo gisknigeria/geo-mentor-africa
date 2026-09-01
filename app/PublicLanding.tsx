@@ -85,10 +85,10 @@ export function PublicLanding() {
   }, []);
 
   const summaryStats = useMemo(() => [
-    { label: "Verified schools", value: impact?.schools ?? 0, detail: "approved programme members" },
-    { label: "Field records", value: impact?.observations ?? 0, detail: "submitted biodiversity observations" },
-    { label: "Images attached", value: impact?.media_uploads ?? 0, detail: "photographs attached to records" },
-    { label: "Expert-reviewed", value: impact?.verified_observations ?? 0, detail: "completed human review" },
+    { label: "Verified schools", value: impact?.schools ?? null, detail: "approved programme members" },
+    { label: "Field records", value: impact?.observations ?? null, detail: "submitted biodiversity observations" },
+    { label: "Images attached", value: impact?.media_uploads ?? null, detail: "photographs attached to records" },
+    { label: "Expert-reviewed", value: impact?.verified_observations ?? null, detail: "completed human review" },
   ], [impact]);
 
   return <main className="min-h-screen bg-[#f2f3ed] text-[#17332c]">
