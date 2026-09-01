@@ -84,6 +84,38 @@ const roles = [
   },
 ];
 
+const quickAccess = [
+  {
+    title: "Become a Mentor",
+    href: "/register?role=mentor",
+    text: "Guide students, review biodiversity records and strengthen field learning at participating schools.",
+  },
+  {
+    title: "Find or Adopt a School",
+    href: "/register?role=school",
+    text: "Connect schools with mentors, partners and resources for conservation and field activities.",
+  },
+  {
+    title: "View Activities",
+    href: "/observations",
+    text: "Explore fieldwork, biodiversity records, programme updates and school-level engagement.",
+  },
+  {
+    title: "Awards & Recognition",
+    href: "/partner",
+    text: "See the impact, innovations, achievements and recognition that celebrate programme success.",
+  },
+];
+
+const partnerLogos = [
+  "Schools",
+  "Universities",
+  "Conservation Groups",
+  "Technology Partners",
+  "Professional Bodies",
+  "Sponsors",
+];
+
 const workflow = [
   {
     title: "Capture",
@@ -176,6 +208,142 @@ export function PublicLanding() {
       <LandingHeader />
 
       <LiveHomeHero />
+
+      <section className="bg-white px-5 py-20 sm:px-8" id="featured-media">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
+              FEATURED VIDEO AND IMAGE GALLERY
+            </p>
+            <h2 className="mt-4 font-serif text-4xl leading-tight text-emerald-950 sm:text-5xl">
+              Mentorship, fieldwork and school impact in action.
+            </h2>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 p-6 shadow-sm">
+              <div className="aspect-video rounded-2xl bg-[radial-gradient(circle_at_center,_rgba(163,230,53,0.28),_rgba(5,42,34,0.95)_65%)] p-6">
+                <div className="flex h-full items-center justify-center rounded-2xl border border-white/15 bg-black/15 text-center">
+                  <div>
+                    <div className="mx-auto grid size-16 place-items-center rounded-full bg-white/10 text-lime-200">
+                      <ArrowRight className="size-7 rotate-[-45deg]" />
+                    </div>
+                    <p className="mt-5 text-xs font-black tracking-[.18em] text-lime-200">
+                      FEATURED VIDEO
+                    </p>
+                    <h3 className="mt-3 font-serif text-3xl text-white">
+                      A living school biodiversity programme
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                "Mentors supporting field learning",
+                "School biodiversity restoration",
+                "Students observing local species",
+                "Community conservation in action",
+              ].map((label, index) => (
+                <div key={label} className="rounded-2xl border border-slate-200 bg-[#f4f8f3] p-4">
+                  <div className={`mb-4 grid h-28 place-items-center rounded-xl ${index % 2 === 0 ? "bg-[#dfeab2]" : "bg-[#d7e7df]"}`}>
+                    <span className="text-[10px] font-black tracking-[.16em] text-emerald-800">
+                      {label.split(" ")[0].toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold leading-5 text-slate-700">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#eef3dd] px-5 py-20 sm:px-8" id="quick-access">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
+              QUICK ACCESS
+            </p>
+            <h2 className="mt-4 font-serif text-4xl leading-tight text-emerald-950 sm:text-5xl">
+              Choose the next step in the programme.
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {quickAccess.map(({ title, href, text }) => (
+              <Link
+                key={title}
+                href={href}
+                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-black tracking-[.14em] text-emerald-800">
+                  ACTION
+                </span>
+                <h3 className="mt-4 font-serif text-2xl text-emerald-950">{title}</h3>
+                <p className="mt-3 text-xs leading-6 text-slate-600">{text}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-[10px] font-black text-emerald-800">
+                  Explore <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-5 py-20 sm:px-8" id="map">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
+              INTERACTIVE MAP
+            </p>
+            <h2 className="mt-4 font-serif text-4xl leading-tight text-emerald-950 sm:text-5xl">
+              Programme coverage, school locations and field activity.
+            </h2>
+          </div>
+        </div>
+        <LiveSchoolMap />
+      </section>
+
+      <section className="bg-[#f6f7f1] px-5 py-20 sm:px-8" id="impact-tracker">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
+              LIVE ACTIVITY AND IMPACT TRACKER
+            </p>
+            <h2 className="mt-4 font-serif text-4xl leading-tight text-emerald-950 sm:text-5xl">
+              Schools reached, mentors engaged and biodiversity evidence recorded.
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {summaryStats.map(({ label, value, detail }) => (
+              <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-[9px] font-black tracking-[.16em] text-slate-400">{label}</p>
+                <strong className="mt-5 block font-serif text-4xl text-emerald-950">{value}</strong>
+                <small className="mt-2 block text-[10px] leading-5 text-slate-500">{detail}</small>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#0b4436] px-5 py-20 sm:px-8" id="partners-supporters">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-[10px] font-black tracking-[.18em] text-lime-200">
+              PARTNERS AND SUPPORTERS
+            </p>
+            <h2 className="mt-4 font-serif text-4xl leading-tight text-white sm:text-5xl">
+              Strategic partners enabling fieldwork, mentoring and conservation action.
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {partnerLogos.map((partner) => (
+              <div key={partner} className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center text-sm font-bold text-emerald-50/80">
+                {partner}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="px-5 py-20 sm:px-8" id="roles">
         <div className="mx-auto max-w-[1440px]">
