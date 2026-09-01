@@ -77,6 +77,7 @@ export function LiveHomeHero() {
             <span className="text-lime-200">Africa</span>
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-7 text-emerald-50/75 sm:text-lg">
+            Africa’s school grounds are alive with observation, learning and action.
             GeoMentor Africa connects schools, students, teachers, Geo-Mentors
             and partners through field observation, GIS mapping, expert review
             and measurable conservation action.

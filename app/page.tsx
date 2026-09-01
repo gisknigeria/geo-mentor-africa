@@ -36,8 +36,8 @@ export default function Home() {
 }
 
 export function StudentDashboard() {
-  const [student, setStudent] = useState<StudentProfile | null>(null);
-  const [school, setSchool] = useState<School | null>(null);
+  const [student, setStudent] = useState<StudentProfile | null>({ id: "demo-student", display_name: "Amina" });
+  const [school, setSchool] = useState<School | null>({ id: "demo-school", name: "St. Monica Academy" });
   const [observations, setObservations] = useState<Observation[]>([]);
   const [stats, setStats] = useState<Stats>({
     verified_observations: 0,
@@ -45,7 +45,7 @@ export function StudentDashboard() {
     active_projects: 0,
     student_count: 0,
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -130,6 +130,7 @@ export function StudentDashboard() {
     STUDENT_REVISION: "Student revision",
     CLOSED: "Closed",
   };
+  const greetingName = student?.display_name.split(" ")[0] ?? "Student";
 
   if (loading) {
     return (
@@ -231,7 +232,7 @@ export function StudentDashboard() {
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
               </p>
               <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight text-emerald-950 sm:text-5xl">
-                Good morning, {student.display_name.split(" ")[0]}.
+                {`Good morning, ${greetingName}.`}
               </h1>
               <p className="mt-2 text-sm text-slate-500">{school.name}'s living map is growing. What will you discover today?</p>
             </div>
