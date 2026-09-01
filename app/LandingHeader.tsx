@@ -43,7 +43,10 @@ export function LandingHeader() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    setOpen(false);
+    setProgrammeOpen(false);
+  }, [pathname]);
 
   const active = (href: string) => {
     if (href === "/") return pathname === "/";
