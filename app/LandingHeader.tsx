@@ -12,8 +12,14 @@ const links = [
   { label: "Home", href: "/" },
   { label: "Biodiversity", href: "/observations" },
   { label: "School map", href: "/#map" },
-  { label: "Programme & safety", href: "/pilot" },
   { label: "Partners", href: "/partner" },
+];
+
+const programmeLinks = [
+  { label: "Launch path", href: "/pilot#journey" },
+  { label: "Roles", href: "/pilot#roles" },
+  { label: "First lesson", href: "/pilot#lesson" },
+  { label: "Checklist", href: "/pilot#checklist" },
 ];
 
 export function LandingHeader() {
@@ -21,6 +27,7 @@ export function LandingHeader() {
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [open, setOpen] = useState(false);
+  const [programmeOpen, setProgrammeOpen] = useState(false);
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
@@ -64,6 +71,41 @@ export function LandingHeader() {
               {link.label}
             </Link>
           ))}
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setProgrammeOpen((value) => !value)}
+              aria-expanded={programmeOpen}
+              aria-controls="programme-menu"
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[11px] font-bold transition ${
+                pathname === "/pilot" || pathname.startsWith("/pilot#")
+                  ? "bg-white/12 text-lime-200"
+                  : "text-emerald-100/70 hover:bg-white/8 hover:text-white"
+              }`}
+            >
+              Programme &amp; safety
+              <span className={`transition ${programmeOpen ? "rotate-180" : ""}`}>▾</span>
+            </button>
+
+            {programmeOpen && (
+              <div
+                id="programme-menu"
+                className="absolute left-1/2 top-[calc(100%+8px)] z-50 grid w-44 -translate-x-1/2 gap-1 rounded-xl border border-emerald-900/10 bg-white p-2 text-left text-xs font-bold text-emerald-950 shadow-2xl"
+              >
+                {programmeLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setProgrammeOpen(false)}
+                    className="rounded-lg px-3 py-2.5 hover:bg-emerald-50"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="flex items-center gap-1.5">
@@ -107,6 +149,38 @@ export function LandingHeader() {
               {link.label}
             </Link>
           ))}
+
+          <div className="rounded-lg border border-white/10 bg-white/5">
+            <button
+              type="button"
+              onClick={() => setProgrammeOpen((value) => !value)}
+              aria-expanded={programmeOpen}
+              aria-controls="mobile-programme-menu"
+              className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm font-bold text-emerald-50/80"
+            >
+              Programme &amp; safety
+              <span className={`transition ${programmeOpen ? "rotate-180" : ""}`}>▾</span>
+            </button>
+
+            {programmeOpen && (
+              <div id="mobile-programme-menu" className="grid gap-1 border-t border-white/10 p-2">
+                {programmeLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => {
+                      setProgrammeOpen(false);
+                      setOpen(false);
+                    }}
+                    className="rounded-lg px-3 py-2.5 text-sm font-bold text-emerald-50/85 hover:bg-white/10"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           {ready && !signedIn && (
             <Link href="/register" className="mt-1 rounded-lg bg-white/10 px-4 py-3 text-sm font-bold text-lime-200 sm:hidden">
               Join the network
