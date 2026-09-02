@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import {
   ArrowRight,
@@ -8,26 +9,19 @@ import {
   Leaf,
   Map as MapIcon,
   Users,
-  Zap,
-  Globe,
   BarChart3,
-  Shield,
   Sparkles,
   Binoculars,
   Microscope,
   TreePine,
-  FlaskConical,
   Camera,
-  Activity,
-  Wind,
   Droplets,
   Award,
-  BookOpen,
   Handshake,
   TrendingUp,
-  AlertCircle,
   School,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { StudentObservationMap } from "./map/StudentObservationMap";
 
@@ -54,11 +48,20 @@ type BiodiversityRecord = {
   longitude: number;
 };
 
+const stockHeroVideoUrl = process.env.NEXT_PUBLIC_FEATURED_VIDEO_URL || "https://videos.pexels.com/video-files/857195/857195-hd_1920_1080_30fps.mp4";
+
+const heroSlides = [
+  { type: "video", label: "GeoMentor fieldwork", alt: "Stock video of environmental fieldwork" },
+  { type: "image", src: "/biodiversity-fieldwork.png", label: "Learning in the field", alt: "Students and a mentor documenting biodiversity in a school garden" },
+  { type: "image", src: "/og.png", label: "Mapping what matters", alt: "GeoMentor Africa biodiversity programme" },
+] as const;
+
 export function PublicLandingAdvanced() {
   const [scrolled, setScrolled] = useState(false);
   const [impact, setImpact] = useState<Impact | null>(null);
   const [biodiversityRecords, setBiodiversityRecords] = useState<BiodiversityRecord[]>([]);
   const [liveDataLoading, setLiveDataLoading] = useState(true);
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,6 +69,13 @@ export function PublicLandingAdvanced() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveHeroSlide((current) => (current + 1) % heroSlides.length);
+    }, 7000);
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -117,58 +127,99 @@ export function PublicLandingAdvanced() {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-lime-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        </div>
-
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-200 bg-emerald-50">
-            <Sparkles className="size-4 text-emerald-600" />
-            <span className="text-sm font-semibold text-emerald-700">Transforming field learning across Africa</span>
+      <section className="relative overflow-hidden bg-emerald-950 px-6 pb-20 pt-32 lg:pb-24">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(66,153,116,.34),transparent_36%),linear-gradient(135deg,#062f26,#0b4436_55%,#123f36)]" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-20">
+          <div>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-lime-300/40 bg-emerald-950/50 px-4 py-2">
+              <Sparkles className="size-4 text-lime-300" />
+              <span className="text-sm font-semibold text-lime-100">GeoMentor Africa</span>
+            </div>
+            <h1 className="max-w-2xl text-5xl font-bold leading-[.98] tracking-tight text-white sm:text-7xl">
+              The platform for learning from Africa&apos;s living systems.
+            </h1>
+            <p className="mt-7 max-w-xl text-lg leading-relaxed text-emerald-50">
+              GeoMentor Africa brings together biodiversity fieldwork, GIS mapping, mentors, expert validation and decision intelligence in one coordinated platform.
+            </p>
+            <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+              <Link href="#waitlist" className="inline-flex items-center justify-center gap-2 rounded-xl bg-lime-300 px-7 py-4 font-bold text-emerald-950 shadow-lg transition hover:bg-lime-200">
+                Join the programme <ArrowRight className="size-5" />
+              </Link>
+              <Link href="/about" className="inline-flex items-center justify-center rounded-xl px-7 py-4 font-bold text-white ring-1 ring-white/30 transition hover:bg-white/10">
+                What we do
+              </Link>
+            </div>
+            <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-white/15 pt-7 sm:grid-cols-4 lg:grid-cols-2">
+              {[
+                { number: impact ? impact.schools.toLocaleString() : "--", label: "Verified schools" },
+                { number: impact ? impact.countries.toLocaleString() : "--", label: "Countries" },
+                { number: impact ? impact.observations.toLocaleString() : "--", label: "Observations" },
+                { number: impact ? impact.verified_observations.toLocaleString() : "--", label: "Expert-verified" },
+              ].map(({ number, label }) => <div key={label}><div className="text-2xl font-bold text-lime-300">{number}</div><p className="mt-1 text-xs text-emerald-200">{label}</p></div>)}
+            </div>
           </div>
 
-          <h1 className="text-6xl sm:text-7xl font-bold tracking-tight text-slate-900 mb-6 leading-tight">
-            Connect schools with mentors. <br />
-            <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Map biodiversity. Create impact.
-            </span>
-          </h1>
-
-          <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-            A platform where schools capture biodiversity evidence, mentors guide field learning, partners fund conservation action, and AI transforms observations into actionable intelligence.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link
-              href="#waitlist"
-              className="px-8 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition inline-flex items-center gap-2 justify-center shadow-lg"
-            >
-              Join the waiting list
-              <ArrowRight className="size-5" />
-            </Link>
-            <Link
-              href="#lab"
-              className="px-8 py-4 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition"
-            >
-              Explore the platform
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="grid sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {[
-              { number: impact ? impact.schools.toLocaleString() : "--", label: "Verified schools" },
-              { number: impact ? impact.countries.toLocaleString() : "--", label: "Countries" },
-              { number: impact ? impact.observations.toLocaleString() : "--", label: "Observations captured" },
-              { number: impact ? impact.verified_observations.toLocaleString() : "--", label: "Expert-verified" },
-            ].map(({ number, label }) => (
-              <div key={label} className="p-4 rounded-lg bg-white border border-slate-200">
-                <div className="text-2xl font-bold text-emerald-600">{number}</div>
-                <p className="text-xs text-slate-600 mt-1">{label}</p>
+          <div className="relative min-h-[430px] overflow-hidden rounded-[2rem] border border-white/20 bg-emerald-900 shadow-2xl shadow-black/30">
+            {heroSlides[activeHeroSlide].type === "video" ? (
+              <video className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline poster="/biodiversity-fieldwork.png" aria-label={heroSlides[activeHeroSlide].alt}>
+                <source src={stockHeroVideoUrl} type="video/mp4" />
+                <track kind="captions" src="/hero-video.vtt" srcLang="en" label="English" />
+              </video>
+            ) : (
+              <Image src={heroSlides[activeHeroSlide].src} alt={heroSlides[activeHeroSlide].alt} fill className="object-cover" priority={activeHeroSlide === 1} />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-transparent to-emerald-950/10" />
+            <div className="absolute inset-x-7 bottom-7 flex items-end justify-between gap-5">
+              <div><p className="text-xs font-black uppercase tracking-[.2em] text-lime-300">Field note</p><p className="mt-2 text-2xl font-bold text-white">{heroSlides[activeHeroSlide].label}</p></div>
+              <div className="flex gap-2" aria-label="Hero media slides">
+                {heroSlides.map((slide, index) => <button key={slide.label} type="button" onClick={() => setActiveHeroSlide(index)} aria-label={`Show ${slide.label}`} className={`size-3 rounded-full border border-white transition ${index === activeHeroSlide ? "bg-lime-300" : "bg-white/40 hover:bg-white/70"}`} />)}
               </div>
-            ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FIELDWORK MEDIA */}
+      <section id="media" className="bg-emerald-950 px-6 py-24 text-white">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-lime-300">Fieldwork gallery</p>
+              <h2 className="text-4xl font-bold sm:text-5xl">See the work behind the data.</h2>
+            </div>
+            <p className="max-w-md text-sm leading-relaxed text-emerald-100">Students, teachers and GeoMentors turn places they know into evidence, stories and action.</p>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+            <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-emerald-800 bg-emerald-900">
+              {stockHeroVideoUrl ? (
+                <video className="absolute inset-0 h-full w-full object-cover" controls preload="metadata" poster="/biodiversity-fieldwork.png">
+                  <source src={stockHeroVideoUrl} type="video/mp4" />
+                  <track kind="captions" src="/hero-video.vtt" srcLang="en" label="English" />
+                  Your browser does not support the video element.
+                </video>
+              ) : (
+                <div className="absolute inset-0">
+                  <Image src="/biodiversity-fieldwork.png" alt="Students and a mentor documenting biodiversity in a school garden" fill className="object-cover opacity-70" priority />
+                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/20 to-transparent" />
+                  <div className="absolute inset-x-7 bottom-7">
+                    <div className="mb-4 grid size-14 place-items-center rounded-full bg-lime-300 text-emerald-950"><Camera className="size-6" /></div>
+                    <h3 className="text-2xl font-bold">GeoMentor field stories</h3>
+                    <p className="mt-2 max-w-md text-sm text-emerald-100">Featured programme video coming soon. The gallery is ready for your school visits, restoration work and field activities.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+              <figure className="relative min-h-[170px] overflow-hidden rounded-2xl border border-emerald-800 bg-emerald-900">
+                <Image src="/biodiversity-fieldwork.png" alt="Biodiversity fieldwork in a school garden" fill className="object-cover" />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-950 p-5 pt-12 text-sm font-bold">Learning in the field</figcaption>
+              </figure>
+              <figure className="relative min-h-[170px] overflow-hidden rounded-2xl border border-emerald-800 bg-emerald-900">
+                <Image src="/og.png" alt="GeoMentor Africa biodiversity programme" fill className="object-cover" />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-950 p-5 pt-12 text-sm font-bold">Mapping what matters</figcaption>
+              </figure>
+            </div>
           </div>
         </div>
       </section>
@@ -353,8 +404,8 @@ export function PublicLandingAdvanced() {
                 className="group rounded-2xl overflow-hidden border border-slate-200 bg-white hover:shadow-xl hover:border-emerald-300 transition"
               >
                 {/* Image Area */}
-                <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-7xl group-hover:scale-105 transition overflow-hidden">
-                  {record.imageUrl ? <img src={record.imageUrl} alt={record.common} className="h-full w-full object-cover" /> : <Leaf className="size-16 text-emerald-700" />}
+                <div className="relative aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-7xl group-hover:scale-105 transition overflow-hidden">
+                  {record.imageUrl ? <Image src={record.imageUrl} alt={record.common} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" /> : <Leaf className="size-16 text-emerald-700" />}
                 </div>
 
                 {/* Card Content */}
@@ -581,7 +632,7 @@ export function PublicLandingAdvanced() {
                 borderColor: "border-purple-200",
               },
             ].map(({ icon, title, description, color, borderColor }) => {
-              const iconMap: Record<string, any> = {
+              const iconMap: Record<string, LucideIcon> = {
                 School,
                 Users,
                 Handshake,
@@ -639,7 +690,7 @@ export function PublicLandingAdvanced() {
 
               <div className="p-6 rounded-xl bg-emerald-50 border-2 border-emerald-200">
                 <p className="text-sm text-emerald-900">
-                  <strong>🌍 Pilot Programme:</strong> We're currently testing in select African schools. Early adopters get VIP support and shape the platform's development.
+                  <strong>Pilot Programme:</strong> We&apos;re currently testing in select African schools. Early adopters get VIP support and shape the platform&apos;s development.
                 </p>
               </div>
             </div>
@@ -649,7 +700,7 @@ export function PublicLandingAdvanced() {
                 Join our waiting list
               </h3>
               <p className="text-slate-600 mb-8">
-                A few details and you're in.
+                A few details and you&apos;re in.
               </p>
               <WaitlistForm />
             </div>
@@ -690,9 +741,9 @@ export function PublicLandingAdvanced() {
             <div>
               <h4 className="font-bold text-white mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition">About</a></li>
-                <li><a href="#" className="hover:text-white transition">Contact</a></li>
-                <li><a href="#" className="hover:text-white transition">Blog</a></li>
+                <li><Link href="/about" className="hover:text-white transition">About</Link></li>
+                <li><Link href="/#waitlist" className="hover:text-white transition">Contact</Link></li>
+                <li><Link href="/activities" className="hover:text-white transition">Blog</Link></li>
               </ul>
             </div>
           </div>
@@ -700,9 +751,9 @@ export function PublicLandingAdvanced() {
           <div className="border-t border-slate-700 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm">
             <p>© 2024 GeoMentor Africa. All rights reserved.</p>
             <div className="flex gap-6 mt-4 sm:mt-0">
-              <a href="#" className="hover:text-white transition">Privacy</a>
-              <a href="#" className="hover:text-white transition">Terms</a>
-              <a href="#" className="hover:text-white transition">Cookies</a>
+              <Link href="/trust" className="hover:text-white transition">Privacy</Link>
+              <Link href="/trust" className="hover:text-white transition">Terms</Link>
+              <Link href="/trust" className="hover:text-white transition">Cookies</Link>
             </div>
           </div>
         </div>
