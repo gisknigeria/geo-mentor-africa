@@ -13,7 +13,7 @@ import { AccountMenu } from "../components/app/account-menu";
 import { Badge } from "../components/ui/badge";
 import { buttonVariants } from "../components/ui/button";
 import { cn } from "../lib/utils";
-import { PublicLanding } from "./PublicLandingNew";
+import { PublicLandingAdvanced } from "./PublicLandingAdvanced";
 import { supabase } from "../lib/supabase/client";
 
 type School = { id: string; name: string };
@@ -32,7 +32,7 @@ const navigation = [
 ];
 
 export default function Home() {
-  return <PublicLanding />;
+  return <PublicLandingAdvanced />;
 }
 
 export function StudentDashboard() {
