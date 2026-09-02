@@ -145,7 +145,7 @@ export function PublicInfoPage({ page }: { page: InfoPage }) {
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/85 via-emerald-950/60 to-teal-950/80" />
         <div className="relative mx-auto grid max-w-6xl items-end gap-12 lg:grid-cols-[1.2fr_.8fr]">
           <div><p className="mb-5 text-xs font-black tracking-[0.22em] text-lime-300">{pageContent.label}</p><h1 className="max-w-4xl text-5xl font-bold leading-[.98] tracking-tight sm:text-7xl">{pageContent.title}</h1><p className="mt-7 max-w-2xl text-lg leading-relaxed text-emerald-100">{pageContent.intro}</p></div>
-          <div className="border-l border-white/20 pl-7"><HeroIcon className="size-16 text-lime-300" /><p className="mt-8 text-sm font-bold uppercase tracking-wider text-emerald-200">One platform. Seven ways to participate.</p><Link href="/#waitlist" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white hover:text-lime-300">Get involved <ArrowRight className="size-4" /></Link></div>
+          <div className="border-l border-white/20 pl-7"><HeroIcon className="size-16 text-lime-300" /><p className="mt-8 text-sm font-bold uppercase tracking-wider text-emerald-200">One platform. Multiple ways to participate.</p><Link href="/#waitlist" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-white hover:text-lime-300">Get involved <ArrowRight className="size-4" /></Link></div>
         </div>
       </section>
 
