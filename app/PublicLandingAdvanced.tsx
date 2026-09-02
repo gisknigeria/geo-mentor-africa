@@ -78,7 +78,7 @@ const biodiversityRecords = [
   },
 ];
 
-export function PublicLandingNew() {
+export function PublicLandingAdvanced() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
