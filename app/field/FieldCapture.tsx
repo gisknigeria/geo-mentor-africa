@@ -8,10 +8,18 @@ import { Button } from "../../components/ui/button";
 import { supabase } from "../../lib/supabase/client";
 
 type Coordinates = { latitude: number; longitude: number; accuracy: number };
+type AISuggestion = {
+  observation_type: string;
+  common_name: string;
+  scientific_name: string;
+  notes: string;
+  confidence: number;
+};
 type Draft = {
   id: string;
   category: string;
   commonName: string;
+  scientificName: string;
   notes: string;
   observedAt: string;
   coordinates: Coordinates | null;
@@ -59,6 +67,7 @@ function subscribeToConnectivity(callback: () => void) {
 export function FieldCapture() {
   const [category, setCategory] = useState("TREE");
   const [commonName, setCommonName] = useState("");
+  const [scientificName, setScientificName] = useState("");
   const [notes, setNotes] = useState("");
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [gpsState, setGpsState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -66,6 +75,8 @@ export function FieldCapture() {
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<AISuggestion | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
   const online = useSyncExternalStore(subscribeToConnectivity, () => navigator.onLine, () => true);
 
   const observedAt = useMemo(() => new Date().toISOString(), []);
@@ -81,6 +92,7 @@ export function FieldCapture() {
       id: crypto.randomUUID(),
       category,
       commonName: commonName.trim(),
+      scientificName: scientificName.trim(),
       notes: notes.trim(),
       observedAt,
       coordinates,
@@ -145,6 +157,54 @@ export function FieldCapture() {
     setPhotos((current) => [...current, ...validFiles]);
     setPhotoUrls((current) => [...current, ...nextUrls]);
     event.target.value = "";
+
+    // Auto-analyze the first photo if available
+    if (!aiSuggestion && validFiles.length > 0) {
+      analyzePhoto(validFiles[0]);
+    }
+  }
+
+  async function analyzePhoto(file: File) {
+    if (analyzing) return;
+    setAnalyzing(true);
+    setMessage(null);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = (event.target?.result as string)?.split(",")[1];
+        if (!base64) throw new Error("Could not read file");
+
+        const response = await fetch("/api/analyze-observation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64, mimeType: file.type }),
+        });
+
+        if (!response.ok) throw new Error("Analysis failed");
+        const suggestion = (await response.json()) as AISuggestion;
+        setAiSuggestion(suggestion);
+
+        // Auto-fill form with AI suggestions
+        setCategory(suggestion.observation_type);
+        if (!commonName) setCommonName(suggestion.common_name);
+        if (!scientificName) setScientificName(suggestion.scientific_name);
+        if (!notes) setNotes(suggestion.notes);
+
+        if (suggestion.confidence > 0) {
+          setMessage(`AI identified: ${suggestion.common_name}. Please review and adjust before submitting.`);
+        }
+      };
+      reader.onerror = () => {
+        setMessage("Could not read the image file.");
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Photo analysis error:", error);
+      setMessage("Photo analysis unavailable. Please describe the organism manually.");
+    } finally {
+      setAnalyzing(false);
+    }
   }
 
   async function saveDraft() {
@@ -205,6 +265,7 @@ export function FieldCapture() {
         observer_id: authData.user.id,
         observation_type: category,
         common_name: commonName.trim() || null,
+        scientific_name: scientificName.trim() || null,
         notes: notes.trim(),
         observed_at: observedAt,
         location: `SRID=4326;POINT(${coordinates.longitude} ${coordinates.latitude})`,
@@ -234,10 +295,12 @@ export function FieldCapture() {
 
       setMessage("Observation submitted securely. A teacher must review it before expert verification.");
       setCommonName("");
+      setScientificName("");
       setNotes("");
       setCoordinates(null);
       setGpsState("idle");
       setPhotos([]);
+      setAiSuggestion(null);
       for (const url of photoUrls) URL.revokeObjectURL(url);
       setPhotoUrls([]);
     } catch (error) {
@@ -308,9 +371,34 @@ export function FieldCapture() {
 
           <div className="form-section">
             <div className="form-heading"><span>3</span><div><h2>Describe the observation</h2><p>Experts can help with identification later.</p></div></div>
+            
+            {aiSuggestion && aiSuggestion.confidence > 0 && (
+              <div className="ai-suggestion-panel" style={{ 
+                marginBottom: "1.5rem", 
+                padding: "1rem", 
+                borderRadius: "0.75rem", 
+                backgroundColor: "rgba(34, 197, 94, 0.1)", 
+                border: "1px solid rgba(34, 197, 94, 0.3)" 
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                  <strong style={{ color: "#065f46" }}>🤖 AI Suggestion</strong>
+                  <span style={{ fontSize: "0.875rem", color: "#059669" }}>
+                    {Math.round(aiSuggestion.confidence * 100)}% confident
+                  </span>
+                </div>
+                <div style={{ fontSize: "0.875rem", color: "#065f46", lineHeight: "1.5" }}>
+                  <p><strong>Type:</strong> {aiSuggestion.observation_type}</p>
+                  <p><strong>Common name:</strong> {aiSuggestion.common_name}</p>
+                  <p><strong>Scientific name:</strong> {aiSuggestion.scientific_name}</p>
+                  <p><strong>Notes:</strong> {aiSuggestion.notes}</p>
+                </div>
+              </div>
+            )}
+
             <div className="field-grid">
               <label><span>Observation type</span><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="TREE">Tree</option><option value="PLANT">Plant</option><option value="BIRD">Bird</option><option value="INSECT">Insect</option><option value="POLLINATOR">Pollinator</option><option value="FUNGI">Fungi</option><option value="OTHER">Other</option></select></label>
               <label><span>Common or local name <em>Optional</em></span><input value={commonName} onChange={(event) => setCommonName(event.target.value)} maxLength={120} placeholder="What do you call it?" /></label>
+              <label><span>Scientific name <em>Optional</em></span><input value={scientificName} onChange={(event) => setScientificName(event.target.value)} maxLength={200} placeholder="Genus species (e.g., Homo sapiens)" /></label>
               <label className="full-field"><span>What did you notice?</span><textarea required value={notes} onChange={(event) => setNotes(event.target.value)} minLength={10} maxLength={1000} placeholder="Describe colour, size, behaviour, condition or habitat…" /><small>{notes.length}/1000</small></label>
             </div>
           </div>
