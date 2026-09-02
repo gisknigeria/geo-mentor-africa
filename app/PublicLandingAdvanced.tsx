@@ -134,14 +134,12 @@ export function PublicLandingAdvanced() {
             <h1 className="max-w-2xl text-6xl font-black leading-[.9] tracking-tight text-white sm:text-8xl">
               GeoMentor Africa
             </h1>
-            <h2 className="mt-6 max-w-2xl text-xl font-medium leading-tight tracking-tight text-emerald-50 sm:text-5xl">
-              Learning from Africa&apos;s living systems.
-            </h2>
+          
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-emerald-50">
               GeoMentor Africa brings together biodiversity fieldwork, GIS mapping, mentors, expert validation and decision intelligence in one coordinated platform.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-              <Link href="#waitlist" className="inline-flex items-center justify-center gap-2 rounded-xl bg-lime-300 px-7 py-4 font-bold text-emerald-950 shadow-lg transition hover:bg-lime-200">
+              <Link href="#waitlist" className="inline-flex items-center justify-center gap-2 rounded-xl bg-lime-300 px-7 py-4 font-bold text-white shadow-lg transition hover:bg-lime-200">
                 Join the programme <ArrowRight className="size-5" />
               </Link>
               <Link href="/about" className="inline-flex items-center justify-center rounded-xl px-7 py-4 font-bold text-white ring-1 ring-white/40 transition hover:bg-white/10">
