@@ -3,24 +3,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { ArrowLeft, Check, Pencil, Save, ShieldAlert, Trash2, X } from "lucide-react";
+import { ArrowLeft, Images, Pencil, Save, ShieldAlert, Trash2, X } from "lucide-react";
 import { Logo } from "../../../components/app/logo";
 import { Button } from "../../../components/ui/button";
 import { supabase } from "../../../lib/supabase/client";
 
 type Capture = {
-  id: string;
-  observation_type: string;
-  common_name: string | null;
-  scientific_name: string | null;
-  notes: string;
-  verification_status: string;
-  observed_at: string;
-  school: { name: string } | null;
+  id: string; observation_type: string; common_name: string | null; scientific_name: string | null;
+  notes: string; verification_status: string; observed_at: string; school: { name: string } | null;
   observation_media: Array<{ id: string; content_type: string; url: string | null }>;
 };
 
-const captureTypes = ["TREE", "PLANT", "BIRD", "MAMMAL", "INSECT", "POLLINATOR", "FUNGI", "OTHER"];
+const captureTypes = ["TREE", "PLANT", "BIRD", "INSECT", "POLLINATOR", "ANIMAL", "FUNGI", "HABITAT", "OTHER"];
 
 export default function AdminCapturesPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -31,9 +25,15 @@ export default function AdminCapturesPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  async function authorizedFetch(input: RequestInfo, init: RequestInit = {}) {
+    const { data } = await supabase.auth.getSession();
+    const headers = new Headers(init.headers);
+    headers.set("Authorization", `Bearer ${data.session?.access_token || ""}`);
+    return fetch(input, { ...init, headers });
+  }
+
   async function loadCaptures() {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const response = await fetch("/api/admin/captures", { headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}` } });
+    const response = await authorizedFetch("/api/admin/captures");
     const result = await response.json().catch(() => null) as { captures?: Capture[]; error?: string } | null;
     if (!response.ok) setMessage(result?.error || "Captures could not be loaded.");
     else setCaptures(result?.captures ?? []);
@@ -44,10 +44,7 @@ export default function AdminCapturesPage() {
       setUser(data.user);
       if (data.user) {
         const { data: membership } = await supabase.from("organization_memberships").select("user_id").eq("user_id", data.user.id).eq("role", "PLATFORM_ADMIN").eq("status", "VERIFIED").maybeSingle();
-        if (membership) {
-          setIsAdmin(true);
-          await loadCaptures();
-        }
+        if (membership) { setIsAdmin(true); await loadCaptures(); }
       }
       setLoading(false);
     });
@@ -58,21 +55,20 @@ export default function AdminCapturesPage() {
     if (!editing) return;
     const values = new FormData(event.currentTarget);
     setBusyId(editing.id);
-    const { data: sessionData } = await supabase.auth.getSession();
-    const response = await fetch("/api/admin/captures", {
+    const response = await authorizedFetch("/api/admin/captures", {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: editing.id,
-      observation_type: String(values.get("observation_type")),
-      common_name: String(values.get("common_name") || "").trim() || null,
-      scientific_name: String(values.get("scientific_name") || "").trim() || null,
-      notes: String(values.get("notes") || "").trim(),
-      observed_at: String(values.get("observed_at")),
+        observation_type: String(values.get("observation_type")),
+        common_name: String(values.get("common_name") || "").trim() || null,
+        scientific_name: String(values.get("scientific_name") || "").trim() || null,
+        notes: String(values.get("notes") || "").trim(),
+        observed_at: String(values.get("observed_at")),
       }),
     });
     const result = await response.json().catch(() => null) as { error?: string } | null;
-    setMessage(!response.ok ? result?.error || "Capture could not be updated." : "Capture updated successfully.");
+    setMessage(response.ok ? "Capture updated successfully." : result?.error || "Capture could not be updated.");
     if (response.ok) { setEditing(null); await loadCaptures(); }
     setBusyId(null);
   }
@@ -80,43 +76,24 @@ export default function AdminCapturesPage() {
   async function deleteCapture(capture: Capture) {
     if (!window.confirm(`Delete the capture “${capture.common_name || capture.observation_type}”? This cannot be undone.`)) return;
     setBusyId(capture.id);
-    const { data: sessionData } = await supabase.auth.getSession();
-    const response = await fetch("/api/admin/captures", { method: "DELETE", headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}`, "Content-Type": "application/json" }, body: JSON.stringify({ id: capture.id }) });
+    const response = await authorizedFetch("/api/admin/captures", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: capture.id }) });
     const result = await response.json().catch(() => null) as { error?: string } | null;
-    setMessage(!response.ok ? result?.error || "Capture could not be deleted." : "Capture deleted.");
+    setMessage(response.ok ? "Capture deleted." : result?.error || "Capture could not be deleted.");
     if (response.ok) await loadCaptures();
-    setBusyId(null);
-  }
-
-  async function uploadImage(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file || !editing) return;
-    setBusyId(`upload-${editing.id}`);
-    const { data: sessionData } = await supabase.auth.getSession();
-    const form = new FormData();
-    form.set("observationId", editing.id);
-    form.set("file", file);
-    const response = await fetch("/api/admin/captures", { method: "POST", headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}` }, body: form });
-    const result = await response.json().catch(() => null) as { error?: string; media?: { id: string; content_type: string; url: string | null } } | null;
-    setMessage(!response.ok ? result?.error || "Image upload failed." : "Image added to capture.");
-    if (response.ok && result?.media) setEditing((current) => current ? { ...current, observation_media: [...current.observation_media, result.media!] } : null);
-    event.target.value = "";
-    setBusyId(null);
-  }
-
-  async function removeImage(mediaId: string) {
-    if (!editing || !window.confirm("Remove this image from the capture?")) return;
-    setBusyId(`media-${mediaId}`);
-    const { data: sessionData } = await supabase.auth.getSession();
-    const response = await fetch("/api/admin/captures", { method: "DELETE", headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}`, "Content-Type": "application/json" }, body: JSON.stringify({ mediaId }) });
-    const result = await response.json().catch(() => null) as { error?: string } | null;
-    setMessage(!response.ok ? result?.error || "Image could not be removed." : "Image removed.");
-    if (response.ok) { await loadCaptures(); setEditing((current) => current ? { ...current, observation_media: current.observation_media.filter((media) => media.id !== mediaId) } : null); }
     setBusyId(null);
   }
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] text-sm text-emerald-950">Loading capture administration...</main>;
   if (!user || !isAdmin) return <main className="grid min-h-screen place-items-center bg-[#f4f6f1] px-4"><section className="max-w-md rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm"><ShieldAlert className="mx-auto size-10 text-rose-700" /><h1 className="mt-4 font-serif text-3xl text-emerald-950">Administrator access required</h1><p className="mt-3 text-sm text-slate-600">Use a verified Platform Administrator account to manage biodiversity captures.</p><Link href="/auth" className="mt-6 inline-flex rounded-lg bg-emerald-800 px-4 py-3 text-xs font-bold text-white">Sign in securely</Link></section></main>;
 
-  return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]"><header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-8"><div className="mx-auto flex max-w-7xl items-center justify-between"><Logo /><span className="rounded-full bg-rose-100 px-3 py-1.5 text-[10px] font-black text-rose-800">PLATFORM ADMINISTRATOR</span></div></header><div className="mx-auto max-w-7xl px-4 py-8 sm:px-8"><Link href="/admin/onboarding" className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800"><ArrowLeft className="size-4" /> Admin workspace</Link><div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">BIODIVERSITY DATA CONTROL</p><h1 className="mt-2 font-serif text-4xl text-emerald-950">Manage captures</h1><p className="mt-2 text-sm text-slate-500">Edit or permanently delete any biodiversity capture as a platform administrator.</p></div><strong className="text-sm text-emerald-800">{captures.length} captures</strong></div>{message && <p className="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900" role="status">{message}</p>}<section className="mt-6 grid gap-3">{captures.length === 0 ? <p className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No biodiversity captures found.</p> : captures.map((capture) => <article key={capture.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-800">{capture.observation_type}</span><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{capture.verification_status}</span></div><h2 className="mt-3 text-lg font-bold text-emerald-950">{capture.common_name || "Unnamed capture"}</h2><p className="mt-1 text-xs italic text-slate-500">{capture.scientific_name || "Scientific identification pending"}</p><p className="mt-2 text-xs text-slate-500">{capture.school?.name || "School unavailable"} · {new Date(capture.observed_at).toLocaleDateString()}</p></div><div className="flex shrink-0 gap-2"><Button size="sm" variant="secondary" onClick={() => setEditing(capture)} disabled={busyId === capture.id}><Pencil className="size-4" />Edit</Button><Button size="sm" variant="ghost" onClick={() => void deleteCapture(capture)} disabled={busyId === capture.id}><Trash2 className="size-4 text-rose-700" />Delete</Button></div></div></article>)}</section></div>{editing && <div className="fixed inset-0 z-50 grid place-items-center bg-emerald-950/50 p-4"><form onSubmit={saveCapture} className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">EDIT CAPTURE</p><h2 className="mt-2 font-serif text-3xl text-emerald-950">Update observation</h2></div><button type="button" onClick={() => setEditing(null)} aria-label="Close edit form" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X className="size-5" /></button></div><div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-xs font-bold"><span>Type</span><select name="observation_type" defaultValue={editing.observation_type} className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm">{captureTypes.map((type) => <option key={type}>{type}</option>)}</select></label><label className="grid gap-2 text-xs font-bold"><span>Observed at</span><input name="observed_at" type="datetime-local" defaultValue={new Date(editing.observed_at).toISOString().slice(0, 16)} required className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm" /></label><label className="grid gap-2 text-xs font-bold"><span>Common name</span><input name="common_name" defaultValue={editing.common_name ?? ""} maxLength={120} className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm" /></label><label className="grid gap-2 text-xs font-bold"><span>Scientific name</span><input name="scientific_name" defaultValue={editing.scientific_name ?? ""} maxLength={180} className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm" /></label><label className="grid gap-2 text-xs font-bold sm:col-span-2"><span>Notes</span><textarea name="notes" defaultValue={editing.notes} minLength={10} maxLength={1000} required className="min-h-32 rounded-lg border border-slate-300 p-3 text-sm" /></label></div><div className="mt-6 flex justify-end gap-2"><Button type="button" variant="secondary" onClick={() => setEditing(null)}>Cancel</Button><Button type="submit" disabled={busyId === editing.id}><Save className="size-4" />Save changes</Button></div></form></div>}</main>;
+  return <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
+    <header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-8"><div className="mx-auto flex max-w-7xl items-center justify-between"><Logo /><span className="rounded-full bg-rose-100 px-3 py-1.5 text-[10px] font-black text-rose-800">PLATFORM ADMINISTRATOR</span></div></header>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8">
+      <Link href="/admin/onboarding" className="inline-flex items-center gap-2 text-xs font-bold text-emerald-800"><ArrowLeft className="size-4" /> Admin workspace</Link>
+      <div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">BIODIVERSITY DATA CONTROL</p><h1 className="mt-2 font-serif text-4xl text-emerald-950">Manage captures</h1><p className="mt-2 text-sm text-slate-500">Edit capture details, manage evidence images or remove a capture.</p></div><div className="flex items-center gap-3"><strong className="text-sm text-emerald-800">{captures.length} captures</strong><Link href="/admin/captures/media" className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-800 px-4 text-xs font-bold text-white"><Images className="size-4" />Manage images</Link></div></div>
+      {message && <p className="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900" role="status">{message}</p>}
+      <section className="mt-6 grid gap-3">{captures.length === 0 ? <p className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No biodiversity captures found.</p> : captures.map((capture) => <article key={capture.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-800">{capture.observation_type}</span><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{capture.verification_status}</span><span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">{capture.observation_media.length} image{capture.observation_media.length === 1 ? "" : "s"}</span></div><h2 className="mt-3 text-lg font-bold text-emerald-950">{capture.common_name || "Unnamed capture"}</h2><p className="mt-1 text-xs italic text-slate-500">{capture.scientific_name || "Scientific identification pending"}</p><p className="mt-2 text-xs text-slate-500">{capture.school?.name || "School unavailable"} · {new Date(capture.observed_at).toLocaleDateString()}</p></div><div className="flex shrink-0 gap-2"><Link href="/admin/captures/media" className="inline-flex min-h-9 items-center gap-2 rounded-md border border-slate-200 px-3 text-xs font-bold"><Images className="size-4" />Images</Link><Button size="sm" variant="secondary" onClick={() => setEditing(capture)} disabled={busyId === capture.id}><Pencil className="size-4" />Edit</Button><Button size="sm" variant="ghost" onClick={() => void deleteCapture(capture)} disabled={busyId === capture.id}><Trash2 className="size-4 text-rose-700" />Delete</Button></div></div></article>)}</section>
+    </div>
+    {editing && <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-emerald-950/50 p-4"><form onSubmit={saveCapture} className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="text-[10px] font-black tracking-[.18em] text-emerald-700">EDIT CAPTURE</p><h2 className="mt-2 font-serif text-3xl text-emerald-950">Update observation</h2></div><button type="button" onClick={() => setEditing(null)} aria-label="Close edit form" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X className="size-5" /></button></div><div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-xs font-bold"><span>Type</span><select name="observation_type" defaultValue={editing.observation_type} className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm">{captureTypes.map((type) => <option key={type}>{type}</option>)}</select></label><label className="grid gap-2 text-xs font-bold"><span>Observed at</span><input name="observed_at" type="datetime-local" defaultValue={new Date(editing.observed_at).toISOString().slice(0, 16)} required className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm" /></label><label className="grid gap-2 text-xs font-bold"><span>Common name</span><input name="common_name" defaultValue={editing.common_name ?? ""} maxLength={120} className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm" /></label><label className="grid gap-2 text-xs font-bold"><span>Scientific name</span><input name="scientific_name" defaultValue={editing.scientific_name ?? ""} maxLength={180} className="min-h-11 rounded-lg border border-slate-300 px-3 text-sm" /></label><label className="grid gap-2 text-xs font-bold sm:col-span-2"><span>Notes</span><textarea name="notes" defaultValue={editing.notes} minLength={10} maxLength={1000} required className="min-h-32 rounded-lg border border-slate-300 p-3 text-sm" /></label></div><div className="mt-6 flex justify-end gap-2"><Button type="button" variant="secondary" onClick={() => setEditing(null)}>Cancel</Button><Button type="submit" disabled={busyId === editing.id}><Save className="size-4" />Save changes</Button></div></form></div>}
+  </main>;
 }

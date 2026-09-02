@@ -4,7 +4,7 @@ import { publicDataClient } from "../../public/_supabase";
 
 export const dynamic = "force-dynamic";
 
-const allowedTypes = new Set(["TREE", "PLANT", "BIRD", "MAMMAL", "INSECT", "POLLINATOR", "FUNGI", "OTHER"]);
+const allowedTypes = new Set(["TREE", "PLANT", "BIRD", "INSECT", "POLLINATOR", "ANIMAL", "FUNGI", "HABITAT", "OTHER"]);
 
 async function getAdminClient(request: Request) {
   const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
@@ -39,12 +39,13 @@ export async function GET(request: Request) {
     .limit(500);
   if (error) return NextResponse.json({ error: "Captures could not be loaded" }, { status: 502 });
   const captures = await Promise.all((data ?? []).map(async (capture) => {
+    const school = Array.isArray(capture.schools) ? capture.schools[0] ?? null : capture.schools;
     const media = Array.isArray(capture.observation_media) ? capture.observation_media : [];
     const mediaWithUrls = await Promise.all(media.map(async (item) => {
       const { data: signed } = await supabase.storage.from("observation-evidence").createSignedUrl(item.storage_path, 3600);
       return { id: item.id, content_type: item.content_type, url: signed?.signedUrl ?? null };
     }));
-    return { ...capture, observation_media: mediaWithUrls };
+    return { ...capture, school, observation_media: mediaWithUrls };
   }));
   return NextResponse.json({ captures });
 }
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
   const { client: supabase, userId } = admin;
   const form = await request.formData();
   const observationId = String(form.get("observationId") || "");
+  const mediaId = String(form.get("mediaId") || "");
   const file = form.get("file");
   if (!observationId || !(file instanceof File)) return NextResponse.json({ error: "Capture and image are required" }, { status: 400 });
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size < 1 || file.size > 10 * 1024 * 1024) {
@@ -116,6 +118,21 @@ export async function POST(request: Request) {
   if (uploadError) return NextResponse.json({ error: "Image upload failed" }, { status: 502 });
   const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
   const sha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  if (mediaId) {
+    const { data: existing, error: lookupError } = await supabase.from("observation_media").select("id, observation_id, storage_path").eq("id", mediaId).eq("observation_id", observationId).maybeSingle();
+    if (lookupError || !existing) {
+      await supabase.storage.from("observation-evidence").remove([storagePath]);
+      return NextResponse.json({ error: "The image to replace could not be found" }, { status: 404 });
+    }
+    const { data, error } = await supabase.from("observation_media").update({ storage_path: storagePath, content_type: file.type, size_bytes: file.size, sha256, moderation_status: "PENDING" }).eq("id", mediaId).select("id, content_type").maybeSingle();
+    if (error || !data) {
+      await supabase.storage.from("observation-evidence").remove([storagePath]);
+      return NextResponse.json({ error: "Image could not be replaced" }, { status: 502 });
+    }
+    await supabase.storage.from("observation-evidence").remove([existing.storage_path]);
+    const { data: signed } = await supabase.storage.from("observation-evidence").createSignedUrl(storagePath, 3600);
+    return NextResponse.json({ media: { ...data, url: signed?.signedUrl ?? null }, replaced: true });
+  }
   const { data, error } = await supabase.from("observation_media").insert({ observation_id: observationId, storage_path: storagePath, content_type: file.type, size_bytes: file.size, sha256 }).select("id, content_type").single();
   if (error || !data) {
     await supabase.storage.from("observation-evidence").remove([storagePath]);
