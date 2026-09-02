@@ -30,7 +30,7 @@ create policy waiting_list_read_own_or_admin on public.waiting_list
   for select
   using (
     auth.uid() is null or 
-    (auth.jwt() ->> 'role' = 'authenticated' and auth.jwt() ->> 'app_metadata'->>'role' = 'admin')
+    (auth.jwt() ->> 'role' = 'authenticated' and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   );
 
 -- Trigger for updated_at
