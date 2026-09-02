@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("observations")
-    .select("id, observation_type, common_name, scientific_name, notes, observed_at, verification_status, sensitivity_level, location, schools(id, name, city, state_region, country_code, location), observation_media(id, moderation_status), expert_reviews(decision, scientific_name, review_notes, created_at)")
+    .select("id, observation_type, common_name, scientific_name, notes, observed_at, verification_status, sensitivity_level, location, schools(id, name, city, state_region, country_code, location), observation_media(id, moderation_status, storage_path), expert_reviews(decision, scientific_name, review_notes, created_at)")
     .eq("visibility", "PUBLIC")
     .order("observed_at", { ascending: false })
     .limit(500);
@@ -24,6 +24,8 @@ export async function GET() {
     const media = Array.isArray(item.observation_media) ? item.observation_media : [];
     const reviews = Array.isArray(item.expert_reviews) ? item.expert_reviews : [];
     const latestReview = reviews.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] ?? null;
+    const approvedMedia = media.find((entry) => entry.moderation_status === "APPROVED");
+    const imageUrl = approvedMedia ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/observation-evidence/${approvedMedia.storage_path}` : null;
     return {
       id: item.id,
       common: item.common_name || item.observation_type,
@@ -36,6 +38,7 @@ export async function GET() {
       note: item.notes,
       status: item.verification_status,
       hasEvidence: media.some((entry) => entry.moderation_status === "APPROVED"),
+      imageUrl,
       review: latestReview ? { decision: latestReview.decision, scientificName: latestReview.scientific_name, note: latestReview.review_notes, date: latestReview.created_at } : null,
       latitude: coordinates ? privacySafeCoordinate(coordinates.latitude) : NaN,
       longitude: coordinates ? privacySafeCoordinate(coordinates.longitude) : NaN,
