@@ -107,21 +107,20 @@ export function PublicLandingAdvanced() {
             : "bg-white"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-emerald-700">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3">
+          <Link href="/" className="flex shrink-0 items-center gap-2 text-2xl font-bold text-emerald-800">
             <Leaf className="size-6" />
             GeoMentor Africa
           </Link>
-          <div className="hidden lg:flex gap-8 items-center text-sm font-medium">
-            <Link href="/about" className="text-slate-600 hover:text-emerald-700 transition">About</Link>
-            <Link href="/lab" className="text-slate-600 hover:text-emerald-700 transition">Lab</Link>
-            <Link href="/green-biz" className="text-slate-600 hover:text-emerald-700 transition">Green Biz</Link>
-            <Link href="/activities" className="text-slate-600 hover:text-emerald-700 transition">Activities</Link>
-            <Link href="/support" className="text-slate-600 hover:text-emerald-700 transition">Support/Fund</Link>
-            <Link href="/volunteer" className="text-slate-600 hover:text-emerald-700 transition">Volunteer</Link>
-            <Link href="#waitlist" className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition">
-              Join Waitlist
-            </Link>
+          <div className="flex min-w-0 items-center gap-5 overflow-x-auto whitespace-nowrap text-xs font-bold text-slate-600 sm:gap-7 sm:text-sm">
+            <Link href="/" className="text-emerald-700 transition hover:text-emerald-800">Home</Link>
+            <Link href="/about" className="transition hover:text-emerald-700">About</Link>
+            <Link href="/lab" className="transition hover:text-emerald-700">Lab</Link>
+            <Link href="/green-biz" className="transition hover:text-emerald-700">Green Biz</Link>
+            <Link href="/activities" className="transition hover:text-emerald-700">Activities</Link>
+            <Link href="/support" className="transition hover:text-emerald-700">Support/Fund</Link>
+            <Link href="/volunteer" className="transition hover:text-emerald-700">Volunteer</Link>
+            <Link href="#waitlist" className="shrink-0 rounded-lg bg-emerald-700 px-4 py-2.5 text-white transition hover:bg-emerald-800">Join the programme</Link>
           </div>
         </div>
       </nav>
@@ -131,13 +130,16 @@ export function PublicLandingAdvanced() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(66,153,116,.34),transparent_36%),linear-gradient(135deg,#062f26,#0b4436_55%,#123f36)]" />
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-20">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-lime-300/40 bg-emerald-950/50 px-4 py-2">
-              <Sparkles className="size-4 text-lime-300" />
-              <span className="text-sm font-semibold text-lime-100">GeoMentor Africa</span>
+            <div className="mb-5 flex items-center gap-2 text-lime-200">
+              <Sparkles className="size-5 text-lime-300" />
+              <span className="text-sm font-bold uppercase tracking-[.2em]">A biodiversity intelligence platform</span>
             </div>
-            <h1 className="max-w-2xl text-5xl font-bold leading-[.98] tracking-tight text-white sm:text-7xl">
-              The platform for learning from Africa&apos;s living systems.
+            <h1 className="max-w-2xl text-6xl font-black leading-[.9] tracking-tight text-white sm:text-8xl">
+              GeoMentor Africa
             </h1>
+            <h2 className="mt-6 max-w-2xl text-3xl font-medium leading-tight tracking-tight text-emerald-50 sm:text-5xl">
+              Learning from Africa&apos;s living systems.
+            </h2>
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-emerald-50">
               GeoMentor Africa brings together biodiversity fieldwork, GIS mapping, mentors, expert validation and decision intelligence in one coordinated platform.
             </p>
@@ -145,7 +147,7 @@ export function PublicLandingAdvanced() {
               <Link href="#waitlist" className="inline-flex items-center justify-center gap-2 rounded-xl bg-lime-300 px-7 py-4 font-bold text-emerald-950 shadow-lg transition hover:bg-lime-200">
                 Join the programme <ArrowRight className="size-5" />
               </Link>
-              <Link href="/about" className="inline-flex items-center justify-center rounded-xl px-7 py-4 font-bold text-white ring-1 ring-white/30 transition hover:bg-white/10">
+              <Link href="/about" className="inline-flex items-center justify-center rounded-xl px-7 py-4 font-bold text-white ring-1 ring-white/40 transition hover:bg-white/10">
                 What we do
               </Link>
             </div>
