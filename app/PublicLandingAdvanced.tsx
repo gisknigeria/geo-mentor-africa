@@ -30,56 +30,34 @@ import {
 } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
 
-// Mock biodiversity data
-const biodiversityRecords = [
-  {
-    id: 1,
-    common: "Acacia Tree",
-    scientific: "Acacia tortilis",
-    category: "Plants",
-    school: "St. Monica Academy",
-    location: "Nairobi, Kenya",
-    status: "VERIFIED",
-    observations: 24,
-    image: "🌳",
-  },
-  {
-    id: 2,
-    common: "African Fish Eagle",
-    scientific: "Haliaeetus vocifer",
-    category: "Animals",
-    school: "Green Valley School",
-    location: "Lake Naivasha",
-    status: "VERIFIED",
-    observations: 18,
-    image: "🦅",
-  },
-  {
-    id: 3,
-    common: "Soil Microbes",
-    scientific: "Various species",
-    category: "Microbial",
-    school: "Kenyatta University",
-    location: "Nairobi, Kenya",
-    status: "PENDING",
-    observations: 12,
-    image: "🔬",
-  },
-  {
-    id: 4,
-    common: "Butterfly species",
-    scientific: "Papilio demoleus",
-    category: "Animals",
-    school: "Nyeri School",
-    location: "Nyeri, Kenya",
-    status: "VERIFIED",
-    observations: 31,
-    image: "🦋",
-  },
-];
+type Impact = {
+  schools: number;
+  countries: number;
+  observations: number;
+  media_uploads: number;
+  verified_observations: number;
+  awaiting_review: number;
+};
+
+type BiodiversityRecord = {
+  id: string;
+  common: string;
+  scientific: string;
+  category: string;
+  school: string;
+  place: string;
+  status: string;
+  hasEvidence: boolean;
+  imageUrl: string | null;
+  latitude: number;
+  longitude: number;
+};
 
 export function PublicLandingAdvanced() {
   const [scrolled, setScrolled] = useState(false);
+  const [impact, setImpact] = useState<Impact | null>(null);
+  const [biodiversityRecords, setBiodiversityRecords] = useState<BiodiversityRecord[]>([]);
+  const [liveDataLoading, setLiveDataLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,6 +65,25 @@ export function PublicLandingAdvanced() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const loadLiveData = async () => {
+      try {
+        const [impactResponse, observationsResponse] = await Promise.all([
+          fetch("/api/public/impact"),
+          fetch("/api/public/observations"),
+        ]);
+        if (impactResponse.ok) setImpact(await impactResponse.json());
+        if (observationsResponse.ok) {
+          const result = await observationsResponse.json();
+          setBiodiversityRecords(result.records ?? []);
+        }
+      } finally {
+        setLiveDataLoading(false);
+      }
+    };
+    loadLiveData();
   }, []);
 
   return (
@@ -110,6 +107,9 @@ export function PublicLandingAdvanced() {
             </Link>
             <Link href="#biodiversity" className="text-slate-600 hover:text-emerald-700 transition">
               Biodiversity
+            </Link>
+            <Link href="#about" className="text-slate-600 hover:text-emerald-700 transition">
+              About
             </Link>
             <Link href="#activities" className="text-slate-600 hover:text-emerald-700 transition">
               Activities
@@ -164,10 +164,10 @@ export function PublicLandingAdvanced() {
           {/* Stats */}
           <div className="grid sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
             {[
-              { number: "500+", label: "Schools interested" },
-              { number: "25+", label: "Countries" },
-              { number: "1000+", label: "Mentors" },
-              { number: "50+", label: "Partners" },
+              { number: impact ? impact.schools.toLocaleString() : "--", label: "Verified schools" },
+              { number: impact ? impact.countries.toLocaleString() : "--", label: "Countries" },
+              { number: impact ? impact.observations.toLocaleString() : "--", label: "Observations captured" },
+              { number: impact ? impact.verified_observations.toLocaleString() : "--", label: "Expert-verified" },
             ].map(({ number, label }) => (
               <div key={label} className="p-4 rounded-lg bg-white border border-slate-200">
                 <div className="text-2xl font-bold text-emerald-600">{number}</div>
@@ -324,17 +324,19 @@ export function PublicLandingAdvanced() {
 
           {/* Interactive Map Section */}
           <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-xl mb-12 bg-white">
-            <div className="aspect-video bg-gradient-to-br from-emerald-100 via-teal-100 to-blue-100 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20">
-                <svg className="w-full h-full" viewBox="0 0 1000 600">
-                  {/* Map pins for different locations */}
-                  <circle cx="300" cy="150" r="8" fill="#0b4436" opacity="0.3" />
-                  <circle cx="600" cy="250" r="6" fill="#d9f06b" opacity="0.4" />
-                  <circle cx="400" cy="400" r="7" fill="#0b4436" opacity="0.35" />
-                  <circle cx="750" cy="350" r="8" fill="#d9f06b" opacity="0.3" />
-                  <circle cx="200" cy="500" r="6" fill="#0b4436" opacity="0.4" />
-                </svg>
-              </div>
+            <div className="aspect-video bg-gradient-to-br from-emerald-100 via-teal-100 to-blue-100 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_#0b4436_1px,_transparent_1px)] [background-size:24px_24px]" />
+              {biodiversityRecords.map((record) => (
+                <span
+                  key={record.id}
+                  className="absolute size-4 rounded-full bg-emerald-700 border-2 border-white shadow-lg"
+                  style={{
+                    left: `${Math.min(94, Math.max(6, ((record.longitude + 20) / 75) * 100))}%`,
+                    top: `${Math.min(90, Math.max(10, ((35 - record.latitude) / 70) * 100))}%`,
+                  }}
+                  title={`${record.common} at ${record.school}`}
+                />
+              ))}
               
               <div className="text-center z-10">
                 <MapIcon className="size-20 mx-auto text-emerald-700 mb-4 opacity-80" />
@@ -342,22 +344,27 @@ export function PublicLandingAdvanced() {
                   Africa Biodiversity Map
                 </h3>
                 <p className="text-emerald-700 font-semibold">
-                  Schools and monitoring locations across 25+ countries
+                  {liveDataLoading ? "Loading live monitoring locations..." : `${biodiversityRecords.length} public observation locations`}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Biodiversity Cards Grid */}
+          {biodiversityRecords.length === 0 && !liveDataLoading ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-600">
+              Live observations will appear here as schools begin capturing biodiversity evidence.
+            </div>
+          ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {biodiversityRecords.map((record) => (
+            {biodiversityRecords.slice(0, 8).map((record) => (
               <div
                 key={record.id}
                 className="group rounded-2xl overflow-hidden border border-slate-200 bg-white hover:shadow-xl hover:border-emerald-300 transition"
               >
                 {/* Image Area */}
                 <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-7xl group-hover:scale-105 transition overflow-hidden">
-                  {record.image}
+                  {record.imageUrl ? <img src={record.imageUrl} alt={record.common} className="h-full w-full object-cover" /> : <Leaf className="size-16 text-emerald-700" />}
                 </div>
 
                 {/* Card Content */}
@@ -388,7 +395,7 @@ export function PublicLandingAdvanced() {
                     </p>
                     <p className="text-slate-500 flex items-center gap-1">
                       <MapIcon className="size-3" />
-                      {record.location}
+                      {record.place || "Location withheld"}
                     </p>
                   </div>
 
@@ -405,10 +412,41 @@ export function PublicLandingAdvanced() {
                       {record.category}
                     </span>
                     <span className="text-xs font-bold text-slate-500">
-                      {record.observations} observations
+                      Captured record
                     </span>
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+          )}
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="py-24 px-6 bg-emerald-950 text-white">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-start">
+          <div>
+            <p className="text-lime-300 font-bold uppercase tracking-[0.2em] text-sm mb-4">About GeoMentor Africa</p>
+            <h2 className="text-5xl font-bold mb-6">A learning network built from real places and real evidence.</h2>
+            <p className="text-emerald-100 text-lg leading-relaxed mb-6">
+              GeoMentor Africa connects schools, mentors, researchers and partners around one shared goal: helping young people understand and protect the living systems around them.
+            </p>
+            <p className="text-emerald-200 leading-relaxed">
+              Students capture observations in the field. Mentors support better questions and projects. Experts validate the evidence. The platform turns that growing body of work into useful intelligence for conservation, agriculture and local decision-making.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[
+              { icon: School, title: "School-led", text: "Learning begins in school grounds, gardens and nearby habitats." },
+              { icon: Camera, title: "Evidence-first", text: "Every record is tied to an observation, place and review status." },
+              { icon: Users, title: "Community-powered", text: "Mentors and experts add guidance and scientific trust." },
+              { icon: TrendingUp, title: "Actionable", text: "Insights help communities plan practical conservation action." },
+            ].map(({ icon: Icon, title, text }) => (
+              <div key={title} className="border border-emerald-800 bg-emerald-900/60 p-5 rounded-xl">
+                <Icon className="size-8 text-lime-300 mb-4" />
+                <h3 className="font-bold text-lg mb-2">{title}</h3>
+                <p className="text-sm text-emerald-200 leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
