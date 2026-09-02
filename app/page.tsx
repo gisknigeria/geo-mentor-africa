@@ -138,7 +138,7 @@ export function StudentDashboard() {
       <div className="min-h-screen bg-[#f4f6f1] text-[#15342d] flex items-center justify-center">
         <div className="text-center">
           <p className="text-sm font-semibold text-slate-600">Loading your dashboard...</p>
-          <p className="mt-2 text-lg font-medium text-emerald-950">Good morning, {defaultStudentName}.</p>
+          <p className="mt-2 text-lg font-medium text-emerald-950">Good morning, Amina.</p>
         </div>
       </div>
     );
@@ -149,7 +149,7 @@ export function StudentDashboard() {
       <div className="min-h-screen bg-[#f4f6f1] text-[#15342d] flex items-center justify-center">
         <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <p className="text-xs font-bold tracking-[.18em] text-emerald-700">STUDENT ACCESS</p>
-          <h1 className="mt-3 font-serif text-3xl text-emerald-950">Good morning, {defaultStudentName}.</h1>
+          <h1 className="mt-3 font-serif text-3xl text-emerald-950">Good morning, Amina.</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Please sign in with your verified student account or ask your school administrator to approve your school membership before you can view real records.
           </p>
