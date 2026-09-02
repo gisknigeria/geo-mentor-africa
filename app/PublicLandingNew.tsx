@@ -157,7 +157,7 @@ export function PublicLanding() {
                 description: "Partners sponsor schools and see geotagged proof of impact on the ground.",
               },
             ].map(({ icon, title, description }) => {
-              const iconMap: Record<string, typeof Leaf> = {
+              const iconMap: Record<string, any> = {
                 Camera,
                 Globe,
                 Users,
