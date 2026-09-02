@@ -23,6 +23,7 @@ import {
 import { LandingHeader } from "./LandingHeader";
 import { LiveHomeHero } from "./LiveHomeHero";
 import { LiveSchoolMap } from "./LiveSchoolMap";
+import { WaitlistForm } from "./components/WaitlistForm";
 
 type PublicImpact = {
   schools: number;
@@ -728,6 +729,63 @@ export function PublicLanding() {
             >
               Explore the map
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f2f3ed] px-5 py-20 sm:px-8" id="waiting-list">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:items-center">
+            <div>
+              <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
+                LAUNCHING SOON
+              </p>
+              <h2 className="mt-4 font-serif text-5xl leading-tight text-emerald-950 sm:text-6xl">
+                Join thousands on our waiting list.
+              </h2>
+              <p className="mt-5 text-base leading-7 text-slate-600">
+                Be among the first to experience a new way of connecting schools with mentors, 
+                partners and conservation action. Join our waiting list for exclusive early access and updates.
+              </p>
+              
+              <div className="mt-8 space-y-4">
+                <div className="flex gap-4">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-800">
+                    <Check className="size-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-emerald-950">Early Access</h4>
+                    <p className="text-sm text-slate-600">Get exclusive early access to features and updates</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-800">
+                    <Check className="size-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-emerald-950">Priority Support</h4>
+                    <p className="text-sm text-slate-600">Dedicated support to help you get started</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-800">
+                    <Check className="size-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-emerald-950">Community Impact</h4>
+                    <p className="text-sm text-slate-600">Join a movement transforming field learning in Africa</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+              <h3 className="font-serif text-2xl text-emerald-950 mb-1">Join our waiting list</h3>
+              <p className="text-sm text-slate-600 mb-6">Just a few details and you're in.</p>
+              <WaitlistForm />
+            </div>
           </div>
         </div>
       </section>
