@@ -18,7 +18,7 @@ const workspaces = {
   MENTOR: { title: "Mentor workspace", description: "Guide assigned schools and support supervised field learning.", href: "/mentor", icon: Binoculars, tone: "bg-sky-100 text-sky-800" },
   EXPERT: { title: "Expert validation", description: "Verify biodiversity records after teacher review.", href: "/expert", icon: Leaf, tone: "bg-violet-100 text-violet-800" },
   PARTNER: { title: "Geo-Partner impact", description: "Support schools, campaigns and location-linked conservation goals.", href: "/partner", icon: Handshake, tone: "bg-teal-100 text-teal-800" },
-  PLATFORM_ADMIN: { title: "Platform onboarding", description: "Review applications and administer trusted access.", href: "/admin/onboarding", icon: ShieldAlert, tone: "bg-rose-100 text-rose-800" },
+  PLATFORM_ADMIN: { title: "Capture management", description: "Edit or delete biodiversity captures and manage trusted access.", href: "/admin/captures", icon: ShieldAlert, tone: "bg-rose-100 text-rose-800" },
 } as const;
 
 export function RolePortal() {
