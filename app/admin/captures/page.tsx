@@ -31,9 +31,11 @@ export default function AdminCapturesPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   async function loadCaptures() {
-    const { data, error } = await supabase.from("observations").select("id, observation_type, common_name, scientific_name, notes, verification_status, observed_at, schools(name)").order("observed_at", { ascending: false }).limit(500);
-    if (error) setMessage("Captures could not be loaded. Confirm the admin database policies are applied.");
-    else setCaptures((data ?? []).map((item) => ({ ...item, school: Array.isArray(item.schools) ? item.schools[0] ?? null : item.schools })) as Capture[]);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const response = await fetch("/api/admin/captures", { headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}` } });
+    const result = await response.json().catch(() => null) as { captures?: Capture[]; error?: string } | null;
+    if (!response.ok) setMessage(result?.error || "Captures could not be loaded.");
+    else setCaptures(result?.captures ?? []);
   }
 
   useEffect(() => {
@@ -55,25 +57,33 @@ export default function AdminCapturesPage() {
     if (!editing) return;
     const values = new FormData(event.currentTarget);
     setBusyId(editing.id);
-    const { data, error } = await supabase.from("observations").update({
+    const { data: sessionData } = await supabase.auth.getSession();
+    const response = await fetch("/api/admin/captures", {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: editing.id,
       observation_type: String(values.get("observation_type")),
       common_name: String(values.get("common_name") || "").trim() || null,
       scientific_name: String(values.get("scientific_name") || "").trim() || null,
       notes: String(values.get("notes") || "").trim(),
       observed_at: String(values.get("observed_at")),
-      updated_at: new Date().toISOString(),
-    }).eq("id", editing.id).select("id").maybeSingle();
-    setMessage(error || !data ? "Capture could not be updated." : "Capture updated successfully.");
-    if (data) { setEditing(null); await loadCaptures(); }
+      }),
+    });
+    const result = await response.json().catch(() => null) as { error?: string } | null;
+    setMessage(!response.ok ? result?.error || "Capture could not be updated." : "Capture updated successfully.");
+    if (response.ok) { setEditing(null); await loadCaptures(); }
     setBusyId(null);
   }
 
   async function deleteCapture(capture: Capture) {
     if (!window.confirm(`Delete the capture “${capture.common_name || capture.observation_type}”? This cannot be undone.`)) return;
     setBusyId(capture.id);
-    const { error } = await supabase.from("observations").delete().eq("id", capture.id);
-    setMessage(error ? "Capture could not be deleted. Confirm the admin delete migration is applied." : "Capture deleted.");
-    if (!error) await loadCaptures();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const response = await fetch("/api/admin/captures", { method: "DELETE", headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}`, "Content-Type": "application/json" }, body: JSON.stringify({ id: capture.id }) });
+    const result = await response.json().catch(() => null) as { error?: string } | null;
+    setMessage(!response.ok ? result?.error || "Capture could not be deleted." : "Capture deleted.");
+    if (response.ok) await loadCaptures();
     setBusyId(null);
   }
 
