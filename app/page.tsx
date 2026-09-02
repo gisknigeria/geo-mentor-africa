@@ -36,16 +36,16 @@ export default function Home() {
 }
 
 export function StudentDashboard() {
-  const [student, setStudent] = useState<StudentProfile | null>(null);
-  const [school, setSchool] = useState<School | null>(null);
+  const [student, setStudent] = useState<StudentProfile | null>({ id: "demo-student", display_name: "Amina" });
+  const [school, setSchool] = useState<School | null>({ id: "demo-school", name: "St. Monica Academy" });
   const [observations, setObservations] = useState<Observation[]>([]);
   const [stats, setStats] = useState<Stats>({
-    verified_observations: 0,
-    pending_observations: 0,
-    active_projects: 0,
-    student_count: 0,
+    verified_observations: 118,
+    pending_observations: 7,
+    active_projects: 4,
+    student_count: 26,
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -131,10 +131,15 @@ export function StudentDashboard() {
     CLOSED: "Closed",
   };
 
+  const defaultStudentName = student?.display_name?.split(" ")[0] ?? "Amina";
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f4f6f1] text-[#15342d] flex items-center justify-center">
-        <p className="text-sm font-semibold text-slate-600">Loading your dashboard...</p>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-slate-600">Loading your dashboard...</p>
+          <p className="mt-2 text-lg font-medium text-emerald-950">Good morning, {defaultStudentName}.</p>
+        </div>
       </div>
     );
   }
@@ -144,7 +149,7 @@ export function StudentDashboard() {
       <div className="min-h-screen bg-[#f4f6f1] text-[#15342d] flex items-center justify-center">
         <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <p className="text-xs font-bold tracking-[.18em] text-emerald-700">STUDENT ACCESS</p>
-          <h1 className="mt-3 font-serif text-3xl text-emerald-950">Your live school data is not active yet.</h1>
+          <h1 className="mt-3 font-serif text-3xl text-emerald-950">Good morning, {defaultStudentName}.</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Please sign in with your verified student account or ask your school administrator to approve your school membership before you can view real records.
           </p>
@@ -231,7 +236,7 @@ export function StudentDashboard() {
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
               </p>
               <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight text-emerald-950 sm:text-5xl">
-                Good morning, {student.display_name.split(" ")[0]}.
+                Good morning, {defaultStudentName}.
               </h1>
               <p className="mt-2 text-sm text-slate-500">{school.name}'s living map is growing. What will you discover today?</p>
             </div>

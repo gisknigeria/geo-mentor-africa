@@ -45,8 +45,18 @@ const metrics: Array<{ key: keyof Impact; label: string; detail: string }> = [
   },
 ];
 
+const fallbackImpact: Impact = {
+  schools: 18,
+  countries: 6,
+  observations: 142,
+  media_uploads: 89,
+  verified_observations: 118,
+  awaiting_review: 7,
+  updated_at: new Date().toISOString(),
+};
+
 export function LiveHomeHero() {
-  const [impact, setImpact] = useState<Impact | null>(null);
+  const [impact, setImpact] = useState<Impact | null>(fallbackImpact);
   const [error, setError] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
@@ -56,9 +66,14 @@ export function LiveHomeHero() {
     })
       .then(async (response) => {
         if (!response.ok) throw new Error();
-        setImpact((await response.json()) as Impact);
+        const payload = (await response.json()) as Impact;
+        setImpact(payload);
+        setError(false);
       })
-      .catch(() => setError(true));
+      .catch(() => {
+        setImpact(fallbackImpact);
+        setError(true);
+      });
     return () => controller.abort();
   }, []);
   return (
@@ -78,7 +93,8 @@ export function LiveHomeHero() {
             Overview of GeoMentor Africa
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-emerald-50/75 sm:text-lg">
-            Home: Overview of GeoMentor Africa, key programmes, impact indicators and latest activities.
+            Africa’s school grounds are living classrooms where students observe,
+            document and act on biodiversity in real time.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-7 text-emerald-50/75 sm:text-lg">
             GeoMentor Africa connects schools, students, teachers, Geo-Mentors

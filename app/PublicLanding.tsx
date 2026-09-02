@@ -289,20 +289,6 @@ export function PublicLanding() {
         </div>
       </section>
 
-      <section className="bg-white px-5 py-20 sm:px-8" id="map">
-        <div className="mx-auto max-w-[1440px]">
-          <div className="mb-8 max-w-2xl">
-            <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
-              INTERACTIVE MAP
-            </p>
-            <h2 className="mt-4 font-serif text-4xl leading-tight text-emerald-950 sm:text-5xl">
-              Programme coverage, school locations and field activity.
-            </h2>
-          </div>
-        </div>
-        <LiveSchoolMap />
-      </section>
-
       <section className="bg-[#f6f7f1] px-5 py-20 sm:px-8" id="impact-tracker">
         <div className="mx-auto max-w-[1440px]">
           <div className="mb-8 max-w-2xl">
@@ -517,23 +503,28 @@ export function PublicLanding() {
           <div className="grid gap-10 lg:grid-cols-[.85fr_1.15fr]">
             <div className="lg:sticky lg:top-28 lg:self-start">
               <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
-                THE BIODIVERSITY LAB
+                BIODIVERSITY LAB
               </p>
               <h2 className="mt-4 font-serif text-5xl leading-tight text-emerald-950 sm:text-6xl">
-                A field record is the beginning, not the answer.
+                The Biodiversity Lab is the platform’s practical environmental workspace for mapping, monitoring and managing biodiversity and conservation activities.
               </h2>
               <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600">
-                Every observation keeps its evidence, AI suggestion, reviewer
-                decisions and discussion history. That makes uncertainty visible
-                and turns corrections into learning.
+                Core functions include:
               </p>
-              <Link
-                href="/observations"
-                className="mt-7 inline-flex items-center gap-2 text-xs font-black text-emerald-800"
-              >
-                Browse the public organism library{" "}
-                <ArrowRight className="size-4" />
-              </Link>
+              <ul className="mt-5 max-w-xl space-y-3 text-sm leading-7 text-slate-600">
+                <li>1. Activity Map: Displays schools, biodiversity gardens, conservation activities and observations.</li>
+                <li>2. School Boundary Mapping: Defines school premises, conservation areas and green spaces.</li>
+                <li>3. Conservation Garden Mapping: Records garden boundaries, planting areas, habitats and monitoring points.</li>
+                <li>4. Bio-Tracker Dashboard: Enables students, teachers and GeoMentors to monitor plants, animals and other biodiversity observations on the web dashboard.</li>
+              </ul>
+              <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <p className="text-[10px] font-black tracking-[.18em] text-emerald-700">
+                  1.3 BIODIVERSITY TRACKING APP
+                </p>
+                <p className="mt-3 text-sm leading-7 text-slate-700">
+                  The Biodiversity Tracking App supports georeferenced field data collection and long-term monitoring.
+                </p>
+              </div>
               <div className="mt-9 grid grid-cols-3 gap-2">
                 <span className="rounded-xl bg-emerald-950 p-4 text-white">
                   <TreePine className="size-5 text-lime-300" />
@@ -550,27 +541,42 @@ export function PublicLanding() {
               </div>
             </div>
             <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200">
-              {workflow.map(({ title, text, icon: Icon }, index) => (
-                <article
-                  key={title}
-                  className="grid gap-5 bg-[#f8f9f5] p-7 sm:grid-cols-[70px_1fr]"
-                >
-                  <span className="grid size-14 place-items-center rounded-2xl bg-white text-emerald-800 shadow-sm">
-                    <Icon className="size-6" />
-                  </span>
-                  <div>
-                    <span className="font-mono text-[9px] font-black text-slate-400">
-                      0{index + 1}
-                    </span>
-                    <h3 className="mt-1 font-serif text-3xl text-emerald-950">
-                      {title}
-                    </h3>
-                    <p className="mt-2 text-xs leading-6 text-slate-500">
-                      {text}
-                    </p>
-                  </div>
-                </article>
-              ))}
+              <article className="grid gap-5 bg-[#f8f9f5] p-7 sm:grid-cols-[70px_1fr]">
+                <span className="grid size-14 place-items-center rounded-2xl bg-white text-emerald-800 shadow-sm">
+                  <Camera className="size-6" />
+                </span>
+                <div>
+                  <span className="font-mono text-[9px] font-black text-slate-400">01</span>
+                  <h3 className="mt-1 font-serif text-3xl text-emerald-950">Plant tracking</h3>
+                  <p className="mt-2 text-xs leading-6 text-slate-500">
+                    For plants, it can capture species, common and local names, photographs, GPS location, planting date, condition, growth, flowering, fruiting and monitoring history.
+                  </p>
+                </div>
+              </article>
+              <article className="grid gap-5 bg-[#f8f9f5] p-7 sm:grid-cols-[70px_1fr]">
+                <span className="grid size-14 place-items-center rounded-2xl bg-white text-emerald-800 shadow-sm">
+                  <Binoculars className="size-6" />
+                </span>
+                <div>
+                  <span className="font-mono text-[9px] font-black text-slate-400">02</span>
+                  <h3 className="mt-1 font-serif text-3xl text-emerald-950">Wildlife tracking</h3>
+                  <p className="mt-2 text-xs leading-6 text-slate-500">
+                    For animals and other wildlife, it can capture species, GPS location, date, habitat, number observed and photographs.
+                  </p>
+                </div>
+              </article>
+              <article className="grid gap-5 bg-[#f8f9f5] p-7 sm:grid-cols-[70px_1fr]">
+                <span className="grid size-14 place-items-center rounded-2xl bg-white text-emerald-800 shadow-sm">
+                  <MapPinned className="size-6" />
+                </span>
+                <div>
+                  <span className="font-mono text-[9px] font-black text-slate-400">03</span>
+                  <h3 className="mt-1 font-serif text-3xl text-emerald-950">Long-term monitoring</h3>
+                  <p className="mt-2 text-xs leading-6 text-slate-500">
+                    The application enables repeated monitoring of the same trees, species and habitats over time, rather than limiting records to one-time planting or observations.
+                  </p>
+                </div>
+              </article>
             </div>
           </div>
         </div>
