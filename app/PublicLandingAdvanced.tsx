@@ -29,6 +29,7 @@ import {
   School,
 } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
+import { StudentObservationMap } from "./map/StudentObservationMap";
 
 type Impact = {
   schools: number;
@@ -102,18 +103,12 @@ export function PublicLandingAdvanced() {
             GeoMentor Africa
           </Link>
           <div className="hidden lg:flex gap-8 items-center text-sm font-medium">
-            <Link href="#lab" className="text-slate-600 hover:text-emerald-700 transition">
-              Lab
-            </Link>
-            <Link href="#biodiversity" className="text-slate-600 hover:text-emerald-700 transition">
-              Biodiversity
-            </Link>
-            <Link href="#about" className="text-slate-600 hover:text-emerald-700 transition">
-              About
-            </Link>
-            <Link href="#activities" className="text-slate-600 hover:text-emerald-700 transition">
-              Activities
-            </Link>
+            <Link href="/about" className="text-slate-600 hover:text-emerald-700 transition">About</Link>
+            <Link href="/lab" className="text-slate-600 hover:text-emerald-700 transition">Lab</Link>
+            <Link href="/green-biz" className="text-slate-600 hover:text-emerald-700 transition">Green Biz</Link>
+            <Link href="/activities" className="text-slate-600 hover:text-emerald-700 transition">Activities</Link>
+            <Link href="/support" className="text-slate-600 hover:text-emerald-700 transition">Support/Fund</Link>
+            <Link href="/volunteer" className="text-slate-600 hover:text-emerald-700 transition">Volunteer</Link>
             <Link href="#waitlist" className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition">
               Join Waitlist
             </Link>
@@ -324,27 +319,19 @@ export function PublicLandingAdvanced() {
 
           {/* Interactive Map Section */}
           <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-xl mb-12 bg-white">
-            <div className="aspect-video bg-gradient-to-br from-emerald-100 via-teal-100 to-blue-100 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_#0b4436_1px,_transparent_1px)] [background-size:24px_24px]" />
-              {biodiversityRecords.map((record) => (
-                <span
-                  key={record.id}
-                  className="absolute size-4 rounded-full bg-emerald-700 border-2 border-white shadow-lg"
-                  style={{
-                    left: `${Math.min(94, Math.max(6, ((record.longitude + 20) / 75) * 100))}%`,
-                    top: `${Math.min(90, Math.max(10, ((35 - record.latitude) / 70) * 100))}%`,
-                  }}
-                  title={`${record.common} at ${record.school}`}
-                />
-              ))}
-              
-              <div className="text-center z-10">
-                <MapIcon className="size-20 mx-auto text-emerald-700 mb-4 opacity-80" />
-                <h3 className="text-3xl font-bold text-emerald-950 mb-2">
-                  Africa Biodiversity Map
-                </h3>
-                <p className="text-emerald-700 font-semibold">
-                  {liveDataLoading ? "Loading live monitoring locations..." : `${biodiversityRecords.length} public observation locations`}
+            <div className="relative h-[420px] w-full bg-emerald-50">
+              <StudentObservationMap
+                observations={biodiversityRecords.map((record) => ({
+                  id: record.id,
+                  label: `${record.common} · ${record.school}`,
+                  latitude: record.latitude,
+                  longitude: record.longitude,
+                }))}
+              />
+              <div className="pointer-events-none absolute left-4 top-4 z-[400] rounded-xl border border-white/80 bg-white/95 px-4 py-3 shadow-lg">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">Live biodiversity map</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {liveDataLoading ? "Loading monitoring locations..." : `${biodiversityRecords.length} public observation locations`}
                 </p>
               </div>
             </div>
@@ -683,17 +670,18 @@ export function PublicLandingAdvanced() {
             <div>
               <h4 className="font-bold text-white mb-4">Platform</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="#lab" className="hover:text-white transition">Lab</Link></li>
-                <li><Link href="#biodiversity" className="hover:text-white transition">Biodiversity</Link></li>
-                <li><Link href="#activities" className="hover:text-white transition">Activities</Link></li>
+                <li><Link href="/about" className="hover:text-white transition">About</Link></li>
+                <li><Link href="/lab" className="hover:text-white transition">Lab</Link></li>
+                <li><Link href="/green-biz" className="hover:text-white transition">Green Biz</Link></li>
+                <li><Link href="/activities" className="hover:text-white transition">Activities</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">For</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition">Schools</a></li>
-                <li><a href="#" className="hover:text-white transition">Mentors</a></li>
-                <li><a href="#" className="hover:text-white transition">Partners</a></li>
+                <li><Link href="/support" className="hover:text-white transition">Support/Fund</Link></li>
+                <li><Link href="/volunteer" className="hover:text-white transition">Volunteer</Link></li>
+                <li><Link href="/#waitlist" className="hover:text-white transition">Join the programme</Link></li>
               </ul>
             </div>
             <div>
