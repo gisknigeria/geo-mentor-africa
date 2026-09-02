@@ -11,12 +11,11 @@ export async function GET(request: NextRequest) {
   const country = request.nextUrl.searchParams.get("country")?.trim().toUpperCase() || null;
   const state = request.nextUrl.searchParams.get("state")?.trim() || null;
 
-  const { data, error } = await supabase.rpc("public_school_map", { p_country: country, p_state: state });
-  if (!error && data) return NextResponse.json(data, { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=1800" } });
-
   const result = await supabase.from("schools")
     .select("id,name,school_type,country_code,state_region,district_lga,city,location")
-    .eq("verification_status", "VERIFIED").not("location", "is", null).limit(5000);
+    .eq("verification_status", "VERIFIED")
+    .neq("id", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+    .not("location", "is", null).limit(5000);
   if (result.error) return NextResponse.json({ error: "Live school locations are temporarily unavailable" }, { status: 502 });
   const rows = (result.data ?? []) as SchoolRow[];
   const located = rows.flatMap((row) => {

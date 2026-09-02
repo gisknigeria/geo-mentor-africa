@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
 
 type Point = { id: string; label: string; latitude: number; longitude: number; category: string };
+type SchoolPoint = { id: string; label: string; latitude: number; longitude: number };
 
-export function PublicObservationMap({ points, selectedId, onSelect }: { points: Point[]; selectedId: string | null; onSelect: (id: string) => void }) {
+export function PublicObservationMap({ points, schools, selectedId, onSelect }: { points: Point[]; schools: SchoolPoint[]; selectedId: string | null; onSelect: (id: string) => void }) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
@@ -26,10 +27,16 @@ export function PublicObservationMap({ points, selectedId, onSelect }: { points:
         marker.bindTooltip(`${point.label} · ${point.category}`, { direction: "top" });
         marker.on("click", () => onSelect(point.id));
       });
-      if (valid.length) map.current.fitBounds(L.latLngBounds(valid.map((point) => [point.latitude, point.longitude] as [number, number])), { padding: [40, 40], maxZoom: 13 });
+      const validSchools = schools.filter((school) => Number.isFinite(school.latitude) && Number.isFinite(school.longitude));
+      validSchools.forEach((school) => {
+        const marker = L.circleMarker([school.latitude, school.longitude], { radius: 11, color: "#fff", weight: 3, fillColor: "#2563eb", fillOpacity: .95 }).addTo(layer.current!);
+        marker.bindTooltip(`${school.label} · School location`, { direction: "top" });
+      });
+      const bounds = [...valid, ...validSchools];
+      if (bounds.length) map.current.fitBounds(L.latLngBounds(bounds.map((point) => [point.latitude, point.longitude] as [number, number])), { padding: [40, 40], maxZoom: 13 });
     });
     return () => { cancelled = true; };
-  }, [points, selectedId, onSelect]);
+  }, [points, schools, selectedId, onSelect]);
   useEffect(() => () => { map.current?.remove(); map.current = null; }, []);
-  return <div ref={element} className="absolute inset-0" aria-label="Interactive map of public verified biodiversity observations" />;
+  return <div ref={element} className="absolute inset-0" aria-label="Interactive map of biodiversity capture locations and participating schools" />;
 }

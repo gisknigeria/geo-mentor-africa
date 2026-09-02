@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
       .from("schools")
       .select("id,name,school_type,country_code,state_region,district_lga,city,location")
       .eq("verification_status", "VERIFIED")
+      .neq("id", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
       .not("location", "is", null)
       .limit(12);
 
@@ -27,11 +28,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(items, { headers: { "Cache-Control": "public, max-age=300" } });
   }
 
-  const { data, error } = await supabase.rpc("search_school_catalog", { p_query: query, p_country: country, p_limit: 12 });
-  if (!error && data) return NextResponse.json(data, { headers: { "Cache-Control": "public, max-age=300" } });
-
   let builder = supabase.from("schools").select("id,name,school_type,country_code,state_region,district_lga,city,location")
-    .eq("verification_status", "VERIFIED").ilike("name", `%${query.replaceAll("%", "")}%`).not("location", "is", null).limit(12);
+    .eq("verification_status", "VERIFIED").neq("id", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb").ilike("name", `%${query.replaceAll("%", "")}%`).not("location", "is", null).limit(12);
   if (country) builder = builder.eq("country_code", country);
   const result = await builder;
   if (result.error) return NextResponse.json({ error: "School search is temporarily unavailable" }, { status: 502 });

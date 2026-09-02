@@ -5,43 +5,27 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = publicDataClient();
+  if (!supabase) return NextResponse.json({ error: "Live programme evidence is not configured" }, { status: 503 });
 
-  const fallbackData = {
-    schools: 18,
-    countries: 6,
-    observations: 142,
-    media_uploads: 89,
-    verified_observations: 118,
-    awaiting_review: 7,
-    updated_at: new Date().toISOString(),
-  };
-
-  if (!supabase) {
-    return NextResponse.json(fallbackData, {
-      headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" },
-    });
-  }
-
-  const { data, error } = await supabase.rpc("public_home_impact");
-  if (!error && data) return NextResponse.json(data, { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } });
-
+  const demoSchoolId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+  const demoObservationIds = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", "ffffffff-ffff-4fff-8fff-ffffffffffff"];
   const [schools, observations, uploads, verified, pending] = await Promise.all([
-    supabase.from("schools").select("id", { count: "exact", head: true }).eq("verification_status", "VERIFIED"),
-    supabase.from("observations").select("id", { count: "exact", head: true }),
-    supabase.from("observation_media").select("id", { count: "exact", head: true }),
-    supabase.from("observations").select("id", { count: "exact", head: true }).eq("verification_status", "VERIFIED"),
-    supabase.from("observations").select("id", { count: "exact", head: true }).eq("verification_status", "PENDING"),
+    supabase.from("schools").select("id,country_code", { count: "exact" }).eq("verification_status", "VERIFIED").neq("id", demoSchoolId),
+    supabase.from("observations").select("id", { count: "exact", head: true }).not("id", "in", `(${demoObservationIds.join(",")})`),
+    supabase.from("observation_media").select("id", { count: "exact", head: true }).not("observation_id", "in", `(${demoObservationIds.join(",")})`),
+    supabase.from("observations").select("id", { count: "exact", head: true }).eq("verification_status", "VERIFIED").not("id", "in", `(${demoObservationIds.join(",")})`),
+    supabase.from("observations").select("id", { count: "exact", head: true }).in("verification_status", ["PENDING", "NEEDS_CHANGES"]).not("id", "in", `(${demoObservationIds.join(",")})`),
   ]);
   if ([schools, observations, uploads, verified, pending].some((result) => result.error)) {
-    return NextResponse.json(fallbackData, { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } });
+    return NextResponse.json({ error: "Live programme evidence is temporarily unavailable" }, { status: 502 });
   }
   return NextResponse.json({
-    schools: schools.count ?? fallbackData.schools,
-    countries: 6,
-    observations: observations.count ?? fallbackData.observations,
-    media_uploads: uploads.count ?? fallbackData.media_uploads,
-    verified_observations: verified.count ?? fallbackData.verified_observations,
-    awaiting_review: pending.count ?? fallbackData.awaiting_review,
+    schools: schools.count ?? 0,
+    countries: new Set((schools.data ?? []).map((school) => school.country_code)).size,
+    observations: observations.count ?? 0,
+    media_uploads: uploads.count ?? 0,
+    verified_observations: verified.count ?? 0,
+    awaiting_review: pending.count ?? 0,
     updated_at: new Date().toISOString(),
   }, { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } });
 }

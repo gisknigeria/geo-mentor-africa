@@ -45,18 +45,8 @@ const metrics: Array<{ key: keyof Impact; label: string; detail: string }> = [
   },
 ];
 
-const fallbackImpact: Impact = {
-  schools: 18,
-  countries: 6,
-  observations: 142,
-  media_uploads: 89,
-  verified_observations: 118,
-  awaiting_review: 7,
-  updated_at: new Date().toISOString(),
-};
-
 export function LiveHomeHero() {
-  const [impact, setImpact] = useState<Impact | null>(fallbackImpact);
+  const [impact, setImpact] = useState<Impact | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
@@ -71,7 +61,7 @@ export function LiveHomeHero() {
         setError(false);
       })
       .catch(() => {
-        setImpact(fallbackImpact);
+        setImpact(null);
         setError(true);
       });
     return () => controller.abort();
