@@ -17,6 +17,7 @@ type Capture = {
   verification_status: string;
   observed_at: string;
   school: { name: string } | null;
+  observation_media: Array<{ id: string; content_type: string; url: string | null }>;
 };
 
 const captureTypes = ["TREE", "PLANT", "BIRD", "MAMMAL", "INSECT", "POLLINATOR", "FUNGI", "OTHER"];
@@ -84,6 +85,33 @@ export default function AdminCapturesPage() {
     const result = await response.json().catch(() => null) as { error?: string } | null;
     setMessage(!response.ok ? result?.error || "Capture could not be deleted." : "Capture deleted.");
     if (response.ok) await loadCaptures();
+    setBusyId(null);
+  }
+
+  async function uploadImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !editing) return;
+    setBusyId(`upload-${editing.id}`);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const form = new FormData();
+    form.set("observationId", editing.id);
+    form.set("file", file);
+    const response = await fetch("/api/admin/captures", { method: "POST", headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}` }, body: form });
+    const result = await response.json().catch(() => null) as { error?: string; media?: { id: string; content_type: string; url: string | null } } | null;
+    setMessage(!response.ok ? result?.error || "Image upload failed." : "Image added to capture.");
+    if (response.ok && result?.media) setEditing((current) => current ? { ...current, observation_media: [...current.observation_media, result.media!] } : null);
+    event.target.value = "";
+    setBusyId(null);
+  }
+
+  async function removeImage(mediaId: string) {
+    if (!editing || !window.confirm("Remove this image from the capture?")) return;
+    setBusyId(`media-${mediaId}`);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const response = await fetch("/api/admin/captures", { method: "DELETE", headers: { Authorization: `Bearer ${sessionData.session?.access_token || ""}`, "Content-Type": "application/json" }, body: JSON.stringify({ mediaId }) });
+    const result = await response.json().catch(() => null) as { error?: string } | null;
+    setMessage(!response.ok ? result?.error || "Image could not be removed." : "Image removed.");
+    if (response.ok) { await loadCaptures(); setEditing((current) => current ? { ...current, observation_media: current.observation_media.filter((media) => media.id !== mediaId) } : null); }
     setBusyId(null);
   }
 
