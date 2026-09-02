@@ -7,14 +7,12 @@ export async function GET() {
   const supabase = publicDataClient();
   if (!supabase) return NextResponse.json({ error: "Live programme evidence is not configured" }, { status: 503 });
 
-  const demoSchoolId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
-  const demoObservationIds = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", "ffffffff-ffff-4fff-8fff-ffffffffffff"];
   const [schools, observations, uploads, verified, pending] = await Promise.all([
-    supabase.from("schools").select("id,country_code", { count: "exact" }).eq("verification_status", "VERIFIED").neq("id", demoSchoolId),
-    supabase.from("observations").select("id", { count: "exact", head: true }).eq("visibility", "PUBLIC").not("id", "in", `(${demoObservationIds.join(",")})`),
-    supabase.from("observation_media").select("id", { count: "exact", head: true }).eq("moderation_status", "APPROVED").not("observation_id", "in", `(${demoObservationIds.join(",")})`),
-    supabase.from("observations").select("id", { count: "exact", head: true }).eq("visibility", "PUBLIC").eq("verification_status", "VERIFIED").not("id", "in", `(${demoObservationIds.join(",")})`),
-    supabase.from("observations").select("id", { count: "exact", head: true }).eq("visibility", "PUBLIC").in("verification_status", ["PENDING", "NEEDS_CHANGES"]).not("id", "in", `(${demoObservationIds.join(",")})`),
+    supabase.from("schools").select("id,country_code", { count: "exact" }).eq("verification_status", "VERIFIED"),
+    supabase.from("observations").select("id", { count: "exact", head: true }),
+    supabase.from("observation_media").select("id", { count: "exact", head: true }),
+    supabase.from("observations").select("id", { count: "exact", head: true }).eq("verification_status", "VERIFIED"),
+    supabase.from("observations").select("id", { count: "exact", head: true }).in("verification_status", ["PENDING", "NEEDS_CHANGES"]),
   ]);
   if ([schools, observations, uploads, verified, pending].some((result) => result.error)) {
     return NextResponse.json({ error: "Live programme evidence is temporarily unavailable" }, { status: 502 });

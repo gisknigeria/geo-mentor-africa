@@ -11,7 +11,6 @@ export async function GET() {
   const { data, error } = await supabase
     .from("observations")
     .select("id, observation_type, common_name, scientific_name, notes, observed_at, verification_status, sensitivity_level, location, schools(id, name, city, state_region, country_code, location), observation_media(id, moderation_status, storage_path), expert_reviews(decision, scientific_name, review_notes, created_at)")
-    .eq("visibility", "PUBLIC")
     .order("observed_at", { ascending: false })
     .limit(500);
 
