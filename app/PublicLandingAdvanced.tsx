@@ -327,6 +327,9 @@ export function PublicLandingAdvanced() {
                   latitude: record.latitude,
                   longitude: record.longitude,
                 }))}
+                selectedId={null}
+                onSelect={() => undefined}
+                onMove={() => undefined}
               />
               <div className="pointer-events-none absolute left-4 top-4 z-[400] rounded-xl border border-white/80 bg-white/95 px-4 py-3 shadow-lg">
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">Live biodiversity map</p>
