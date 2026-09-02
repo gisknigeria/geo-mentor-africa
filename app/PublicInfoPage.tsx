@@ -10,6 +10,7 @@ import {
   FlaskConical,
   Globe,
   Handshake,
+  HeartHandshake,
   Leaf,
   Map,
   Microscope,
@@ -20,7 +21,6 @@ import {
   Sprout,
   TrendingUp,
   Users,
-  Volunteer,
 } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
 
@@ -105,7 +105,7 @@ const content: Record<InfoPage, PageContent> = {
     label: "VOLUNTEER",
     title: "Bring your expertise to the field.",
     intro: "Join a network of GeoMentors, experts, teachers, professionals and volunteers helping young people learn from the places around them.",
-    icon: Volunteer,
+    icon: HeartHandshake,
     accent: "from-violet-950 via-emerald-950 to-emerald-800",
     sections: [
       { icon: Users, title: "Become a GeoMentor", text: "Guide a school or project with practical encouragement, field questions and consistent follow-through.", items: ["Adopt or support a school", "Guide field activities", "Help students reflect"] },
