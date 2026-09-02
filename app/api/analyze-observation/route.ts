@@ -6,7 +6,10 @@ export const runtime = "nodejs";
 type AnalysisResult = {
   observation_type: "TREE" | "PLANT" | "ANIMAL" | "POLLINATOR" | "FUNGI" | "OTHER";
   common_name: string;
+  common_names: string[];
   scientific_name: string;
+  what_you_see: string;
+  what_we_know: string;
   notes: string;
   confidence: number;
 };
@@ -62,18 +65,21 @@ async function analyzeWithClaude(
             },
             {
               type: "text",
-              text: `You are a biodiversity expert. Analyze this image and identify the organism.
+              text: `You are a biodiversity expert. Analyze this image and provide comprehensive information about the organism.
 
 Respond in JSON format ONLY (no markdown, no extra text):
 {
   "observation_type": "TREE" | "PLANT" | "ANIMAL" | "POLLINATOR" | "FUNGI" | "OTHER",
-  "common_name": "common name in English",
+  "common_name": "primary common name in English",
+  "common_names": ["alternative common name 1", "alternative common name 2"],
   "scientific_name": "scientific binomial name or 'Unknown'",
-  "notes": "Brief description (max 100 words) of key identifying features",
+  "what_you_see": "Description (max 150 words) of visible features: color, shape, size, texture, posture, behavior, habitat context, condition",
+  "what_we_know": "Description (max 200 words) of interesting facts: habitat preference, distribution, ecological role, uses, conservation status, interesting behaviors or adaptations",
+  "notes": "Brief key identifying features for taxonomists (max 100 words)",
   "confidence": 0.0 to 1.0
 }
 
-If uncertain, set confidence lower and use "Unknown" for scientific name.`,
+Be thorough and educational. If uncertain, set confidence lower and use 'Unknown' for scientific name.`,
             },
           ],
         },
@@ -107,8 +113,11 @@ function generatePlaceholderAnalysis(): AnalysisResult {
   return {
     observation_type: "PLANT",
     common_name: "Unknown species",
+    common_names: [],
     scientific_name: "Unknown",
-    notes: "Photo analysis is not available yet. Please identify this organism based on its features.",
+    what_you_see: "Photo analysis is not available yet. Describe what you observe: color, shape, size, texture, and habitat context.",
+    what_we_know: "No AI analysis available. Once you describe the organism, teachers and experts can help identify it and provide background information.",
+    notes: "Please identify this organism based on its visible features.",
     confidence: 0,
   };
 }

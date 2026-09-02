@@ -11,7 +11,10 @@ type Coordinates = { latitude: number; longitude: number; accuracy: number };
 type AISuggestion = {
   observation_type: string;
   common_name: string;
+  common_names: string[];
   scientific_name: string;
+  what_you_see: string;
+  what_we_know: string;
   notes: string;
   confidence: number;
 };
@@ -193,6 +196,8 @@ export function FieldCapture() {
 
         if (suggestion.confidence > 0) {
           setMessage(`AI identified: ${suggestion.common_name}. Please review and adjust before submitting.`);
+        } else {
+          setMessage("Photo uploaded. Please review the suggested fields or fill them in manually before submitting.");
         }
       };
       reader.onerror = () => {
@@ -372,25 +377,45 @@ export function FieldCapture() {
           <div className="form-section">
             <div className="form-heading"><span>3</span><div><h2>Describe the observation</h2><p>Experts can help with identification later.</p></div></div>
             
-            {aiSuggestion && aiSuggestion.confidence > 0 && (
+            {aiSuggestion && (
               <div className="ai-suggestion-panel" style={{ 
                 marginBottom: "1.5rem", 
                 padding: "1rem", 
                 borderRadius: "0.75rem", 
-                backgroundColor: "rgba(34, 197, 94, 0.1)", 
-                border: "1px solid rgba(34, 197, 94, 0.3)" 
+                backgroundColor: aiSuggestion.confidence > 0 ? "rgba(34, 197, 94, 0.1)" : "rgba(100, 116, 139, 0.1)", 
+                border: aiSuggestion.confidence > 0 ? "1px solid rgba(34, 197, 94, 0.3)" : "1px solid rgba(100, 116, 139, 0.3)" 
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                  <strong style={{ color: "#065f46" }}>🤖 AI Suggestion</strong>
-                  <span style={{ fontSize: "0.875rem", color: "#059669" }}>
-                    {Math.round(aiSuggestion.confidence * 100)}% confident
-                  </span>
+                  <strong style={{ color: aiSuggestion.confidence > 0 ? "#065f46" : "#475569" }}>
+                    {analyzing ? "🤖 Analyzing photo..." : aiSuggestion.confidence > 0 ? "🤖 AI Analysis" : "📸 Photo uploaded"}
+                  </strong>
+                  {aiSuggestion.confidence > 0 && (
+                    <span style={{ fontSize: "0.875rem", color: "#059669" }}>
+                      {Math.round(aiSuggestion.confidence * 100)}% confident
+                    </span>
+                  )}
                 </div>
-                <div style={{ fontSize: "0.875rem", color: "#065f46", lineHeight: "1.5" }}>
-                  <p><strong>Type:</strong> {aiSuggestion.observation_type}</p>
-                  <p><strong>Common name:</strong> {aiSuggestion.common_name}</p>
-                  <p><strong>Scientific name:</strong> {aiSuggestion.scientific_name}</p>
-                  <p><strong>Notes:</strong> {aiSuggestion.notes}</p>
+                <div style={{ fontSize: "0.875rem", color: aiSuggestion.confidence > 0 ? "#065f46" : "#475569", lineHeight: "1.6" }}>
+                  <p style={{ marginBottom: "0.5rem" }}><strong>Type:</strong> {aiSuggestion.observation_type}</p>
+                  <p style={{ marginBottom: "0.5rem" }}><strong>Common name:</strong> {aiSuggestion.common_name}</p>
+                  {aiSuggestion.common_names.length > 0 && (
+                    <p style={{ marginBottom: "0.5rem" }}><strong>Also called:</strong> {aiSuggestion.common_names.join(", ")}</p>
+                  )}
+                  <p style={{ marginBottom: "0.5rem" }}><strong>Scientific name:</strong> {aiSuggestion.scientific_name}</p>
+                  
+                  {aiSuggestion.what_you_see && (
+                    <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(6, 95, 70, 0.2)" }}>
+                      <p style={{ marginBottom: "0.25rem", fontWeight: "600" }}>📸 What you can see:</p>
+                      <p style={{ marginBottom: "0.5rem", fontSize: "0.8125rem", lineHeight: "1.5" }}>{aiSuggestion.what_you_see}</p>
+                    </div>
+                  )}
+                  
+                  {aiSuggestion.what_we_know && (
+                    <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(6, 95, 70, 0.2)" }}>
+                      <p style={{ marginBottom: "0.25rem", fontWeight: "600" }}>🧬 Background info:</p>
+                      <p style={{ marginBottom: "0.5rem", fontSize: "0.8125rem", lineHeight: "1.5" }}>{aiSuggestion.what_we_know}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
