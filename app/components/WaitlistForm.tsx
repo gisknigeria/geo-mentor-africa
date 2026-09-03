@@ -65,7 +65,7 @@ export function WaitlistForm() {
         setFormState({
           isSubmitting: false,
           message:
-            "Thank you! Check your email to confirm your spot on the waiting list.",
+            "Thank you! Check your email to confirm your spot on the volunteer list.",
           isSuccess: true,
           isError: false,
         });
@@ -278,12 +278,12 @@ export function WaitlistForm() {
         {formState.isSubmitting ? (
           <>
             <Loader className="size-4 animate-spin" />
-            Joining waiting list...
+            Joining volunteer list...
           </>
         ) : (
           <>
             <Mail className="size-4" />
-            Join the waiting list
+            Join the volunteer list
           </>
         )}
       </button>

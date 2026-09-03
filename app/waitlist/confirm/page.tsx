@@ -30,7 +30,7 @@ function ConfirmWaitlistContent() {
         if (response.ok) {
           setStatus("success");
           setMessage(
-            "Your email has been confirmed! You're now officially on our waiting list."
+            "Your email has been confirmed! You're now officially on our volunteer list."
           );
         } else {
           setStatus("error");
