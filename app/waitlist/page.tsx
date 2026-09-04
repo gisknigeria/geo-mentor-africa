@@ -97,7 +97,7 @@ export default function WaitlistPage() {
 
   return (
     <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
-      <section className="relative isolate overflow-hidden bg-[#083d31]">
+      <section className="relative isolate min-h-[80vh] overflow-hidden bg-[#083d31]">
         <div className="absolute inset-0" aria-hidden="true">
           {heroImages.map((image, index) => (
             <div
@@ -130,7 +130,7 @@ export default function WaitlistPage() {
             
             <h1 className="max-w-2xl font-serif font-medium leading-[.9] tracking-[-.04em] text-white">
               <span className="block text-2xl sm:text-3xl">Volunteer for</span>
-              <span className="mt-2 block text-5xl sm:text-7xl">
+              <span className="mt-2 block whitespace-nowrap text-4xl sm:text-6xl lg:text-7xl">
                 GeoMentor <span className="text-lime-300">Africa</span>
               </span>
             </h1>
@@ -159,7 +159,7 @@ export default function WaitlistPage() {
               <div className="flex items-center gap-2 text-lime-300">
                 <CalendarDays className="size-4" />
                 <p className="text-lg font-black uppercase tracking-[.2em]">
-                  Launch Date October 1
+                  Launch Date 
                 </p>
               </div>
               <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">
@@ -207,12 +207,13 @@ export default function WaitlistPage() {
             <p>
               Thank you for volunteering to help take these ideas and
               commitments forward. As we count down to the official launch of
-              the GeoMentor Africa Platform on 1 October 2026, we invite you to
+              the GeoMentor Africa Platform. 
+            </p>
+            <p>we invite you to
               share your interests, expertise, strengths, and how you would
               like to contribute through mentorship, school adoption,
               biodiversity monitoring, research, technology, training,
-              partnerships, funding, or other forms of support.
-            </p>
+              partnerships, funding, or other forms of support.</p>
           </div>
           <div className="mt-8 flex items-start gap-3 border-t border-[#dfe6df] pt-5 text-xs leading-5 text-slate-500">
             <MapPinned className="mt-0.5 size-4 shrink-0 text-orange-600" />
