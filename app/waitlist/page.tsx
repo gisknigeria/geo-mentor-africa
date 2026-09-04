@@ -32,10 +32,7 @@ const heroImages = [
     src: "/20230522_122403%280%29.jpg",
     alt: "Students learning together during an outdoor field activity",
   },
-  {
-    src: "/20230522_122039.jpg",
-    alt: "Community members planting a seedling together",
-  },
+ 
   {
     src: "/20170524_155227.jpg",
     alt: "A school group working together during a biodiversity activity",
@@ -111,8 +108,8 @@ export default function WaitlistPage() {
               style={{ backgroundImage: `url(${image.src})` }}
             />
           ))}
-          <div className="absolute inset-0 bg-[#063d31]/70" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#063d31]/95 via-[#063d31]/75 to-[#063d31]/45" />
+          <div className="absolute inset-0 bg-[#063d31]/42" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#063d31]/72 via-[#063d31]/42 to-[#063d31]/15" />
         </div>
         <div className="pointer-events-none absolute -right-28 -top-36 size-[30rem] rounded-full border-[36px] border-lime-300/10" />
         <div className="pointer-events-none absolute bottom-[-12rem] left-[-6rem] size-[26rem] rounded-full border-[50px] border-orange-300/10" />
@@ -131,8 +128,10 @@ export default function WaitlistPage() {
         <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pb-24 lg:grid-cols-[1fr_1.1fr] lg:items-end lg:gap-20 lg:px-12 lg:pt-20">
           <div className="max-w-xl">
             
-            <h1 className="max-w-2xl font-serif text-5xl font-medium leading-[.98] tracking-[-.04em] text-white sm:text-7xl">
-              Volunteer for GeoMentor Africa
+            <h1 className="max-w-2xl font-serif font-medium leading-[.9] tracking-[-.04em] text-white">
+              <span className="block text-2xl sm:text-3xl">Volunteer for</span>
+              <span className="mt-2 block text-7xl sm:text-9xl">GeoMentor</span>
+              <span className="mt-2 block text-5xl text-lime-300 sm:text-7xl">Africa</span>
             </h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-emerald-100/75 sm:text-lg">
               GeoMentor Africa is a volunteer-driven initiative that connects
@@ -149,7 +148,7 @@ export default function WaitlistPage() {
                 <Check className="size-4 text-lime-300" /> Pilot opportunities
               </span>
               <span className="inline-flex items-center gap-2">
-                <Check className="size-4 text-lime-300" /> No noisy inbox
+                <Check className="size-4 text-lime-300" /> sit on the Technical Working Group
               </span>
             </div>
           </div>
@@ -182,21 +181,47 @@ export default function WaitlistPage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[.8fr_1.2fr] lg:gap-20 lg:px-12">
         <div className="lg:pt-5">
           <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-700">
-            Reserve your place
+            Thank You for Stepping Forward
           </p>
           <h2 className="mt-3 max-w-md font-serif text-4xl font-medium leading-tight text-emerald-950 sm:text-5xl">
-            Be there when the map comes alive.
+            Every meaningful journey begins with a first step.
           </h2>
-          <p className="mt-5 max-w-md text-sm leading-7 text-slate-600">
-            Tell us how you would like to take part. Schools, educators,
-            mentors, partners, experts, and volunteers are all welcome.
-          </p>
+          <div className="mt-5 max-w-xl space-y-4 text-sm leading-7 text-slate-600">
+            <p>
+              GeoMentor Africa responds to a clear opportunity: Africa has the
+              world&apos;s largest youth population and globally significant
+              biodiversity, yet many young people still have limited access to
+              practical conservation, geospatial technology, environmental
+              data, and professional mentorship.
+            </p>
+            <p>
+              GeoMentor Africa connects schools and young people with
+              professionals, experts, universities, conservation
+              organisations, technology companies, and funding partners. The
+              programme integrates school adoption, biodiversity monitoring,
+              mapping, AI-enabled insights, expert validation, funding, and
+              green enterprise development to turn learning into practical,
+              measurable action.
+            </p>
+            <p>
+              Thank you for volunteering to help take these ideas and
+              commitments forward. As we count down to the official launch of
+              the GeoMentor Africa Platform on 1 October 2026, we invite you to
+              share your interests, expertise, strengths, and how you would
+              like to contribute through mentorship, school adoption,
+              biodiversity monitoring, research, technology, training,
+              partnerships, funding, or other forms of support.
+            </p>
+          </div>
           <div className="mt-8 flex items-start gap-3 border-t border-[#dfe6df] pt-5 text-xs leading-5 text-slate-500">
             <MapPinned className="mt-0.5 size-4 shrink-0 text-orange-600" />
-            <span>
-              Built for local knowledge, practical learning, and visible impact
-              across Africa.
-            </span>
+            <div>
+              <p>The countdown is on.</p>
+              <p className="mt-2 font-semibold text-emerald-800">
+                Join us as we connect, contribute, and build GeoMentor Africa
+                together.
+              </p>
+            </div>
           </div>
         </div>
 
