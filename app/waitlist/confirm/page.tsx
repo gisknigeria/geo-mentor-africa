@@ -12,13 +12,13 @@ function ConfirmWaitlistContent() {
 
   const [status, setStatus] = useState<
     "loading" | "success" | "error" | "not-found"
-  >("loading");
-  const [message, setMessage] = useState("");
+  >(id ? "loading" : "not-found");
+  const [message, setMessage] = useState(
+    id ? "" : "No confirmation code found."
+  );
 
   useEffect(() => {
     if (!id) {
-      setStatus("not-found");
-      setMessage("No confirmation code found.");
       return;
     }
 
@@ -30,13 +30,13 @@ function ConfirmWaitlistContent() {
         if (response.ok) {
           setStatus("success");
           setMessage(
-            "Your email has been confirmed! You're now officially on our volunteer list."
+            "Your email has been confirmed! You\u0027re now officially on our volunteer list."
           );
         } else {
           setStatus("error");
           setMessage(data.error || "Failed to confirm your email.");
         }
-      } catch (error) {
+      } catch {
         setStatus("error");
         setMessage("An error occurred. Please try again later.");
       }
@@ -68,7 +68,7 @@ function ConfirmWaitlistContent() {
           <p className="text-slate-600 mb-6">{message}</p>
           <div className="space-y-3">
             <p className="text-sm text-slate-600">
-              We'll keep you updated on our launch and early access opportunities.
+              We&apos;ll keep you updated on our launch and early access opportunities.
             </p>
             <Link
               href="/"

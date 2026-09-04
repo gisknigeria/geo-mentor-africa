@@ -1,12 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Check, Leaf, MapPinned } from "lucide-react";
+import { ArrowLeft, CalendarDays, Check, MapPinned } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { Logo } from "../../components/app/logo";
 
 const launchDate = new Date("2026-10-01T00:00:00+01:00");
+const heroImages = [
+  {
+    src: "/biodiversity-fieldwork.png",
+    alt: "Students and a mentor documenting biodiversity in a school garden",
+  },
+  {
+    src: "/og.png",
+    alt: "GeoMentor Africa students mapping biodiversity in a garden",
+  },
+];
 
 type Countdown = {
   days: number;
@@ -44,17 +54,42 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 
 export default function WaitlistPage() {
   const [countdown, setCountdown] = useState<Countdown>(getCountdown);
+  const [activeHeroImage, setActiveHeroImage] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => setCountdown(getCountdown()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
-  const hasLaunched = launchDate.getTime() <= Date.now();
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveHeroImage((current) => (current + 1) % heroImages.length);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const hasLaunched =
+    countdown.days === 0 &&
+    countdown.hours === 0 &&
+    countdown.minutes === 0 &&
+    countdown.seconds === 0;
 
   return (
     <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
       <section className="relative isolate overflow-hidden bg-[#083d31]">
+        <div className="absolute inset-0" aria-hidden="true">
+          {heroImages.map((image, index) => (
+            <div
+              key={image.src}
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[1800ms] ${
+                index === activeHeroImage ? "opacity-100" : "opacity-0"
+              }`}
+              style={{ backgroundImage: `url(${image.src})` }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-[#063d31]/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#063d31]/95 via-[#063d31]/75 to-[#063d31]/45" />
+        </div>
         <div className="pointer-events-none absolute -right-28 -top-36 size-[30rem] rounded-full border-[36px] border-lime-300/10" />
         <div className="pointer-events-none absolute bottom-[-12rem] left-[-6rem] size-[26rem] rounded-full border-[50px] border-orange-300/10" />
 
@@ -71,25 +106,27 @@ export default function WaitlistPage() {
 
         <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pb-24 lg:grid-cols-[1fr_1.1fr] lg:items-end lg:gap-20 lg:px-12 lg:pt-20">
           <div className="max-w-xl">
-            <div className="mb-7 flex items-center gap-3 text-lime-300">
-              <span className="grid size-10 place-items-center rounded-full border border-lime-300/30 bg-lime-300/10">
-                <Leaf className="size-5" />
-              </span>
-              <span className="text-[10px] font-black uppercase tracking-[.2em]">
-                The next field season
-              </span>
-            </div>
+            
             <h1 className="max-w-2xl font-serif text-5xl font-medium leading-[.98] tracking-[-.04em] text-white sm:text-7xl">
-              Put your place on the map.
+              Volunteer for GeoMentor Africa
             </h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-emerald-100/75 sm:text-lg">
-              GeoMentor Africa is opening its doors this October. Join the volunteer list for launch news, early access, and ways to help young people discover the biodiversity around them.
+              GeoMentor Africa is a volunteer-driven initiative that connects
+              local knowledge with practical learning to create visible impact
+              across Africa. Join our waitlist to be part of the next field
+              season and help us map what lives and grow what matters.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/80">
-              <span className="inline-flex items-center gap-2"><Check className="size-4 text-lime-300" /> Early access updates</span>
-              <span className="inline-flex items-center gap-2"><Check className="size-4 text-lime-300" /> Pilot opportunities</span>
-              <span className="inline-flex items-center gap-2"><Check className="size-4 text-lime-300" /> No noisy inbox</span>
+              <span className="inline-flex items-center gap-2">
+                <Check className="size-4 text-lime-300" /> Early access updates
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Check className="size-4 text-lime-300" /> Pilot opportunities
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Check className="size-4 text-lime-300" /> No noisy inbox
+              </span>
             </div>
           </div>
 
@@ -97,12 +134,17 @@ export default function WaitlistPage() {
             <div className="border-l border-lime-300/35 pl-5 sm:pl-7">
               <div className="flex items-center gap-2 text-lime-300">
                 <CalendarDays className="size-4" />
-                <p className="text-[10px] font-black uppercase tracking-[.2em]">Launching October 1, 2026</p>
+                <p className="text-lg font-black uppercase tracking-[.2em]">
+                  Launch Date October 1
+                </p>
               </div>
               <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">
-                {hasLaunched ? "We are live." : "The countdown is on."}
+                {hasLaunched ? "We are live." : "30 Days Countdown."}
               </h2>
-              <div className="mt-6 grid grid-cols-4 gap-2 sm:gap-3" aria-label="Countdown to launch">
+              <div
+                className="mt-6 grid grid-cols-4 gap-2 sm:gap-3"
+                aria-label="Countdown to launch"
+              >
                 <CountdownUnit value={countdown.days} label="Days" />
                 <CountdownUnit value={countdown.hours} label="Hours" />
                 <CountdownUnit value={countdown.minutes} label="Minutes" />
@@ -115,16 +157,22 @@ export default function WaitlistPage() {
 
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[.8fr_1.2fr] lg:gap-20 lg:px-12">
         <div className="lg:pt-5">
-          <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-700">Reserve your place</p>
+          <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-700">
+            Reserve your place
+          </p>
           <h2 className="mt-3 max-w-md font-serif text-4xl font-medium leading-tight text-emerald-950 sm:text-5xl">
             Be there when the map comes alive.
           </h2>
           <p className="mt-5 max-w-md text-sm leading-7 text-slate-600">
-            Tell us how you would like to take part. Schools, educators, mentors, partners, experts, and volunteers are all welcome.
+            Tell us how you would like to take part. Schools, educators,
+            mentors, partners, experts, and volunteers are all welcome.
           </p>
           <div className="mt-8 flex items-start gap-3 border-t border-[#dfe6df] pt-5 text-xs leading-5 text-slate-500">
             <MapPinned className="mt-0.5 size-4 shrink-0 text-orange-600" />
-            <span>Built for local knowledge, practical learning, and visible impact across Africa.</span>
+            <span>
+              Built for local knowledge, practical learning, and visible impact
+              across Africa.
+            </span>
           </div>
         </div>
 

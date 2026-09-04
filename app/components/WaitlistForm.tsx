@@ -94,7 +94,7 @@ export function WaitlistForm() {
           isError: true,
         });
       }
-    } catch (err) {
+    } catch {
       setFormState({
         isSubmitting: false,
         message:
@@ -195,10 +195,10 @@ export function WaitlistForm() {
       </div>
 
       {/* Interested In Checkboxes */}
-      <div>
-        <label className="block text-xs font-black tracking-[.14em] text-emerald-700 mb-3">
+      <fieldset>
+        <legend className="block text-xs font-black tracking-[.14em] text-emerald-700 mb-3">
           WHAT ARE YOU INTERESTED IN?
-        </label>
+        </legend>
         <div className="space-y-2">
           {[
             { key: "mentorship", label: "Mentorship & guidance for students" },
@@ -232,7 +232,7 @@ export function WaitlistForm() {
             </label>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* Message */}
       <div>
@@ -289,8 +289,8 @@ export function WaitlistForm() {
       </button>
 
       <p className="text-[10px] text-slate-500 text-center">
-        We'll send you updates about our launch and early access opportunities.
-        We won't share your email with anyone else.
+        We&apos;ll send you updates about our launch and early access opportunities.
+        We won&apos;t share your email with anyone else.
       </p>
     </form>
   );
