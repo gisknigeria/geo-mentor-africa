@@ -1,0 +1,20 @@
+-- Store the expanded volunteer and partnership registration details.
+alter table public.waiting_list
+  add column if not exists phone text check (char_length(phone) <= 50),
+  add column if not exists state_region text check (char_length(state_region) <= 150),
+  add column if not exists city text check (char_length(city) <= 150),
+  add column if not exists job_title text check (char_length(job_title) <= 180),
+  add column if not exists professional_field text check (char_length(professional_field) <= 254),
+  add column if not exists website text check (char_length(website) <= 500),
+  add column if not exists participation_type text,
+  add column if not exists contribution_areas text[] default array[]::text[],
+  add column if not exists expertise_summary text check (char_length(expertise_summary) <= 3000),
+  add column if not exists commitment_level text,
+  add column if not exists estimated_time text,
+  add column if not exists geographic_interest text,
+  add column if not exists resource_offers text[] default array[]::text[],
+  add column if not exists additional_information text check (char_length(additional_information) <= 3000),
+  add column if not exists consent_contact boolean not null default false,
+  add column if not exists consent_standards boolean not null default false,
+  add column if not exists consent_data boolean not null default false,
+  add column if not exists wants_updates boolean not null default false;

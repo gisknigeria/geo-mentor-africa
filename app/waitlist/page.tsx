@@ -149,7 +149,7 @@ export default function WaitlistPage() {
                 <Check className="size-4 text-lime-300" /> Pilot opportunities
               </span>
               <span className="inline-flex items-center gap-2">
-                <Check className="size-4 text-lime-300" /> sit on the Technical Working Group
+                <Check className="size-4 text-lime-300" /> seat on the Technical Working Group
               </span>
             </div>
           </div>
@@ -179,7 +179,7 @@ export default function WaitlistPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[.8fr_1.2fr] lg:gap-20 lg:px-12">
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-[10px] sm:px-8 sm:py-[10px] lg:grid-cols-[.8fr_1.2fr] lg:gap-20 lg:px-12">
         <div className="lg:pt-5">
           <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-700">
             Thank You for Stepping Forward

@@ -19,12 +19,39 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { full_name, email, organization, role, country, message, interested_in } = body;
+    const {
+      full_name,
+      email,
+      organization,
+      role,
+      country,
+      message,
+      interested_in,
+      phone,
+      state_region,
+      city,
+      job_title,
+      professional_field,
+      website,
+      participation_type,
+      contribution_areas,
+      expertise_summary,
+      commitment_level,
+      estimated_time,
+      geographic_interest,
+      resource_offers,
+      additional_information,
+      consent_contact,
+      consent_standards,
+      consent_data,
+      wants_updates,
+    } = body;
 
     // Validate required fields
-    if (!full_name || !email) {
+    const hasExpandedRegistration = participation_type !== undefined;
+    if (!full_name || !email || (hasExpandedRegistration && (!country || !consent_contact || !consent_standards || !consent_data))) {
       return NextResponse.json(
-        { error: "Full name and email are required" },
+        { error: "Please complete the required fields and consent statements" },
         { status: 400 }
       );
     }
@@ -65,6 +92,24 @@ export async function POST(request: NextRequest) {
         country: country || null,
         message: message || null,
         interested_in: interested_in || [],
+        phone: phone || null,
+        state_region: state_region || null,
+        city: city || null,
+        job_title: job_title || null,
+        professional_field: professional_field || null,
+        website: website || null,
+        participation_type: participation_type || null,
+        contribution_areas: contribution_areas || [],
+        expertise_summary: expertise_summary || null,
+        commitment_level: commitment_level || null,
+        estimated_time: estimated_time || null,
+        geographic_interest: geographic_interest || null,
+        resource_offers: resource_offers || [],
+        additional_information: additional_information || null,
+        consent_contact: Boolean(consent_contact),
+        consent_standards: Boolean(consent_standards),
+        consent_data: Boolean(consent_data),
+        wants_updates: Boolean(wants_updates),
         status: "PENDING",
       })
       .select()
