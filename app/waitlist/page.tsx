@@ -16,6 +16,30 @@ const heroImages = [
     src: "/og.png",
     alt: "GeoMentor Africa students mapping biodiversity in a garden",
   },
+  {
+    src: "/school%20awards.jpg",
+    alt: "Students celebrating together with school awards and trophies",
+  },
+  {
+    src: "/happy%20students.jpg",
+    alt: "Students gathered together outdoors with their mentor",
+  },
+  {
+    src: "/20230522_122641.jpg",
+    alt: "Students and a mentor planting a young tree outdoors",
+  },
+  {
+    src: "/20230522_122403%280%29.jpg",
+    alt: "Students learning together during an outdoor field activity",
+  },
+  {
+    src: "/20230522_122039.jpg",
+    alt: "Community members planting a seedling together",
+  },
+  {
+    src: "/20170524_155227.jpg",
+    alt: "A school group working together during a biodiversity activity",
+  },
 ];
 
 type Countdown = {
