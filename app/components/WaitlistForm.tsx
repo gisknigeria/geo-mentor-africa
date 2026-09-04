@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, type ReactNode, useState } from "react";
-import { AlertCircle, CheckCircle, Loader, Mail } from "lucide-react";
+import { AlertCircle, CheckCircle, ChevronDown, Loader, Mail } from "lucide-react";
 
 const countryRegions: Record<string, string[]> = {
   Nigeria: ["Abia", "Abuja FCT", "Adamawa", "Anambra", "Enugu", "Kaduna", "Kano", "Katsina", "Lagos", "Ogun", "Oyo", "Rivers"],
@@ -123,7 +123,7 @@ export function WaitlistForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 text-base">
       <Field label="FULL NAME *" htmlFor="fullName"><input id="fullName" type="text" required placeholder="Your name" value={formData.fullName} onChange={(event) => setFormData({ ...formData, fullName: event.target.value })} className={inputClass} /></Field>
       <Field label="EMAIL ADDRESS *" htmlFor="email"><input id="email" type="email" required placeholder="your@email.com" value={formData.email} onChange={(event) => setFormData({ ...formData, email: event.target.value })} className={inputClass} /></Field>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Field label="PHONE / WHATSAPP NUMBER" htmlFor="phone"><input id="phone" type="tel" placeholder="+234..." value={formData.phone} onChange={(event) => setFormData({ ...formData, phone: event.target.value })} className={inputClass} /></Field><Field label="CITY / LOCATION" htmlFor="city"><input id="city" type="text" value={formData.city} onChange={(event) => setFormData({ ...formData, city: event.target.value })} className={inputClass} /></Field></div>
@@ -146,10 +146,10 @@ export function WaitlistForm() {
       <fieldset className="space-y-3"><legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">CONSENT & COMMUNICATION *</legend><Consent checked={formData.consentContact} onChange={(checked) => setFormData({ ...formData, consentContact: checked })} required>I consent to GeoMentor Africa using the information provided to contact me regarding volunteering, partnerships, programmes and related opportunities.</Consent><Consent checked={formData.consentStandards} onChange={(checked) => setFormData({ ...formData, consentStandards: checked })} required>I understand that submitting this form does not automatically confirm appointment as a GeoMentor, partner or programme representative.</Consent><Consent checked={formData.consentData} onChange={(checked) => setFormData({ ...formData, consentData: checked })} required>I agree to uphold applicable safeguarding, ethical, data-protection and professional standards when participating in GeoMentor Africa activities.</Consent><Consent checked={formData.wantsUpdates} onChange={(checked) => setFormData({ ...formData, wantsUpdates: checked })}>I would like to receive GeoMentor Africa news, events and programme updates.</Consent></fieldset>
 
 
-      {formState.message && <div className={`flex gap-3 rounded-lg border px-4 py-3 text-sm ${formState.isSuccess ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-800"}`} role="status">{formState.isSuccess ? <CheckCircle className="mt-0.5 size-5 shrink-0" /> : <AlertCircle className="mt-0.5 size-5 shrink-0" />}<span>{formState.message}</span></div>}
+      {formState.message && <div className={`flex gap-3 rounded-lg border px-4 py-3 text-base ${formState.isSuccess ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-800"}`} role="status">{formState.isSuccess ? <CheckCircle className="mt-0.5 size-5 shrink-0" /> : <AlertCircle className="mt-0.5 size-5 shrink-0" />}<span>{formState.message}</span></div>}
 
       <button type="submit" disabled={formState.isSubmitting} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-3.5 text-sm font-black text-white transition hover:bg-emerald-700 disabled:bg-slate-300">{formState.isSubmitting ? <><Loader className="size-4 animate-spin" />Submitting registration...</> : <><Mail className="size-4" />Join GeoMentor Africa</>}</button>
-      <p className="text-center text-[10px] text-slate-500">We'll send you updates about our launch and early access opportunities. We won't share your email with anyone else.</p>
+      <p className="text-center text-sm text-slate-500">We'll send you updates about our launch and early access opportunities. We won't share your email with anyone else.</p>
     </form>
   );
 }
@@ -157,11 +157,12 @@ export function WaitlistForm() {
 const inputClass = "w-full rounded-lg border border-slate-300 px-4 py-3 text-sm placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
-  return <div><label htmlFor={htmlFor} className="mb-2 block text-xs font-black tracking-[.14em] text-emerald-700">{label}</label>{children}</div>;
+  return <div><label htmlFor={htmlFor} className="mb-2 block text-sm font-black tracking-[.14em] text-emerald-700">{label}</label>{children}</div>;
 }
 
 function CheckboxGroup({ legend, options, values, onChange, required = false }: { legend: string; options: readonly string[]; values: string[]; onChange: (values: string[]) => void; required?: boolean }) {
-  return <fieldset><legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">{legend}</legend><div className="grid gap-2 sm:grid-cols-2">{options.map((option) => <label key={option} className="flex cursor-pointer items-start gap-3"><input type="checkbox" checked={values.includes(option)} required={required && values.length === 0 && option === options[0]} onChange={(event) => onChange(event.target.checked ? [...values, option] : values.filter((value) => value !== option))} className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-200" /><span className="text-sm text-slate-700">{option}</span></label>)}</div></fieldset>;
+  const [isOpen, setIsOpen] = useState(false);
+  return <fieldset className="rounded-xl border border-slate-200 bg-slate-50/60 p-4"><button type="button" aria-expanded={isOpen} onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between gap-4 text-left"><span className="text-sm font-black tracking-[.1em] text-emerald-700">{legend}</span><span className="flex shrink-0 items-center gap-2 text-sm font-semibold text-slate-500">{values.length ? `${values.length} selected` : "Choose options"}<ChevronDown className={`size-5 transition-transform ${isOpen ? "rotate-180" : ""}`} /></span></button>{isOpen && <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2">{options.map((option) => <label key={option} className="flex cursor-pointer items-start gap-3"><input type="checkbox" checked={values.includes(option)} required={required && values.length === 0 && option === options[0]} onChange={(event) => onChange(event.target.checked ? [...values, option] : values.filter((value) => value !== option))} className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-200" /><span className="text-base leading-6 text-slate-700">{option}</span></label>)}</div>}</fieldset>;
 }
 
 function Consent({ checked, onChange, required = false, children }: { checked: boolean; onChange: (checked: boolean) => void; required?: boolean; children: ReactNode }) {
