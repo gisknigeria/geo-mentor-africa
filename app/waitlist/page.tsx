@@ -108,8 +108,8 @@ export default function WaitlistPage() {
               style={{ backgroundImage: `url(${image.src})` }}
             />
           ))}
-          <div className="absolute inset-0 bg-[#063d31]/42" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#063d31]/72 via-[#063d31]/42 to-[#063d31]/15" />
+          <div className="absolute inset-0 bg-[#063d31]/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#063d31]/78 via-[#063d31]/50 to-[#063d31]/24" />
         </div>
         <div className="pointer-events-none absolute -right-28 -top-36 size-[30rem] rounded-full border-[36px] border-lime-300/10" />
         <div className="pointer-events-none absolute bottom-[-12rem] left-[-6rem] size-[26rem] rounded-full border-[50px] border-orange-300/10" />
@@ -130,8 +130,9 @@ export default function WaitlistPage() {
             
             <h1 className="max-w-2xl font-serif font-medium leading-[.9] tracking-[-.04em] text-white">
               <span className="block text-2xl sm:text-3xl">Volunteer for</span>
-              <span className="mt-2 block text-7xl sm:text-9xl">GeoMentor</span>
-              <span className="mt-2 block text-5xl text-lime-300 sm:text-7xl">Africa</span>
+              <span className="mt-2 block text-5xl sm:text-7xl">
+                GeoMentor <span className="text-lime-300">Africa</span>
+              </span>
             </h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-emerald-100/75 sm:text-lg">
               GeoMentor Africa is a volunteer-driven initiative that connects
