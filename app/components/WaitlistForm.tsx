@@ -627,61 +627,11 @@ const countryRegions: Record<string, string[]> = {
   ],
 };
 
+const countryCodes = `AF AX AL DZ AS AD AO AI AQ AG AR AM AW AU AT AZ BS BH BD BB BY BE BZ BJ BM BT BO BQ BA BW BV BR IO BN BG BF BI CV KH CM CA KY CF TD CL CN CX CC CO KM CG CD CK CR CI HR CU CW CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FK FO FJ FI FR GF PF TF GA GM GE DE GH GI GR GL GD GP GU GT GG GN GW GY HT HM VA HN HK HU IS IN ID IR IQ IE IM IL IT JM JP JE JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MO MG MW MY MV ML MT MH MQ MR MU YT MX FM MD MC MN ME MS MA MZ MM NA NR NP NL NC NZ NI NE NG NU NF MK MP NO OM PK PW PS PA PG PY PE PH PN PL PT PR QA RE RO RU RW BL SH KN LC MF PM VC WS SM ST SA SN RS SC SL SG SX SK SI SB SO ZA GS SS ES LK SD SR SJ SE CH SY TW TJ TZ TH TL TG TK TO TT TN TR TM TC TV UG UA AE GB US UM UY UZ VU VE VN VG VI WF EH YE ZM ZW`;
 const countries = [
-  "Algeria",
-  "Angola",
-  "Benin",
-  "Botswana",
-  "Burkina Faso",
-  "Burundi",
-  "Cabo Verde",
-  "Cameroon",
-  "Central African Republic",
-  "Chad",
-  "Comoros",
-  "Democratic Republic of the Congo",
-  "Djibouti",
-  "Egypt",
-  "Equatorial Guinea",
-  "Eritrea",
-  "Eswatini",
-  "Ethiopia",
-  "Gabon",
-  "The Gambia",
-  "Ghana",
-  "Guinea",
-  "Guinea-Bissau",
-  "Ivory Coast",
-  "Kenya",
-  "Lesotho",
-  "Liberia",
-  "Libya",
-  "Madagascar",
-  "Malawi",
-  "Mali",
-  "Mauritania",
-  "Mauritius",
-  "Morocco",
-  "Mozambique",
-  "Namibia",
-  "Niger",
-  "Nigeria",
-  "Republic of the Congo",
-  "Rwanda",
-  "Sao Tome and Principe",
-  "Senegal",
-  "Seychelles",
-  "Sierra Leone",
-  "Somalia",
-  "South Africa",
-  "South Sudan",
-  "Sudan",
-  "Tanzania",
-  "Togo",
-  "Tunisia",
-  "Uganda",
-  "Zambia",
-  "Zimbabwe",
+  ...countryCodes.split(" ").map((code) =>
+    new Intl.DisplayNames(["en"], { type: "region" }).of(code),
+  ).filter((country): country is string => Boolean(country)),
   "Other",
 ];
 const participationOptions = [
@@ -700,27 +650,53 @@ const participationOptions = [
   "Other",
 ];
 const professionalFieldOptions = [
-  "Geospatial Science / GIS",
-  "Surveying / Mapping",
-  "Remote Sensing",
-  "Data Science / Analytics",
-  "Artificial Intelligence / Machine Learning",
-  "Software Engineering / Technology",
-  "Environmental Science",
-  "Ecology / Biodiversity",
-  "Conservation",
-  "Forestry / Agriculture",
-  "Climate Science",
-  "Education / Teaching",
-  "Research / Academia",
-  "Community Development",
-  "Project Management",
-  "Policy / Government",
-  "Business / Entrepreneurship",
-  "Communications / Media",
-  "Finance / Fundraising",
-  "Other",
+  "Geospatial Science, GIS & Earth Observation",
+  "Biodiversity, Ecology & Conservation Science",
+  "Agriculture, Agrobiodiversity & Food Systems",
+  "Environmental Science, Climate & Sustainability",
+  "Geography, Geology & Earth Sciences",
+  "Information Technology, AI & Digital Innovation",
+  "Data Science, Statistics & Analytics",
+  "Research, Science & Innovation",
+  "Education, Training & Capacity Development",
+  "Engineering, Infrastructure & Utilities",
+  "Renewable Energy & Clean Technology",
+  "Urban Planning, Architecture & Built Environment",
+  "Business, Entrepreneurship & Enterprise Development",
+  "Finance, Investment & Resource Mobilisation",
+  "Public Policy, Governance & Sustainable Development",
+  "Community Development, Social Inclusion & Indigenous Knowledge",
+  "Communications, Media & Public Engagement",
+  "Programme, Project & Partnership Management",
+  "Law, Ethics, Safeguarding & Compliance",
+  "Health, Public Health & One Health",
+  "Natural Resources, Forestry & Land Management",
+  "Water Resources, Hydrology & Marine Sciences",
+  "Economics, Development Studies & Social Sciences",
+  "Monitoring, Evaluation, Learning & Impact Assessment",
+  "Other / Multidisciplinary Expertise",
 ];
+const professionalPrefixOptions = [
+  "Mr.", "Ms.", "Mrs.", "Miss", "Dr.", "Prof.", "Engr.", "Arc.",
+  "Bldr.", "Surv.", "QS", "TPl.", "ESV", "Pharm.", "Barr.", "Rev.",
+  "Pst.", "Bp.", "Fr.", "Imam", "Chief", "H.E.", "HRH", "Gen.",
+  "Col.", "Maj.", "Capt.", "Lt.", "Other",
+];
+const jobTitleGroups = {
+  "Executive & Leadership": ["Founder", "Co-Founder", "Chair / Chairperson", "President", "Vice President", "Chief Executive Officer (CEO)", "Managing Director", "Executive Director", "Director", "Deputy Director", "Country Director", "Regional Director", "Programme Director", "Technical Director", "Operations Director", "Head of Department", "Head of Unit", "Team Lead", "Coordinator", "Manager", "Deputy Manager", "Supervisor"],
+  "Academic & Research": ["Professor", "Associate Professor", "Assistant Professor", "Lecturer", "Senior Lecturer", "Researcher", "Senior Researcher", "Research Fellow", "Postdoctoral Researcher", "Principal Investigator", "Research Assistant", "Laboratory Scientist", "Academic Coordinator", "Dean", "Head of Department", "University Administrator"],
+  "Students & Emerging Professionals": ["Undergraduate Student", "Postgraduate Student", "Master's Student", "Doctoral / PhD Student", "Intern", "Graduate Trainee", "Early-Career Professional", "Young Professional", "Volunteer", "Fellow"],
+  Education: ["Principal", "Vice Principal", "Head Teacher", "Teacher", "Educator", "Instructor", "Trainer", "Facilitator", "Curriculum Specialist", "Education Officer", "School Administrator", "Guidance Counsellor", "Learning & Development Specialist"],
+  "Technical & Scientific": ["Scientist", "Conservation Scientist", "Environmental Scientist", "Ecologist", "Biologist", "Forester", "Agronomist", "Soil Scientist", "Geographer", "Geologist", "GIS Specialist", "GIS Analyst", "Geospatial Analyst", "Remote Sensing Specialist", "Surveyor", "Data Scientist", "Data Analyst", "Software Engineer", "Full-Stack Developer", "AI / Machine Learning Engineer", "IoT Engineer", "Electronics Engineer", "Renewable Energy Engineer", "Environmental Engineer", "Technical Specialist", "Technical Officer", "Technical Consultant"],
+  "Conservation, Environment & Agriculture": ["Conservation Officer", "Biodiversity Specialist", "Wildlife Specialist", "Forestry Officer", "Environmental Officer", "Climate Specialist", "Sustainability Specialist", "Restoration Specialist", "Natural Resources Specialist", "Agricultural Officer", "Agricultural Extension Officer", "Farm Manager", "Agribusiness Specialist", "Field Officer", "Field Coordinator"],
+  "Programme, Project & Development": ["Programme Manager", "Project Manager", "Programme Officer", "Project Officer", "Programme Coordinator", "Project Coordinator", "Project Assistant", "Monitoring & Evaluation Specialist", "Monitoring, Evaluation & Learning (MEL) Specialist", "M&E Officer", "Impact Assessment Specialist", "Development Specialist", "Community Development Officer", "Youth Development Officer", "Safeguarding Officer"],
+  "Partnerships & External Relations": ["Partnership Manager", "Partnership Officer", "Business Development Manager", "Business Development Officer", "Stakeholder Engagement Specialist", "Corporate Relations Manager", "Government Relations Officer", "Institutional Relations Officer", "Donor Relations Officer", "Resource Mobilisation Specialist", "Fundraising Manager", "Grants Manager", "Grants Officer"],
+  "Business, Finance & Enterprise": ["Entrepreneur", "Business Owner", "Chief Financial Officer (CFO)", "Finance Manager", "Accountant", "Financial Analyst", "Investment Manager", "Investment Analyst", "Enterprise Development Specialist", "Agribusiness Manager", "Market Development Specialist", "Business Consultant"],
+  "Policy, Government & Governance": ["Public Officer", "Civil Servant", "Policy Adviser", "Policy Analyst", "Policy Officer", "Government Official", "Commissioner", "Permanent Secretary", "Director-General", "Special Adviser", "Technical Adviser", "Programme Adviser", "Governance Specialist"],
+  "Communications & Advocacy": ["Communications Director", "Communications Manager", "Communications Officer", "Public Relations Officer", "Media Officer", "Journalist", "Content Creator", "Social Media Manager", "Advocacy Officer", "Campaign Manager", "Community Engagement Officer"],
+  "Legal & Compliance": ["Lawyer", "Legal Adviser", "Legal Officer", "Compliance Officer", "Ethics Officer", "Data Protection Officer", "Risk Manager"],
+  Other: ["Consultant", "Independent Professional", "Retired Professional", "Community Leader", "Traditional Leader", "Religious Leader", "Volunteer", "Other"],
+} as const;
 const contributionOptions = [
   "Mentorship & Education",
   "Training & Knowledge Sharing",
@@ -823,6 +799,7 @@ const initialFormData = {
   organization: "",
   phone: "",
   city: "",
+  professionalPrefix: "",
   jobTitle: "",
   professionalField: "",
   website: "",
@@ -902,6 +879,7 @@ export function WaitlistForm() {
           country: formData.country || null,
           state_region: formData.stateRegion || null,
           city: formData.city.trim() || null,
+          professional_prefix: formData.professionalPrefix || null,
           job_title: formData.jobTitle.trim() || null,
           professional_field: formData.professionalField.trim() || null,
           website: formData.website.trim() || null,
@@ -1091,16 +1069,37 @@ export function WaitlistForm() {
           )}
       </Field>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="JOB TITLE / ROLE" htmlFor="jobTitle">
-          <input
+        <Field label="PROFESSIONAL PREFIX" htmlFor="professionalPrefix">
+          <select
+            id="professionalPrefix"
+            value={formData.professionalPrefix}
+            onChange={(event) =>
+              setFormData({ ...formData, professionalPrefix: event.target.value })
+            }
+            className={inputClass}
+          >
+            <option value="">Select a prefix</option>
+            {professionalPrefixOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="JOB TITLE / CURRENT ROLE" htmlFor="jobTitle">
+          <select
             id="jobTitle"
-            type="text"
             value={formData.jobTitle}
             onChange={(event) =>
               setFormData({ ...formData, jobTitle: event.target.value })
             }
             className={inputClass}
-          />
+          >
+            <option value="">Select your current role</option>
+            {Object.entries(jobTitleGroups).map(([group, options]) => (
+              <optgroup key={group} label={group}>
+                {options.map((option) => <option key={option} value={option}>{option}</option>)}
+              </optgroup>
+            ))}
+          </select>
         </Field>
         <Field
           label="PROFESSIONAL FIELD / AREA OF EXPERTISE"
