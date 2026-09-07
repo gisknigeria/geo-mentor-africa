@@ -830,9 +830,9 @@ export function WaitlistForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-base">
-      <SectionHeading number="1" title="REGISTRATION" />
-      <SectionHeading number="1" title="BIO DATA" />
-      <Field label="PREFIX" htmlFor="professionalPrefix">
+      <SectionHeading title="REGISTRATION" />
+      <CollapsibleSection title="BIO DATA">
+        <Field label="PREFIX" htmlFor="professionalPrefix">
         <select
           id="professionalPrefix"
           value={formData.prefix}
@@ -846,8 +846,8 @@ export function WaitlistForm() {
             <option key={option} value={option}>{option}</option>
           ))}
         </select>
-      </Field>
-      <Field label="FULL NAME *" htmlFor="fullName">
+        </Field>
+        <Field label="FULL NAME *" htmlFor="fullName">
         <input
           id="fullName"
           type="text"
@@ -859,8 +859,8 @@ export function WaitlistForm() {
           }
           className={inputClass}
         />
-      </Field>
-      <Field label="EMAIL ADDRESS *" htmlFor="email">
+        </Field>
+        <Field label="EMAIL ADDRESS *" htmlFor="email">
         <input
           id="email"
           type="email"
@@ -872,8 +872,8 @@ export function WaitlistForm() {
           }
           className={inputClass}
         />
-      </Field>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        </Field>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="PHONE / WHATSAPP NUMBER" htmlFor="phone">
           <input
             id="phone"
@@ -886,10 +886,11 @@ export function WaitlistForm() {
             className={inputClass}
           />
         </Field>
-      </div>
+        </div>
+      </CollapsibleSection>
 
-      <SectionHeading number="1" title="ADDRESS" />
-      <Field label="COUNTRY *" htmlFor="country">
+      <CollapsibleSection title="ADDRESS">
+        <Field label="COUNTRY *" htmlFor="country">
         <select
           id="country"
           required
@@ -910,9 +911,9 @@ export function WaitlistForm() {
             </option>
           ))}
         </select>
-      </Field>
+        </Field>
 
-      <Field label="STATE / PROVINCE / REGION" htmlFor="stateRegion">
+        <Field label="STATE / PROVINCE / REGION" htmlFor="stateRegion">
         <select
           id="stateRegion"
           value={
@@ -959,8 +960,8 @@ export function WaitlistForm() {
               className={`${inputClass} mt-3`}
             />
           )}
-      </Field>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        </Field>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="CITY" htmlFor="city">
           <input
             id="city"
@@ -983,9 +984,11 @@ export function WaitlistForm() {
             className={inputClass}
           />
         </Field>
-      </div>
-      <SectionHeading number="1" title="PROFESSIONAL INFO" />
-      <Field label="ORGANIZATION / SCHOOL" htmlFor="organization">
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="PROFESSIONAL INFO">
+        <Field label="ORGANIZATION / SCHOOL" htmlFor="organization">
         <input
           id="organization"
           type="text"
@@ -996,8 +999,8 @@ export function WaitlistForm() {
           }
           className={inputClass}
         />
-      </Field>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        </Field>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="DESIGNATION (JOB TITLE / CURRENT ROLE)" htmlFor="jobTitle">
           <select
             id="jobTitle"
@@ -1015,8 +1018,8 @@ export function WaitlistForm() {
             ))}
           </select>
         </Field>
-      </div>
-      <Field label="AREA OF EXPERTISE (PROFESSIONAL FIELD / AREA OF EXPERTISE)" htmlFor="areaOfExpertise">
+        </div>
+        <Field label="AREA OF EXPERTISE (PROFESSIONAL FIELD / AREA OF EXPERTISE)" htmlFor="areaOfExpertise">
         <input
           id="areaOfExpertise"
           type="text"
@@ -1027,8 +1030,8 @@ export function WaitlistForm() {
           }
           className={inputClass}
         />
-      </Field>
-      <Field label="WEBSITE / LINKEDIN PROFILE (OPTIONAL)" htmlFor="website">
+        </Field>
+        <Field label="WEBSITE / LINKEDIN PROFILE (OPTIONAL)" htmlFor="website">
         <input
           id="website"
           type="url"
@@ -1039,7 +1042,8 @@ export function WaitlistForm() {
           }
           className={inputClass}
         />
-      </Field>
+        </Field>
+      </CollapsibleSection>
       <CheckboxGroup
         legend="PROFESSIONAL FIELD / AREA OF EXPERTISE *"
         description="Select one or more professional fields that best represent your background, expertise or area of contribution."
@@ -1215,11 +1219,31 @@ function Field({
   );
 }
 
-function SectionHeading({ number, title }: { number: string; title: string }) {
+function SectionHeading({ title }: { title: string }) {
   return (
     <h2 className="border-b border-emerald-100 pb-2 pt-4 text-sm font-black tracking-[.16em] text-emerald-800">
-      {number}. {title}
+      {title}
     </h2>
+  );
+}
+
+function CollapsibleSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <details open className="group rounded-xl border border-emerald-100 bg-white">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-sm font-black tracking-[.16em] text-emerald-800 marker:hidden [&::-webkit-details-marker]:hidden">
+        {title}
+        <ChevronDown className="size-5 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="space-y-6 border-t border-emerald-100 p-4 pt-5">
+        {children}
+      </div>
+    </details>
   );
 }
 
