@@ -692,6 +692,7 @@ const initialFormData = {
   prefix: "",
   jobTitle: "",
   professionalField: [] as string[],
+  areaOfExpertise: "",
   website: "",
   country: "",
   stateRegion: "",
@@ -774,7 +775,7 @@ export function WaitlistForm() {
           local_government: formData.localGovernmentArea.trim() || null,
           professional_prefix: formData.prefix || null,
           job_title: formData.jobTitle.trim() || null,
-          professional_field: formData.professionalField,
+          professional_field: formData.professionalField.join("; ") || null,
           website: formData.website.trim() || null,
           participation_type: [
             formData.participationType,
@@ -784,7 +785,7 @@ export function WaitlistForm() {
             ...formData.contributionAreas,
             ...formData.programmeAreas,
           ],
-          expertise_summary: formData.message.trim(),
+          expertise_summary: formData.areaOfExpertise.trim() || null,
           commitment_level: formData.commitmentLevel,
           estimated_time: formData.estimatedTime,
           geographic_interest: formData.geographicInterest,
@@ -831,6 +832,21 @@ export function WaitlistForm() {
     <form onSubmit={handleSubmit} className="space-y-6 text-base">
       <SectionHeading number="1" title="REGISTRATION" />
       <SectionHeading number="1" title="BIO DATA" />
+      <Field label="PREFIX" htmlFor="professionalPrefix">
+        <select
+          id="professionalPrefix"
+          value={formData.prefix}
+          onChange={(event) =>
+            setFormData({ ...formData, prefix: event.target.value })
+          }
+          className={inputClass}
+        >
+          <option value="">Select a prefix</option>
+          {professionalPrefixOptions.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </Field>
       <Field label="FULL NAME *" htmlFor="fullName">
         <input
           id="fullName"
@@ -870,42 +886,9 @@ export function WaitlistForm() {
             className={inputClass}
           />
         </Field>
-        <Field label="LOCAL GOVERNMENT" htmlFor="localGovernmentArea">
-          <input
-            id="localGovernmentArea"
-            type="text"
-            value={formData.localGovernmentArea}
-            onChange={(event) =>
-              setFormData({ ...formData, localGovernmentArea: event.target.value })
-            }
-            className={inputClass}
-          />
-        </Field>
-        <Field label="CITY " htmlFor="city">
-          <input
-            id="city"
-            type="text"
-            value={formData.city}
-            onChange={(event) =>
-              setFormData({ ...formData, city: event.target.value })
-            }
-            className={inputClass}
-          />
-        </Field>
       </div>
-      <Field label="ORGANIZATION / SCHOOL" htmlFor="organization">
-        <input
-          id="organization"
-          type="text"
-          placeholder="Name of your institution"
-          value={formData.organization}
-          onChange={(event) =>
-            setFormData({ ...formData, organization: event.target.value })
-          }
-          className={inputClass}
-        />
-      </Field>
 
+      <SectionHeading number="1" title="ADDRESS" />
       <Field label="COUNTRY *" htmlFor="country">
         <select
           id="country"
@@ -978,21 +961,43 @@ export function WaitlistForm() {
           )}
       </Field>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="PROFESSIONAL PREFIX" htmlFor="professionalPrefix">
-          <select
-            id="professionalPrefix"
-            value={formData.prefix}
+        <Field label="CITY" htmlFor="city">
+          <input
+            id="city"
+            type="text"
+            value={formData.city}
             onChange={(event) =>
-              setFormData({ ...formData, prefix: event.target.value })
+              setFormData({ ...formData, city: event.target.value })
             }
             className={inputClass}
-          >
-            <option value="">Select a prefix</option>
-            {professionalPrefixOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
+          />
         </Field>
+        <Field label="LOCAL GOVERNMENT" htmlFor="localGovernmentArea">
+          <input
+            id="localGovernmentArea"
+            type="text"
+            value={formData.localGovernmentArea}
+            onChange={(event) =>
+              setFormData({ ...formData, localGovernmentArea: event.target.value })
+            }
+            className={inputClass}
+          />
+        </Field>
+      </div>
+      <SectionHeading number="1" title="PROFESSIONAL INFO" />
+      <Field label="ORGANIZATION / SCHOOL" htmlFor="organization">
+        <input
+          id="organization"
+          type="text"
+          placeholder="Name of your institution"
+          value={formData.organization}
+          onChange={(event) =>
+            setFormData({ ...formData, organization: event.target.value })
+          }
+          className={inputClass}
+        />
+      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="DESIGNATION (JOB TITLE / CURRENT ROLE)" htmlFor="jobTitle">
           <select
             id="jobTitle"
@@ -1011,6 +1016,18 @@ export function WaitlistForm() {
           </select>
         </Field>
       </div>
+      <Field label="AREA OF EXPERTISE (PROFESSIONAL FIELD / AREA OF EXPERTISE)" htmlFor="areaOfExpertise">
+        <input
+          id="areaOfExpertise"
+          type="text"
+          placeholder="Describe your main area of expertise"
+          value={formData.areaOfExpertise}
+          onChange={(event) =>
+            setFormData({ ...formData, areaOfExpertise: event.target.value })
+          }
+          className={inputClass}
+        />
+      </Field>
       <Field label="WEBSITE / LINKEDIN PROFILE (OPTIONAL)" htmlFor="website">
         <input
           id="website"
@@ -1056,6 +1073,9 @@ export function WaitlistForm() {
       </Field>
       <p className="-mt-3 text-sm leading-6 text-slate-600">
         Select your primary role. Contributors may select one additional role based on their expertise, interests, resources and level of commitment.
+      </p>
+      <p className="-mt-3 text-sm leading-6 text-slate-600">
+        A Geo-Partner may be an individual, organisation, institution, company, government agency, university, professional body, donor, foundation or development partner contributing resources, expertise, technology, funding or institutional support to GeoMentor Africa.
       </p>
       <Field label="ADDITIONAL ROLE (OPTIONAL)" htmlFor="additionalParticipationType">
         <select
@@ -1220,7 +1240,7 @@ function CheckboxGroup({
   onChange: (values: string[]) => void;
   required?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const optionGroups = groups ?? [{ label: "", options: options ?? [] }];
   return (
     <fieldset className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
