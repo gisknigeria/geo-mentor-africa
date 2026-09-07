@@ -634,48 +634,27 @@ const countries = [
   ).filter((country): country is string => Boolean(country)),
   "Other",
 ];
-const participationOptions = [
-  "GeoMentor / Professional Volunteer",
-  "Expert / Researcher / Academic",
-  "Teacher / Educator",
-  "Student / Young Professional",
-  "School / Educational Institution",
-  "Conservation Organisation / NGO",
-  "University / Research Institution",
-  "Technology Partner",
-  "Corporate / Industry Partner",
-  "Sponsor / Funding Partner",
-  "Government / Public Institution",
-  "Community Organisation",
-  "Other",
-];
-const professionalFieldOptions = [
-  "Geospatial Science, GIS & Earth Observation",
-  "Biodiversity, Ecology & Conservation Science",
-  "Agriculture, Agrobiodiversity & Food Systems",
-  "Environmental Science, Climate & Sustainability",
-  "Geography, Geology & Earth Sciences",
-  "Information Technology, AI & Digital Innovation",
-  "Data Science, Statistics & Analytics",
-  "Research, Science & Innovation",
-  "Education, Training & Capacity Development",
-  "Engineering, Infrastructure & Utilities",
-  "Renewable Energy & Clean Technology",
-  "Urban Planning, Architecture & Built Environment",
-  "Business, Entrepreneurship & Enterprise Development",
-  "Finance, Investment & Resource Mobilisation",
-  "Public Policy, Governance & Sustainable Development",
-  "Community Development, Social Inclusion & Indigenous Knowledge",
-  "Communications, Media & Public Engagement",
-  "Programme, Project & Partnership Management",
-  "Law, Ethics, Safeguarding & Compliance",
-  "Health, Public Health & One Health",
-  "Natural Resources, Forestry & Land Management",
-  "Water Resources, Hydrology & Marine Sciences",
-  "Economics, Development Studies & Social Sciences",
-  "Monitoring, Evaluation, Learning & Impact Assessment",
-  "Other / Multidisciplinary Expertise",
-];
+const professionalFieldGroups = [
+  { label: "A. Geospatial, Environmental & Natural Sciences", options: [
+    "Geospatial Science, GIS & Earth Observation", "Geography, Geosciences & Earth Sciences", "Biodiversity, Ecology & Conservation Science", "Environmental Science, Climate Change & Sustainability", "Agriculture, Agrobiodiversity & Food Systems", "Natural Resources, Forestry & Land Management", "Water Resources, Hydrology & Marine Sciences",
+  ] },
+  { label: "B. Technology, Data & Engineering", options: [
+    "Information Technology, Artificial Intelligence & Digital Innovation", "Data Science, Statistics & Analytics", "Engineering, Infrastructure & Utilities", "Renewable Energy & Clean Technology", "Urban Planning, Architecture & Built Environment",
+  ] },
+  { label: "C. Research, Education & Knowledge Development", options: [
+    "Research, Science & Innovation", "Education, Training & Capacity Development", "Monitoring, Evaluation, Learning & Impact Assessment",
+  ] },
+  { label: "D. Enterprise, Finance & Economic Development", options: [
+    "Business, Entrepreneurship & Enterprise Development", "Finance, Investment & Resource Mobilisation", "Economics, Development Studies & Social Sciences",
+  ] },
+  { label: "E. Policy, Governance & Institutional Development", options: [
+    "Public Policy, Governance & Sustainable Development", "Programme, Project & Partnership Management", "Law, Ethics, Safeguarding & Compliance",
+  ] },
+  { label: "F. Community, Communication & Human Development", options: [
+    "Community Development, Social Inclusion & Indigenous Knowledge", "Communications, Media & Public Engagement", "Health, Public Health & One Health",
+  ] },
+  { label: "G. Other", options: ["Other / Multidisciplinary Expertise"] },
+] as const;
 const professionalPrefixOptions = [
   "Mr.", "Ms.", "Mrs.", "Miss", "Dr.", "Prof.", "Engr.", "Arc.",
   "Bldr.", "Surv.", "QS", "TPl.", "ESV", "Pharm.", "Barr.", "Rev.",
@@ -698,115 +677,27 @@ const jobTitleGroups = {
   Other: ["Consultant", "Independent Professional", "Retired Professional", "Community Leader", "Traditional Leader", "Religious Leader", "Volunteer", "Other"],
 } as const;
 const contributionOptions = [
-  "Mentorship & Education",
-  "Training & Knowledge Sharing",
-  "School Adoption & Support",
-  "Biodiversity Monitoring & Field Data",
-  "Indigenous Tree Restoration & School Greening",
-  "Conservation Planning & Field Projects",
-  "Research & Scientific Collaboration",
-  "Expert Validation & Technical Review",
-  "Environmental Data & Analytics",
-  "GIS, Mapping & Remote Sensing",
-  "AI, Software & Digital Platforms",
-  "GeoIoT, Sensors & Electronics",
-  "Cloud, Data Infrastructure & Cybersecurity",
-  "Green Enterprise & Entrepreneurship",
-  "Market & Value-Chain Development",
-  "Financial Literacy & Enterprise Mentoring",
-  "Partnerships & Institutional Collaboration",
-  "Funding, Sponsorship & Resource Mobilisation",
-  "Policy & Government Engagement",
-  "Programme Development, Monitoring & Evaluation",
-  "Advocacy & Public Engagement",
-  "Media, Communications & Storytelling",
-  "Volunteer Coordination & Programme Support",
-  "Other Contribution",
+  "School Adoption, Mentorship Support & Career Guidance", "Training & Knowledge Sharing", "Panelist / Resource Person", "Organise or Support Hackathons & Olympiads", "Organise or Support Seminars, Conferences", "Organise or Support Workshops & Masterclasses", "Organise or Support Field Demonstrations", "Organise or Support Professional Programmes", "Research & Scientific Collaboration", "Expert Validation & Technical Review", "Environmental Data & Analytics", "Knowledge & Intelligence Engine Support", "AI Platform Library Validation",
 ];
-const programmeOptions = [
-  "Geo-Mentoring",
-  "School Adoption",
-  "Biodiversity Conservation",
-  "Indigenous Tree Restoration",
-  "GIS & Mapping",
-  "Citizen Science",
-  "Climate & Environmental Monitoring",
-  "GeoIoT",
-  "Artificial Intelligence",
-  "Research & Data",
-  "Agriculture & Agrobiodiversity",
-  "Green Entrepreneurship",
-  "Youth Development",
-  "Training & Capacity Building",
-  "Conservation Finance",
-  "Partnerships & Funding",
-  "Policy & Institutional Development",
+const participationOptions = [
+  "Geo-Mentor", "Geo-Partner & Institutional Collaboration", "Technology & Research Support", "Funding, Sponsorship & Resource Mobilisation", "Industry Access and Collaboration", "Products/Materials & In-Kind Support", "Advocacy & Programme Support", "Market Access & Enterprise Development",
 ];
-const commitmentOptions = [
-  "One-time volunteer activity",
-  "Occasional volunteer",
-  "Monthly contributor",
-  "Regular GeoMentor",
-  "Project-based contributor",
-  "Institutional partner",
-  "Funding / resource partner",
-  "Research collaborator",
-  "Long-term strategic partner",
-  "Not sure yet — I would like to discuss opportunities",
-];
-const timeOptions = [
-  "1–2 hours per month",
-  "3–5 hours per month",
-  "6–10 hours per month",
-  "More than 10 hours per month",
-  "Project dependent",
-  "Institutional / resource contribution rather than time",
-];
-const geographicOptions = [
-  "Within my local community",
-  "Within my state / region",
-  "Within my country",
-  "Across Africa",
-  "Online / remotely",
-  "Any location where support is needed",
-];
-const resourceOptions = [
-  "Professional expertise",
-  "Training",
-  "Research support",
-  "Software / technology",
-  "Equipment",
-  "Seedlings / planting materials",
-  "Scholarships",
-  "Grants / funding",
-  "Venue / facilities",
-  "Media support",
-  "Market access",
-  "Institutional connections",
-  "Volunteer network",
-  "Other",
-];
-const interestOptions = [
-  ["mentorship", "Mentorship & guidance for students"],
-  ["fieldCapture", "Field data capture & biodiversity tracking"],
-  ["partnershipFunding", "Partnership opportunities & funding"],
-  ["research", "Research & data access"],
-] as const;
-
 const initialFormData = {
   fullName: "",
   email: "",
   organization: "",
   phone: "",
   city: "",
-  professionalPrefix: "",
+  localGovernmentArea: "",
+  prefix: "",
   jobTitle: "",
-  professionalField: "",
+  professionalField: [] as string[],
   website: "",
   country: "",
   stateRegion: "",
   message: "",
   participationType: "",
+  additionalParticipationType: "",
   contributionAreas: [] as string[],
   programmeAreas: [] as string[],
   commitmentLevel: "",
@@ -846,6 +737,7 @@ export function WaitlistForm() {
     event.preventDefault();
     if (
       !formData.country ||
+      !formData.professionalField.length ||
       !formData.contributionAreas.length ||
       !formData.consentContact ||
       !formData.consentStandards ||
@@ -854,7 +746,7 @@ export function WaitlistForm() {
       setFormState({
         isSubmitting: false,
         message:
-          "Please choose a country, select at least one contribution area, and accept all required consent statements.",
+          "Please complete the required registration fields, select at least one professional field and contribution area, and accept all required consent statements.",
         isSuccess: false,
         isError: true,
       });
@@ -879,11 +771,15 @@ export function WaitlistForm() {
           country: formData.country || null,
           state_region: formData.stateRegion || null,
           city: formData.city.trim() || null,
-          professional_prefix: formData.professionalPrefix || null,
+          local_government: formData.localGovernmentArea.trim() || null,
+          professional_prefix: formData.prefix || null,
           job_title: formData.jobTitle.trim() || null,
-          professional_field: formData.professionalField.trim() || null,
+          professional_field: formData.professionalField,
           website: formData.website.trim() || null,
-          participation_type: formData.participationType,
+          participation_type: [
+            formData.participationType,
+            formData.additionalParticipationType,
+          ].filter(Boolean).join("; "),
           contribution_areas: [
             ...formData.contributionAreas,
             ...formData.programmeAreas,
@@ -933,6 +829,8 @@ export function WaitlistForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-base">
+      <SectionHeading number="1" title="REGISTRATION" />
+      <SectionHeading number="1" title="BIO DATA" />
       <Field label="FULL NAME *" htmlFor="fullName">
         <input
           id="fullName"
@@ -972,7 +870,18 @@ export function WaitlistForm() {
             className={inputClass}
           />
         </Field>
-        <Field label="CITY / LOCATION" htmlFor="city">
+        <Field label="LOCAL GOVERNMENT" htmlFor="localGovernmentArea">
+          <input
+            id="localGovernmentArea"
+            type="text"
+            value={formData.localGovernmentArea}
+            onChange={(event) =>
+              setFormData({ ...formData, localGovernmentArea: event.target.value })
+            }
+            className={inputClass}
+          />
+        </Field>
+        <Field label="CITY " htmlFor="city">
           <input
             id="city"
             type="text"
@@ -984,7 +893,7 @@ export function WaitlistForm() {
           />
         </Field>
       </div>
-      <Field label="SCHOOL / ORGANIZATION" htmlFor="organization">
+      <Field label="ORGANIZATION / SCHOOL" htmlFor="organization">
         <input
           id="organization"
           type="text"
@@ -997,7 +906,7 @@ export function WaitlistForm() {
         />
       </Field>
 
-      <Field label="COUNTRY / REGION *" htmlFor="country">
+      <Field label="COUNTRY *" htmlFor="country">
         <select
           id="country"
           required
@@ -1072,9 +981,9 @@ export function WaitlistForm() {
         <Field label="PROFESSIONAL PREFIX" htmlFor="professionalPrefix">
           <select
             id="professionalPrefix"
-            value={formData.professionalPrefix}
+            value={formData.prefix}
             onChange={(event) =>
-              setFormData({ ...formData, professionalPrefix: event.target.value })
+              setFormData({ ...formData, prefix: event.target.value })
             }
             className={inputClass}
           >
@@ -1084,7 +993,7 @@ export function WaitlistForm() {
             ))}
           </select>
         </Field>
-        <Field label="JOB TITLE / CURRENT ROLE" htmlFor="jobTitle">
+        <Field label="DESIGNATION (JOB TITLE / CURRENT ROLE)" htmlFor="jobTitle">
           <select
             id="jobTitle"
             value={formData.jobTitle}
@@ -1101,56 +1010,6 @@ export function WaitlistForm() {
             ))}
           </select>
         </Field>
-        <Field
-          label="PROFESSIONAL FIELD / AREA OF EXPERTISE"
-          htmlFor="professionalField"
-        >
-          <select
-            id="professionalField"
-            value={
-              professionalFieldOptions.includes(formData.professionalField)
-                ? formData.professionalField
-                : formData.professionalField
-                  ? "Other"
-                  : ""
-            }
-            onChange={(event) =>
-              setFormData({
-                ...formData,
-                professionalField: event.target.value,
-              })
-            }
-            className={inputClass}
-          >
-            <option value="">Select your field</option>
-            {professionalFieldOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          {formData.professionalField === "Other" ||
-          (formData.professionalField &&
-            !professionalFieldOptions.includes(formData.professionalField)) ? (
-            <input
-              type="text"
-              aria-label="Other professional field or area of expertise"
-              placeholder="Enter your professional field"
-              value={
-                formData.professionalField === "Other"
-                  ? ""
-                  : formData.professionalField
-              }
-              onChange={(event) =>
-                setFormData({
-                  ...formData,
-                  professionalField: event.target.value,
-                })
-              }
-              className={`${inputClass} mt-3`}
-            />
-          ) : null}
-        </Field>
       </div>
       <Field label="WEBSITE / LINKEDIN PROFILE (OPTIONAL)" htmlFor="website">
         <input
@@ -1164,6 +1023,16 @@ export function WaitlistForm() {
           className={inputClass}
         />
       </Field>
+      <CheckboxGroup
+        legend="PROFESSIONAL FIELD / AREA OF EXPERTISE *"
+        description="Select one or more professional fields that best represent your background, expertise or area of contribution."
+        groups={professionalFieldGroups}
+        values={formData.professionalField}
+        onChange={(values) =>
+          setFormData({ ...formData, professionalField: values })
+        }
+        required
+      />
       <Field
         label="HOW WOULD YOU LIKE TO PARTICIPATE? *"
         htmlFor="participationType"
@@ -1185,8 +1054,29 @@ export function WaitlistForm() {
           ))}
         </select>
       </Field>
+      <p className="-mt-3 text-sm leading-6 text-slate-600">
+        Select your primary role. Contributors may select one additional role based on their expertise, interests, resources and level of commitment.
+      </p>
+      <Field label="ADDITIONAL ROLE (OPTIONAL)" htmlFor="additionalParticipationType">
+        <select
+          id="additionalParticipationType"
+          value={formData.additionalParticipationType}
+          onChange={(event) =>
+            setFormData({ ...formData, additionalParticipationType: event.target.value })
+          }
+          className={inputClass}
+        >
+          <option value="">Select an additional role</option>
+          {participationOptions
+            .filter((option) => option !== formData.participationType)
+            .map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+        </select>
+      </Field>
       <CheckboxGroup
         legend="HOW WOULD YOU LIKE TO CONTRIBUTE? *"
+        description="Select all that apply."
         options={contributionOptions}
         values={formData.contributionAreas}
         onChange={(values) =>
@@ -1194,110 +1084,6 @@ export function WaitlistForm() {
         }
         required
       />
-      <Field
-        label="WHAT CAN YOU BRING TO GEOMENTOR AFRICA? *"
-        htmlFor="message"
-      >
-        <textarea
-          id="message"
-          required
-          placeholder="Describe your experience, expertise, resources, network or contribution..."
-          value={formData.message}
-          onChange={(event) =>
-            setFormData({ ...formData, message: event.target.value })
-          }
-          rows={4}
-          className={inputClass}
-        />
-      </Field>
-      <CheckboxGroup
-        legend="AREAS OF INTEREST"
-        options={programmeOptions}
-        values={formData.programmeAreas}
-        onChange={(values) =>
-          setFormData({ ...formData, programmeAreas: values })
-        }
-      />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="LEVEL OF COMMITMENT *" htmlFor="commitmentLevel">
-          <select
-            id="commitmentLevel"
-            required
-            value={formData.commitmentLevel}
-            onChange={(event) =>
-              setFormData({ ...formData, commitmentLevel: event.target.value })
-            }
-            className={inputClass}
-          >
-            <option value="">Select one</option>
-            {commitmentOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="ESTIMATED TIME" htmlFor="estimatedTime">
-          <select
-            id="estimatedTime"
-            value={formData.estimatedTime}
-            onChange={(event) =>
-              setFormData({ ...formData, estimatedTime: event.target.value })
-            }
-            className={inputClass}
-          >
-            <option value="">Select one</option>
-            {timeOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </div>
-      <Field label="GEOGRAPHIC INTEREST" htmlFor="geographicInterest">
-        <select
-          id="geographicInterest"
-          value={formData.geographicInterest}
-          onChange={(event) =>
-            setFormData({ ...formData, geographicInterest: event.target.value })
-          }
-          className={inputClass}
-        >
-          <option value="">Select one</option>
-          {geographicOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <CheckboxGroup
-        legend="PARTNERSHIP OR RESOURCE OFFER"
-        options={resourceOptions}
-        values={formData.resourceOffers}
-        onChange={(values) =>
-          setFormData({ ...formData, resourceOffers: values })
-        }
-      />
-      <Field
-        label="ADDITIONAL INFORMATION (OPTIONAL)"
-        htmlFor="additionalInformation"
-      >
-        <textarea
-          id="additionalInformation"
-          value={formData.additionalInformation}
-          onChange={(event) =>
-            setFormData({
-              ...formData,
-              additionalInformation: event.target.value,
-            })
-          }
-          rows={3}
-          className={inputClass}
-        />
-      </Field>
-
       <fieldset className="space-y-3">
         <legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">
           CONSENT & COMMUNICATION *
@@ -1377,8 +1163,8 @@ export function WaitlistForm() {
         )}
       </button>
       <p className="text-center text-sm text-slate-500">
-        We'll send you updates about our launch and early access opportunities.
-        We won't share your email with anyone else.
+        We&apos;ll send you updates about our launch and early access opportunities.
+        We won&apos;t share your email with anyone else.
       </p>
     </form>
   );
@@ -1409,20 +1195,33 @@ function Field({
   );
 }
 
+function SectionHeading({ number, title }: { number: string; title: string }) {
+  return (
+    <h2 className="border-b border-emerald-100 pb-2 pt-4 text-sm font-black tracking-[.16em] text-emerald-800">
+      {number}. {title}
+    </h2>
+  );
+}
+
 function CheckboxGroup({
   legend,
+  description,
   options,
+  groups,
   values,
   onChange,
   required = false,
 }: {
   legend: string;
-  options: readonly string[];
+  description?: string;
+  options?: readonly string[];
+  groups?: readonly { label: string; options: readonly string[] }[];
   values: string[];
   onChange: (values: string[]) => void;
   required?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const optionGroups = groups ?? [{ label: "", options: options ?? [] }];
   return (
     <fieldset className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
       <button
@@ -1441,32 +1240,31 @@ function CheckboxGroup({
           />
         </span>
       </button>
+      {description && (
+        <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+      )}
       {isOpen && (
-        <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 sm:grid-cols-2">
-          {options.map((option) => (
-            <label
-              key={option}
-              className="flex cursor-pointer items-start gap-3"
-            >
-              <input
-                type="checkbox"
-                checked={values.includes(option)}
-                required={
-                  required && values.length === 0 && option === options[0]
-                }
-                onChange={(event) =>
-                  onChange(
-                    event.target.checked
-                      ? [...values, option]
-                      : values.filter((value) => value !== option),
-                  )
-                }
-                className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-200"
-              />
-              <span className="text-base leading-6 text-slate-700">
-                {option}
-              </span>
-            </label>
+        <div className="mt-4 space-y-5 border-t border-slate-200 pt-4">
+          {optionGroups.map((group) => (
+            <div key={group.label}>
+              {group.label && <h3 className="mb-3 text-sm font-bold text-slate-800">{group.label}</h3>}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {group.options.map((option) => (
+                  <label key={option} className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={values.includes(option)}
+                      required={required && values.length === 0 && option === group.options[0]}
+                      onChange={(event) =>
+                        onChange(event.target.checked ? [...values, option] : values.filter((value) => value !== option))
+                      }
+                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-200"
+                    />
+                    <span className="text-base leading-6 text-slate-700">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
