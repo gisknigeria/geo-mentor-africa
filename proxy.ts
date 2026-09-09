@@ -5,7 +5,8 @@ export function proxy(request: NextRequest) {
     request.nextUrl.pathname === "/twg" ||
     request.nextUrl.pathname === "/twg/confirm" ||
     request.nextUrl.pathname === "/privacy" ||
-    request.nextUrl.pathname === "/feedback"
+    request.nextUrl.pathname === "/feedback" ||
+    request.nextUrl.pathname === "/faq"
   ) {
     return NextResponse.next();
   }

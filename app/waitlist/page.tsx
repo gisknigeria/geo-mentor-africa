@@ -128,7 +128,7 @@ export default function WaitlistPage() {
         <div className="relative mx-auto grid max-w-7xl gap-8 px-5 pb-10 pt-8 sm:px-8 sm:pb-16 lg:grid-cols-[1fr_1.1fr] lg:items-end lg:gap-16 lg:px-12 lg:pt-14">
           <div className="max-w-xl">
 
-            <h1 className="max-w-2xl font-serif text-4xl font-medium leading-[.95] tracking-[-.04em] text-white sm:text-6xl lg:text-7xl">
+            <h1 className="max-w-2xl font-serif text-5xl font-medium leading-[.95] tracking-[-.04em] text-white sm:text-6xl lg:text-7xl">
               Volunteer with <span className="whitespace-nowrap text-lime-300">GeoMentor Africa</span>
             </h1>
             <p className="mt-5 max-w-lg text-sm font-semibold leading-6 text-emerald-100/90 sm:text-base">

@@ -201,7 +201,7 @@ export default function PrivacyPage() {
         </PolicySection>
 
         <footer className="border-t border-[#dfe6df] pt-6 text-sm text-slate-500">
-          <p className="mb-4">Have feedback or a question? <Link href="/feedback" className="font-bold text-emerald-700 hover:text-emerald-900">Open the feedback page</Link>.</p>
+          <p className="mb-4">Have a question? <Link href="/faq" className="font-bold text-emerald-700 hover:text-emerald-900">Read the FAQ</Link> or <Link href="/feedback" className="font-bold text-emerald-700 hover:text-emerald-900">open the feedback page</Link>.</p>
           <Link href="/twg" className="font-bold text-emerald-700 hover:text-emerald-900">Return to TWG registration</Link>
         </footer>
       </article>

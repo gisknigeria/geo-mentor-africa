@@ -26,6 +26,7 @@ export default function FeedbackPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-6">
           <Link href="/twg" className="font-serif text-xl font-medium">GeoMentor Africa</Link>
           <Link href="/privacy" className="text-xs font-bold text-emerald-100 transition hover:text-lime-300">Privacy Notice</Link>
+          <Link href="/faq" className="text-xs font-bold text-emerald-100 transition hover:text-lime-300">FAQ</Link>
         </div>
       </header>
 
@@ -69,6 +70,7 @@ export default function FeedbackPage() {
           <p>Prefer to contact us directly?</p>
           <p><a className="font-semibold text-emerald-700" href="mailto:giskonsult@gisknigeria.com">giskonsult@gisknigeria.com</a> · <a className="font-semibold text-emerald-700" href="tel:08038089097">08038089097</a></p>
           <p className="mt-4"><Link href="/twg" className="font-bold text-emerald-700 hover:text-emerald-900">Return to TWG registration</Link></p>
+          <p className="mt-2"><Link href="/faq" className="font-bold text-emerald-700 hover:text-emerald-900">Read the frequently asked questions</Link></p>
         </div>
       </section>
     </main>
