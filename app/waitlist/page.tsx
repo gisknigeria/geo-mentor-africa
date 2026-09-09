@@ -154,7 +154,7 @@ export default function WaitlistPage() {
             </div>
             <Link
               href="#twg-form"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-lime-300 px-6 py-3 text-sm font-black text-emerald-950 transition hover:bg-white"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-lime-500 px-6 py-3 text-sm font-black text-emerald-950 transition hover:bg-white"
             >
               Join GeoMentor Africa
             </Link>
@@ -193,7 +193,7 @@ export default function WaitlistPage() {
           <h2 className="mt-3 max-w-md font-serif text-4xl font-medium leading-tight text-emerald-950 sm:text-5xl">
 Every meaningful journey begins with a first step.
           </h2>
-           <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
+           <p >
               GeoMentor Africa brings together professionals, young people,
               schools, institutions and partners to advance mentorship,
               geography, biodiversity intelligence and green enterprise
@@ -214,7 +214,7 @@ Every meaningful journey begins with a first step.
               prepared to begin implementation immediately after the plan is
               officially launched.
             </p>
-              <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
+              <p >
               Contribute your expertise. Join a Technical Working Group.
               Collaborate on practical initiatives. Help turn local knowledge
               into scalable solutions and lasting impact.
