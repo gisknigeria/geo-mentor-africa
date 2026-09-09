@@ -1,11 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === "/waitlist") {
+  if (
+    request.nextUrl.pathname === "/twg" ||
+    request.nextUrl.pathname === "/twg/confirm"
+  ) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect(new URL("/waitlist", request.url));
+  return NextResponse.redirect(new URL("/twg", request.url));
 }
 
 export const config = {

@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
       full_name,
       email,
       organization,
+      organization_address,
       role,
       country,
       message,
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
       job_title,
       professional_field,
       website,
+      organization_website,
       participation_type,
       contribution_areas,
       expertise_summary,
@@ -90,6 +92,7 @@ export async function POST(request: NextRequest) {
         full_name: full_name.trim(),
         email: email.toLowerCase().trim(),
         organization: organization || null,
+        organization_address: organization_address || null,
         role: role || null,
         country: country || null,
         message: message || null,
@@ -102,6 +105,7 @@ export async function POST(request: NextRequest) {
         job_title: job_title || null,
         professional_field: professional_field || null,
         website: website || null,
+        organization_website: organization_website || null,
         participation_type: participation_type || null,
         contribution_areas: contribution_areas || [],
         expertise_summary: expertise_summary || null,
@@ -129,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation email if Resend is configured
     if (resendKey) {
-      const confirmationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/waitlist/confirm?id=${waitlistEntry.id}`;
+      const confirmationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/twg/confirm?id=${waitlistEntry.id}`;
 
       try {
         const emailResponse = await fetch("https://api.resend.com/emails", {
