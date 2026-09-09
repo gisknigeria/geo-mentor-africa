@@ -97,7 +97,7 @@ export default function WaitlistPage() {
 
   return (
     <main className="min-h-screen bg-[#f4f6f1] text-[#15342d]">
-      <section className="relative isolate min-h-[80vh] overflow-hidden bg-[#083d31]">
+      <section className="relative isolate min-h-[80vh] max-h-[90vh] overflow-hidden bg-[#083d31]">
         <div className="absolute inset-0" aria-hidden="true">
           {heroImages.map((image, index) => (
             <div
@@ -125,29 +125,29 @@ export default function WaitlistPage() {
           </Link>
         </header>
 
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-10 sm:px-8 sm:pb-24 lg:grid-cols-[1fr_1.1fr] lg:items-end lg:gap-20 lg:px-12 lg:pt-20">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-5 pb-10 pt-8 sm:px-8 sm:pb-16 lg:grid-cols-[1fr_1.1fr] lg:items-end lg:gap-16 lg:px-12 lg:pt-14">
           <div className="max-w-xl">
-            
+
             <h1 className="max-w-2xl font-serif text-4xl font-medium leading-[.95] tracking-[-.04em] text-white sm:text-6xl lg:text-7xl">
-              Volunteer with GeoMentor <span className="text-lime-300">Africa</span>
+              Volunteer with <span className="whitespace-nowrap text-lime-300">GeoMentor Africa</span>
             </h1>
-            <p className="mt-7 max-w-lg text-base font-semibold leading-7 text-emerald-100/90 sm:text-lg">
+            <p className="mt-5 max-w-lg text-sm font-semibold leading-6 text-emerald-100/90 sm:text-base">
               A pan-African volunteer network transforming knowledge, mentorship
               and geospatial expertise into measurable action.
             </p>
-            <p className="mt-5 max-w-lg text-base leading-7 text-emerald-100/75 sm:text-lg">
+            <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
               GeoMentor Africa brings together professionals, young people,
               schools, institutions and partners to advance mentorship,
               geography, biodiversity intelligence and green enterprise
               development across Africa.
             </p>
-            <p className="mt-5 max-w-lg text-base leading-7 text-emerald-100/75 sm:text-lg">
+            <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
               Contribute your expertise. Join a Technical Working Group.
               Collaborate on practical initiatives. Help turn local knowledge
               into scalable solutions and lasting impact.
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/80">
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-semibold text-emerald-50/80">
               <span className="inline-flex items-center gap-2">
                 <Check className="size-4 text-lime-300" /> Early access updates
               </span>
@@ -160,7 +160,7 @@ export default function WaitlistPage() {
             </div>
             <Link
               href="#twg-form"
-              className="mt-9 inline-flex items-center gap-2 rounded-full bg-lime-300 px-6 py-3 text-sm font-black text-emerald-950 transition hover:bg-white"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-lime-300 px-6 py-3 text-sm font-black text-emerald-950 transition hover:bg-white"
             >
               Join GeoMentor Africa
             </Link>
