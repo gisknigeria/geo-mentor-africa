@@ -795,7 +795,6 @@ const contributionGroups = [
     ],
   },
 ] as const;
-const contributionOptions = contributionGroups.flatMap((group) => group.options);
 const participationOptions = [
   "Geo-Mentor",
   "Knowledge Expert",
@@ -881,12 +880,6 @@ export function WaitlistForm() {
       ? formData.additionalParticipationType
       : "",
   ].filter(Boolean);
-  const hasGeneralContributionRole = selectedParticipationRoles.some(
-    (role) => !roleContributionOptions[role],
-  );
-  const availableContributionOptions = hasGeneralContributionRole
-    ? contributionOptions
-    : [];
   const hasRequiredRolePathways = selectedParticipationRoles
     .filter((role) => roleContributionOptions[role])
     .every((role) =>
@@ -1444,19 +1437,17 @@ export function WaitlistForm() {
           />
         );
       })}
-      {availableContributionOptions.length > 0 && (
-        <CheckboxGroup
-          legend="HOW WOULD YOU LIKE TO CONTRIBUTE? *"
-          description="Select a category to view its contribution options, then select all that apply."
-          groups={contributionGroups}
-          values={formData.contributionAreas}
-          onChange={(values) =>
-            setFormData({ ...formData, contributionAreas: values })
-          }
-          collapsibleGroups
-          required
-        />
-      )}
+      <CheckboxGroup
+        legend="HOW WOULD YOU LIKE TO SPECIFICALLY CONTRIBUTE? *"
+        description="Select a category to view its contribution options, then select all that apply."
+        groups={contributionGroups}
+        values={formData.contributionAreas}
+        onChange={(values) =>
+          setFormData({ ...formData, contributionAreas: values })
+        }
+        collapsibleGroups
+        required
+      />
       <Field
         label="ADDITIONAL CONTRIBUTION DETAILS"
         htmlFor="additionalInformation"
