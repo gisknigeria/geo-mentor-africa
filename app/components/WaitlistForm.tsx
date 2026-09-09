@@ -778,6 +778,7 @@ const initialFormData = {
   additionalParticipationType: "",
   wantsAdditionalRole: "",
   contributionAreas: [] as string[],
+  roleContributionSelections: [] as string[],
   programmeAreas: [] as string[],
   commitmentLevel: "",
   estimatedTime: "",
@@ -821,11 +822,27 @@ export function WaitlistForm() {
       : "",
   ].filter(Boolean);
   const selectedRoleContributionOptions = selectedParticipationRoles.flatMap(
-    (role) => roleContributionOptions[role] ?? contributionOptions,
+    (role) => roleContributionOptions[role] ?? [],
   );
-  const availableContributionOptions = [
-    ...new Set(selectedRoleContributionOptions),
-  ];
+  const hasGeneralContributionRole = selectedParticipationRoles.some(
+    (role) => !roleContributionOptions[role],
+  );
+  const availableContributionOptions = hasGeneralContributionRole
+    ? contributionOptions
+    : [];
+
+  function handleRoleContributionChange(role: string, value: string) {
+    const roleOptions = roleContributionOptions[role] ?? [];
+    setFormData({
+      ...formData,
+      roleContributionSelections: [
+        ...formData.roleContributionSelections.filter(
+          (selection) => !roleOptions.includes(selection),
+        ),
+        ...(value ? [value] : []),
+      ],
+    });
+  }
 
   useEffect(() => {
     const countryCode = africaCountryCodes[formData.country];
@@ -878,7 +895,8 @@ export function WaitlistForm() {
     if (
       !formData.country ||
       !formData.professionalField.length ||
-      !formData.contributionAreas.length ||
+      !formData.contributionAreas.length &&
+        !formData.roleContributionSelections.length ||
       !formData.wantsAdditionalRole ||
       (formData.wantsAdditionalRole === "yes" &&
         !formData.additionalParticipationType) ||
@@ -931,6 +949,7 @@ export function WaitlistForm() {
           contribution_areas: [
             ...formData.contributionAreas,
             ...formData.programmeAreas,
+            ...formData.roleContributionSelections,
           ],
           expertise_summary: formData.areaOfExpertise.trim() || null,
           commitment_level: formData.commitmentLevel,
@@ -1355,6 +1374,37 @@ export function WaitlistForm() {
           </select>
         </Field>
       )}
+      {selectedParticipationRoles.map((role) => {
+        const roleOptions = roleContributionOptions[role];
+        if (!roleOptions) return null;
+
+        return (
+          <Field
+            key={role}
+            label={`${role.toUpperCase()} PATHWAY *`}
+            htmlFor={`pathway-${role}`}
+          >
+            <select
+              id={`pathway-${role}`}
+              required
+              value={
+                formData.roleContributionSelections.find((selection) =>
+                  roleOptions.includes(selection),
+                ) ?? ""
+              }
+              onChange={(event) =>
+                handleRoleContributionChange(role, event.target.value)
+              }
+              className={inputClass}
+            >
+              <option value="">Select a pathway</option>
+              {roleOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </Field>
+        );
+      })}
       {availableContributionOptions.length > 0 && (
         <CheckboxGroup
           legend="HOW WOULD YOU LIKE TO CONTRIBUTE? *"
