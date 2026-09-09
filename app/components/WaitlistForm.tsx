@@ -821,28 +821,19 @@ export function WaitlistForm() {
       ? formData.additionalParticipationType
       : "",
   ].filter(Boolean);
-  const selectedRoleContributionOptions = selectedParticipationRoles.flatMap(
-    (role) => roleContributionOptions[role] ?? [],
-  );
   const hasGeneralContributionRole = selectedParticipationRoles.some(
     (role) => !roleContributionOptions[role],
   );
   const availableContributionOptions = hasGeneralContributionRole
     ? contributionOptions
     : [];
-
-  function handleRoleContributionChange(role: string, value: string) {
-    const roleOptions = roleContributionOptions[role] ?? [];
-    setFormData({
-      ...formData,
-      roleContributionSelections: [
-        ...formData.roleContributionSelections.filter(
-          (selection) => !roleOptions.includes(selection),
-        ),
-        ...(value ? [value] : []),
-      ],
-    });
-  }
+  const hasRequiredRolePathways = selectedParticipationRoles
+    .filter((role) => roleContributionOptions[role])
+    .every((role) =>
+      formData.roleContributionSelections.some((selection) =>
+        roleContributionOptions[role].includes(selection),
+      ),
+    );
 
   useEffect(() => {
     const countryCode = africaCountryCodes[formData.country];
@@ -897,6 +888,7 @@ export function WaitlistForm() {
       !formData.professionalField.length ||
       !formData.contributionAreas.length &&
         !formData.roleContributionSelections.length ||
+      !hasRequiredRolePathways ||
       !formData.wantsAdditionalRole ||
       (formData.wantsAdditionalRole === "yes" &&
         !formData.additionalParticipationType) ||
@@ -1379,30 +1371,17 @@ export function WaitlistForm() {
         if (!roleOptions) return null;
 
         return (
-          <Field
+          <CheckboxGroup
             key={role}
-            label={`${role.toUpperCase()} PATHWAY *`}
-            htmlFor={`pathway-${role}`}
-          >
-            <select
-              id={`pathway-${role}`}
-              required
-              value={
-                formData.roleContributionSelections.find((selection) =>
-                  roleOptions.includes(selection),
-                ) ?? ""
-              }
-              onChange={(event) =>
-                handleRoleContributionChange(role, event.target.value)
-              }
-              className={inputClass}
-            >
-              <option value="">Select a pathway</option>
-              {roleOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          </Field>
+            legend={`${role.toUpperCase()} PATHWAYS *`}
+            description="Select all that apply."
+            options={roleOptions}
+            values={formData.roleContributionSelections}
+            onChange={(values) =>
+              setFormData({ ...formData, roleContributionSelections: values })
+            }
+            required
+          />
         );
       })}
       {availableContributionOptions.length > 0 && (
