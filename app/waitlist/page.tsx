@@ -135,12 +135,7 @@ export default function WaitlistPage() {
               A pan-African volunteer network transforming knowledge, mentorship
               and geospatial expertise into measurable action.
             </p>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
-              GeoMentor Africa brings together professionals, young people,
-              schools, institutions and partners to advance mentorship,
-              geography, biodiversity intelligence and green enterprise
-              development across Africa.
-            </p>
+           
           
 
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-semibold text-emerald-50/80">
@@ -190,11 +185,19 @@ export default function WaitlistPage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-[10px] sm:px-8 sm:py-[10px] lg:grid-cols-[.8fr_1.2fr] lg:gap-20 lg:px-12">
         <div className="lg:pt-5">
           <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-700">
-            Technical Working Groups
+            Thank You for Stepping Forward
           </p>
           <h2 className="mt-3 max-w-md font-serif text-4xl font-medium leading-tight text-emerald-950 sm:text-5xl">
-            30-Day Countdown
+Every meaningful journey begins with a first step.
           </h2>
+           <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
+              GeoMentor Africa brings together professionals, young people,
+              schools, institutions and partners to advance mentorship,
+              geography, biodiversity intelligence and green enterprise
+              development across Africa.
+            </p>
+<h3 className="font-serif text-2xl text-emerald-950">            30-Day Countdown
+          </h3>
           <div className="mt-5 max-w-xl space-y-5 text-sm leading-7 text-slate-600">
             <p>
               The 30-Day Countdown is GeoMentor Africa&apos;s mobilisation and
