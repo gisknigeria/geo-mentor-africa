@@ -1355,16 +1355,18 @@ export function WaitlistForm() {
           </select>
         </Field>
       )}
-      <CheckboxGroup
-        legend="HOW WOULD YOU LIKE TO CONTRIBUTE? *"
-        description="Select all that apply for your selected role(s)."
-        options={availableContributionOptions}
-        values={formData.contributionAreas}
-        onChange={(values) =>
-          setFormData({ ...formData, contributionAreas: values })
-        }
-        required
-      />
+      {availableContributionOptions.length > 0 && (
+        <CheckboxGroup
+          legend="HOW WOULD YOU LIKE TO CONTRIBUTE? *"
+          description="Select all that apply for your selected role(s)."
+          options={availableContributionOptions}
+          values={formData.contributionAreas}
+          onChange={(values) =>
+            setFormData({ ...formData, contributionAreas: values })
+          }
+          required
+        />
+      )}
       <fieldset className="space-y-3">
         <legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">
           CONSENT & COMMUNICATION *
