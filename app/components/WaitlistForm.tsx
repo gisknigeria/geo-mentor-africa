@@ -733,9 +733,69 @@ const jobTitleGroups = {
   "Legal & Compliance": ["Lawyer", "Legal Adviser", "Legal Officer", "Compliance Officer", "Ethics Officer", "Data Protection Officer", "Risk Manager"],
   Other: ["Consultant", "Independent Professional", "Retired Professional", "Community Leader", "Traditional Leader", "Religious Leader", "Volunteer", "Other"],
 } as const;
-const contributionOptions = [
-  "School Adoption, Mentorship Support & Career Guidance", "Training & Knowledge Sharing", "Panelist / Resource Person", "Organise or Support Hackathons & Olympiads", "Organise or Support Seminars, Conferences", "Organise or Support Workshops & Masterclasses", "Organise or Support Field Demonstrations", "Organise or Support Professional Programmes", "Research & Scientific Collaboration", "Expert Validation & Technical Review", "Environmental Data & Analytics", "Knowledge & Intelligence Engine Support", "AI Platform Library Validation",
-];
+const contributionGroups = [
+  {
+    label: "A. School Adoption, Mentorship & Learning",
+    options: [
+      "School Adoption",
+      "Mentorship Support & Career Guidance",
+      "Training & Knowledge Sharing",
+      "Teacher & Student Capacity Development",
+      "Panelist / Resource Person",
+      "Career Talks & Professional Exposure",
+    ],
+  },
+  {
+    label: "B. Events & Professional Engagement",
+    options: [
+      "Organise or Support Hackathons & Olympiads",
+      "Organise or Support Seminars & Conferences",
+      "Organise or Support Workshops & Masterclasses",
+      "Organise or Support Field Demonstrations",
+      "Organise or Support Professional Programmes & Technical Sessions",
+    ],
+  },
+  {
+    label: "C. Research, Science & Knowledge Development",
+    options: [
+      "Research & Scientific Collaboration",
+      "Expert Validation & Technical Review",
+      "Research Design, Documentation & Knowledge Products",
+      "Biodiversity, Environmental & Field Research",
+      "Citizen Science & Community-Based Research",
+    ],
+  },
+  {
+    label: "D. Data, Technology & Intelligence",
+    options: [
+      "Environmental Data & Analytics",
+      "GIS, Mapping & Earth Observation Support",
+      "AI, GeoAI, GeoIoT & Digital Innovation",
+      "Data Collection, Quality Assurance & Validation",
+      "Knowledge & Intelligence Engine Support",
+    ],
+  },
+  {
+    label: "E. Programme & Institutional Support",
+    options: [
+      "Programme Development, Monitoring & Evaluation",
+      "Partnership & Stakeholder Engagement",
+      "Funding, Sponsorship & Resource Mobilisation",
+      "Technology, Equipment & Material Support",
+      "Advocacy, Media & Impact Communication",
+      "Internship, Industry Exposure & Exchange Opportunities",
+    ],
+  },
+  {
+    label: "F. Other",
+    options: [
+      "Other Professional or Technical Contribution",
+      "Other Institutional Contribution",
+      "Prefer to Specify",
+    ],
+  },
+] as const;
+const contributionOptions = contributionGroups.flatMap((group) => group.options);
 const participationOptions = [
   "Geo-Mentor",
   "Knowledge Expert",
@@ -1387,15 +1447,31 @@ export function WaitlistForm() {
       {availableContributionOptions.length > 0 && (
         <CheckboxGroup
           legend="HOW WOULD YOU LIKE TO CONTRIBUTE? *"
-          description="Select all that apply for your selected role(s)."
-          options={availableContributionOptions}
+          description="Select a category to view its contribution options, then select all that apply."
+          groups={contributionGroups}
           values={formData.contributionAreas}
           onChange={(values) =>
             setFormData({ ...formData, contributionAreas: values })
           }
+          collapsibleGroups
           required
         />
       )}
+      <Field
+        label="ADDITIONAL CONTRIBUTION DETAILS"
+        htmlFor="additionalInformation"
+      >
+        <textarea
+          id="additionalInformation"
+          rows={5}
+          placeholder="Please provide any specific expertise, resources, opportunities or support you would like to contribute."
+          value={formData.additionalInformation}
+          onChange={(event) =>
+            setFormData({ ...formData, additionalInformation: event.target.value })
+          }
+          className={inputClass}
+        />
+      </Field>
       <fieldset className="space-y-3">
         <legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">
           CONSENT & COMMUNICATION *
@@ -1544,6 +1620,7 @@ function CheckboxGroup({
   groups,
   values,
   onChange,
+  collapsibleGroups = false,
   required = false,
 }: {
   legend: string;
@@ -1552,9 +1629,11 @@ function CheckboxGroup({
   groups?: readonly { label: string; options: readonly string[] }[];
   values: string[];
   onChange: (values: string[]) => void;
+  collapsibleGroups?: boolean;
   required?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(true);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const optionGroups = groups ?? [{ label: "", options: options ?? [] }];
   return (
     <fieldset className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
@@ -1581,23 +1660,44 @@ function CheckboxGroup({
         <div className="mt-4 space-y-5 border-t border-slate-200 pt-4">
           {optionGroups.map((group) => (
             <div key={group.label}>
-              {group.label && <h3 className="mb-3 text-sm font-bold text-slate-800">{group.label}</h3>}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {group.options.map((option) => (
-                  <label key={option} className="flex cursor-pointer items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={values.includes(option)}
-                      required={required && values.length === 0 && option === group.options[0]}
-                      onChange={(event) =>
-                        onChange(event.target.checked ? [...values, option] : values.filter((value) => value !== option))
-                      }
-                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-200"
-                    />
-                    <span className="text-base leading-6 text-slate-700">{option}</span>
-                  </label>
-                ))}
-              </div>
+              {group.label && collapsibleGroups ? (
+                <button
+                  type="button"
+                  aria-expanded={openGroups[group.label] ?? false}
+                  onClick={() =>
+                    setOpenGroups({
+                      ...openGroups,
+                      [group.label]: !openGroups[group.label],
+                    })
+                  }
+                  className="flex w-full items-center justify-between gap-4 border-b border-slate-200 py-3 text-left text-sm font-bold text-slate-800"
+                >
+                  {group.label}
+                  <ChevronDown
+                    className={`size-5 transition-transform ${openGroups[group.label] ? "rotate-180" : ""}`}
+                  />
+                </button>
+              ) : (
+                group.label && <h3 className="mb-3 text-sm font-bold text-slate-800">{group.label}</h3>
+              )}
+              {(!collapsibleGroups || !group.label || openGroups[group.label]) && (
+                <div className="grid gap-3 pt-3 sm:grid-cols-2">
+                  {group.options.map((option) => (
+                    <label key={option} className="flex cursor-pointer items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={values.includes(option)}
+                        required={required && values.length === 0 && option === group.options[0]}
+                        onChange={(event) =>
+                          onChange(event.target.checked ? [...values, option] : values.filter((value) => value !== option))
+                        }
+                        className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-200"
+                      />
+                      <span className="text-base leading-6 text-slate-700">{option}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
