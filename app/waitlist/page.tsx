@@ -141,11 +141,7 @@ export default function WaitlistPage() {
               geography, biodiversity intelligence and green enterprise
               development across Africa.
             </p>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
-              Contribute your expertise. Join a Technical Working Group.
-              Collaborate on practical initiatives. Help turn local knowledge
-              into scalable solutions and lasting impact.
-            </p>
+          
 
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-semibold text-emerald-50/80">
               <span className="inline-flex items-center gap-2">
@@ -155,7 +151,7 @@ export default function WaitlistPage() {
                 <Check className="size-4 text-lime-300" /> Pilot opportunities
               </span>
               <span className="inline-flex items-center gap-2">
-                <Check className="size-4 text-lime-300" /> seat on the Technical Working Group
+                <Check className="size-4 text-lime-300" /> Seat on the Technical Working Group
               </span>
             </div>
             <Link
@@ -211,6 +207,11 @@ export default function WaitlistPage() {
               aligned with strategic priorities, assigned clear roles and
               prepared to begin implementation immediately after the plan is
               officially launched.
+            </p>
+              <p className="mt-3 max-w-lg text-sm leading-6 text-emerald-100/75 sm:text-base">
+              Contribute your expertise. Join a Technical Working Group.
+              Collaborate on practical initiatives. Help turn local knowledge
+              into scalable solutions and lasting impact.
             </p>
 
             <div>

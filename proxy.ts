@@ -3,7 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   if (
     request.nextUrl.pathname === "/twg" ||
-    request.nextUrl.pathname === "/twg/confirm"
+    request.nextUrl.pathname === "/twg/confirm" ||
+    request.nextUrl.pathname === "/privacy" ||
+    request.nextUrl.pathname === "/feedback"
   ) {
     return NextResponse.next();
   }

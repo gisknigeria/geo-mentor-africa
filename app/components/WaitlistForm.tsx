@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, type ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   AlertCircle,
   CheckCircle,
@@ -847,6 +848,7 @@ const initialFormData = {
   consentContact: false,
   consentStandards: false,
   consentData: false,
+  privacyConsent: false,
   wantsUpdates: false,
   interestedIn: {
     mentorship: false,
@@ -945,9 +947,7 @@ export function WaitlistForm() {
       !formData.wantsAdditionalRole ||
       (formData.wantsAdditionalRole === "yes" &&
         !formData.additionalParticipationType) ||
-      !formData.consentContact ||
-      !formData.consentStandards ||
-      !formData.consentData
+      !formData.privacyConsent
     ) {
       setFormState({
         isSubmitting: false,
@@ -1003,9 +1003,9 @@ export function WaitlistForm() {
           resource_offers: formData.resourceOffers,
           additional_information: formData.additionalInformation.trim() || null,
           message: formData.message.trim() || null,
-          consent_contact: formData.consentContact,
-          consent_standards: formData.consentStandards,
-          consent_data: formData.consentData,
+          consent_contact: formData.privacyConsent,
+          consent_standards: formData.privacyConsent,
+          consent_data: formData.privacyConsent,
           wants_updates: formData.wantsUpdates,
         }),
       });
@@ -1465,50 +1465,48 @@ export function WaitlistForm() {
       </Field>
       <fieldset className="space-y-3">
         <legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">
-          CONSENT & COMMUNICATION *
+          PRIVACY &amp; PARTICIPATION CONSENT *
         </legend>
         <Consent
-          checked={formData.consentContact}
+          checked={formData.privacyConsent}
           onChange={(checked) =>
-            setFormData({ ...formData, consentContact: checked })
+            setFormData({ ...formData, privacyConsent: checked })
           }
           required
         >
-          I consent to GeoMentor Africa using the information provided to
-          contact me regarding volunteering, partnerships, programmes and
-          related opportunities.
-        </Consent>
-        <Consent
-          checked={formData.consentStandards}
-          onChange={(checked) =>
-            setFormData({ ...formData, consentStandards: checked })
-          }
-          required
-        >
-          I understand that submitting this form does not automatically confirm
-          appointment as a GeoMentor, partner or programme representative.
-        </Consent>
-        <Consent
-          checked={formData.consentData}
-          onChange={(checked) =>
-            setFormData({ ...formData, consentData: checked })
-          }
-          required
-        >
-          I agree to uphold applicable safeguarding, ethical, data-protection
-          and professional standards when participating in GeoMentor Africa
-          activities.
-        </Consent>
-        <Consent
-          checked={formData.wantsUpdates}
-          onChange={(checked) =>
-            setFormData({ ...formData, wantsUpdates: checked })
-          }
-        >
-          I would like to receive GeoMentor Africa news, events and programme
-          updates.
+          I have read and understood the GeoMentor Africa{" "}
+          <Link href="/privacy" className="font-semibold text-emerald-700 underline hover:text-emerald-900">
+            Privacy Notice
+          </Link>{" "}
+          and agree to the processing of my personal data as necessary to manage
+          my registration, participation and programme activities.
         </Consent>
       </fieldset>
+
+      <Consent
+        checked={formData.wantsUpdates}
+        onChange={(checked) =>
+          setFormData({ ...formData, wantsUpdates: checked })
+        }
+      >
+        I would like to receive GeoMentor Africa news, programme updates,
+        opportunities and related communications. I understand that I can
+        unsubscribe at any time.
+      </Consent>
+
+      <address className="not-italic rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-sm leading-6 text-slate-600">
+        <p className="font-bold text-emerald-800">Contact Address</p>
+        <p>GIS Konsult Ltd, 44, Adeyi Avenue, Bodija, Ibadan</p>
+        <p>
+          Phone: <a className="font-semibold text-emerald-700" href="tel:08038089097">08038089097</a>
+        </p>
+        <p>
+          Email: <a className="font-semibold text-emerald-700" href="mailto:giskonsult@gisknigeria.com">giskonsult@gisknigeria.com</a>
+        </p>
+        <p className="mt-2">
+          <Link href="/feedback" className="font-semibold text-emerald-700 underline">Send feedback or ask a question</Link>
+        </p>
+      </address>
 
       {formState.message && (
         <div
