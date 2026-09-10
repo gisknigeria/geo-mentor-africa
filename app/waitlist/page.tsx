@@ -193,15 +193,23 @@ export default function WaitlistPage() {
           <h2 className="mt-3 max-w-md font-serif text-4xl font-medium leading-tight text-emerald-950 sm:text-5xl">
 Every meaningful journey begins with a first step.
           </h2>
-           <p >
+           <p className="mt-5 max-w-xl space-y-5 text-sm leading-7 text-slate-600">
               GeoMentor Africa brings together professionals, young people,
               schools, institutions and partners to advance mentorship,
               geography, biodiversity intelligence and green enterprise
               development across Africa.
             </p>
-<h3 className="font-serif text-2xl text-emerald-950">            30-Day Countdown
-          </h3>
-          <div className="mt-5 max-w-xl space-y-5 text-sm leading-7 text-slate-600">
+          <details className="group mt-5 max-w-xl">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-serif text-2xl text-emerald-950 marker:hidden [&::-webkit-details-marker]:hidden">
+              30-Day Countdown
+              <span className="font-sans text-sm font-black uppercase tracking-[.14em] text-emerald-700 group-open:hidden">
+                See more
+              </span>
+              <span className="hidden font-sans text-sm font-black uppercase tracking-[.14em] text-emerald-700 group-open:inline">
+                See less
+              </span>
+            </summary>
+            <div className="mt-5 space-y-5 text-sm leading-7 text-slate-600">
             <p>
               The 30-Day Countdown is GeoMentor Africa&apos;s mobilisation and
               onboarding phase for its Technical Working Groups (TWGs), taking
@@ -220,19 +228,25 @@ Every meaningful journey begins with a first step.
               into scalable solutions and lasting impact.
             </p>
 
-            <div>
-              <h3 className="font-serif text-2xl text-emerald-950">
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-serif text-2xl text-emerald-950 marker:hidden [&::-webkit-details-marker]:hidden">
                 What happens after I register?
-              </h3>
-              <ol className="mt-3 list-decimal space-y-2 pl-5 marker:font-bold marker:text-emerald-700">
+                  <span className="font-sans text-sm font-black uppercase tracking-[.14em] text-emerald-700 group-open:hidden">
+                    See more
+                  </span>
+                  <span className="hidden font-sans text-sm font-black uppercase tracking-[.14em] text-emerald-700 group-open:inline">
+                    See less
+                  </span>
+                </summary>
+                <ol className="mt-3 list-decimal space-y-2 pl-5 marker:font-bold marker:text-emerald-700">
                 <li><strong>Register:</strong> Share your expertise, interests and preferred area of contribution.</li>
                 <li><strong>Profile Review:</strong> We identify where your experience can create the greatest value.</li>
                 <li><strong>Role Matching:</strong> Your skills are aligned with a suitable strategic role.</li>
                 <li><strong>TWG Placement:</strong> You are matched with the most relevant Technical Working Group.</li>
                 <li><strong>Welcome &amp; Onboarding:</strong> Meet your team, understand the strategic priorities and prepare for implementation.</li>
                 <li><strong>Activate &amp; Participate:</strong> Begin contributing to programmes, projects, partnerships and measurable results under the Five-Year Strategic Plan.</li>
-              </ol>
-            </div>
+                </ol>
+              </details>
 
             <div>
               <h3 className="font-serif text-2xl text-emerald-950">
@@ -246,24 +260,11 @@ Every meaningful journey begins with a first step.
                 <li><strong>Geo-Mentor:</strong> Provides outreach services to schools through School Adoption, Mentorship, Education, Training and Knowledge Sharing.</li>
                 <li><strong>Knowledge Expert:</strong> Provides research, scientific expertise and data validation to strengthen the platform&apos;s Knowledge and Intelligence Engine.</li>
                 <li><strong>Industry Mentor:</strong> A professional, entrepreneur, business leader or industry specialist who provides Industry Access &amp; Collaboration by connecting participants to practical experience, innovation, enterprise and career opportunities.</li>
-              </ol>
-              <p className="mt-4">
-                <strong>Geo-Partner &amp; Institutional Collaboration:</strong>{" "}
-                An individual, organisation, institution, company, government
-                agency, university, professional body, donor, foundation or
-                development partner that supports GeoMentor Africa through
-                resources, expertise, technology, funding, partnerships or
-                institutional support.
-              </p>
-              <ol className="mt-3 list-decimal space-y-2 pl-5 marker:font-bold marker:text-emerald-700">
-                <li>Technology &amp; Research Support and Development</li>
-                <li>Resource Mobilisation, Funding and Sponsorship</li>
-                <li>Products/Materials &amp; In-Kind Support</li>
-                <li>Advocacy &amp; Programme Support</li>
-                <li>Market Access &amp; Enterprise Development</li>
+                <li><strong>Geo-Partner &amp; Institutional Collaboration:</strong> An individual, organisation, institution, company, government agency, university, professional body, donor, foundation or development partner that supports GeoMentor Africa through resources, expertise, technology, funding, partnerships or institutional support.</li>
               </ol>
             </div>
-          </div>
+            </div>
+          </details>
         </div>
 
         <div

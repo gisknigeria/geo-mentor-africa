@@ -1042,7 +1042,7 @@ export function WaitlistForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-base">
       <SectionHeading title="REGISTRATION" />
-      <CollapsibleSection title="BIO DATA" defaultOpen>
+      <CollapsibleSection title="BIO DATA">
         <Field label="PREFIX" htmlFor="professionalPrefix">
         <select
           id="professionalPrefix"
