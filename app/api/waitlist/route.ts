@@ -133,7 +133,17 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation email if Resend is configured
     if (resendKey) {
-      const confirmationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/twg/confirm?id=${waitlistEntry.id}`;
+      const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+      const forwardedHost =
+        request.headers.get("x-forwarded-host") ??
+        request.headers.get("host") ??
+        "www.geomentorafrica.org";
+      const requestOrigin = `${forwardedProto}://${forwardedHost}`;
+      const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        requestOrigin;
+      const confirmationUrl = `${siteUrl.replace(/\/$/, "")}/twg/confirm?id=${waitlistEntry.id}`;
 
       try {
         const emailResponse = await fetch("https://api.resend.com/emails", {
