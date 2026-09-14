@@ -223,9 +223,7 @@ Every meaningful journey begins with a first step.
               officially launched.
             </p>
               <p >
-              Contribute your expertise. Join a Technical Working Group.
-              Collaborate on practical initiatives. Help turn local knowledge
-              into scalable solutions and lasting impact.
+              Join a Technical Working Group to contribute your expertise, collaborate on practical initiatives, and turn local knowledge into scalable, lasting impact.
             </p>
 
               <details className="group">
@@ -262,6 +260,30 @@ Every meaningful journey begins with a first step.
                 <li><strong>Industry Mentor:</strong> A professional, entrepreneur, business leader or industry specialist who provides Industry Access &amp; Collaboration by connecting participants to practical experience, innovation, enterprise and career opportunities.</li>
                 <li><strong>Geo-Partner &amp; Institutional Collaboration:</strong> An individual, organisation, institution, company, government agency, university, professional body, donor, foundation or development partner that supports GeoMentor Africa through resources, expertise, technology, funding, partnerships or institutional support.</li>
               </ol>
+
+              <div className="mt-6 overflow-hidden rounded-2xl border border-[#dfe6df] bg-[#edf6f1]">
+                <div className="flex animate-[carousel_18s_linear_infinite] gap-3 p-3">
+                  {[
+                    "/WhatsApp Image 2026-09-05 at 11.38.17 AM (1).jpeg",
+                    "/WhatsApp Image 2026-09-05 at 11.38.17 AM.jpeg",
+                    "/WhatsApp Image 2026-09-05 at 11.38.18 AM.jpeg",
+                    "/WhatsApp Image 2026-09-05 at 11.39.04 AM (1).jpeg",
+                    "/WhatsApp Image 2026-09-05 at 11.39.04 AM.jpeg",
+                    "/WhatsApp Image 2026-09-05 at 11.40.19 AM.jpeg",
+                    "/20230522_122039.jpg",
+                    "/20230522_122403(0).jpg",
+                    "/20230522_122641.jpg",
+                  ].map((image, index) => (
+                    <div key={`${image}-${index}`} className="relative h-32 w-44 shrink-0 overflow-hidden rounded-xl border border-white/60 bg-white shadow-sm sm:h-36 sm:w-52">
+                      <img
+                        src={image}
+                        alt="GeoMentor Africa participation pathway"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             </div>
           </details>
@@ -276,24 +298,68 @@ Every meaningful journey begins with a first step.
       </section>
 
       <footer className="border-t border-[#dfe6df] bg-white px-5 py-8 text-sm text-slate-600 sm:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <Logo className="text-emerald-950" />
+        <div className="mx-auto max-w-7xl">
+          <div className="overflow-hidden rounded-2xl border border-[#dfe6df] bg-[#f7faf7] px-3 py-4">
+            <div className="flex min-w-max animate-[partnerscroll_42s_linear_infinite] items-center gap-5 sm:gap-8">
+              {[
+                "/ANG.png",
+                "/cheth-limited.png",
+                "/clear Geoson Logo.jfif",
+                "/Ebis.png",
+                "/esri-logo.jpg",
+                "/GIS Konsult.png",
+                "/Logo GIS Konsult.png",
+                "/MEWIN.png",
+                "/NACGRAB.jpg",
+                "/NASRDA.jpeg",
+                "/NCF.png",
+                "/SCB.png",
+                "/UI Logo.png",
+              ].concat([
+                "/ANG.png",
+                "/cheth-limited.png",
+                "/clear Geoson Logo.jfif",
+                "/Ebis.png",
+                "/esri-logo.jpg",
+                "/GIS Konsult.png",
+                "/Logo GIS Konsult.png",
+                "/MEWIN.png",
+                "/NACGRAB.jpg",
+                "/NASRDA.jpeg",
+                "/NCF.png",
+                "/SCB.png",
+                "/UI Logo.png",
+              ]).map((logo, index) => (
+                <div key={`${logo}-${index}`} className="flex h-16 w-28 items-center justify-center rounded-xl bg-white p-2 shadow-sm ring-1 ring-slate-200/80 sm:h-20 sm:w-32">
+                  <img
+                    src={logo}
+                    alt="Partner logo"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
-          <address className="not-italic text-left md:text-right">
-            <p className="font-bold text-emerald-800">Contact Address</p>
-            <p>GIS Konsult Ltd, 44, Adeyi Avenue, Bodija, Ibadan</p>
-            <p>
-              Phone: <a className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2" href="tel:08038089097">08038089097</a>
-            </p>
-            <p>
-              Email: <a className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2" href="mailto:giskonsult@gisknigeria.com">giskonsult@gisknigeria.com</a>
-            </p>
-            <p className="mt-2">
-              <Link href="/feedback" className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2">Send feedback or ask a question</Link>
-            </p>
-          </address>
+          <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <Logo className="text-emerald-950" />
+            </div>
+
+            <address className="not-italic text-left md:text-right">
+              <p className="font-bold text-emerald-800">Contact Address</p>
+              <p>GIS Konsult Ltd, 44, Adeyi Avenue, Bodija, Ibadan</p>
+              <p>
+                Phone: <a className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2" href="tel:08038089097">08038089097</a>
+              </p>
+              <p>
+                Email: <a className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2" href="mailto:giskonsult@gisknigeria.com">giskonsult@gisknigeria.com</a>
+              </p>
+              <p className="mt-2">
+                <Link href="/feedback" className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2">Send feedback or ask a question</Link>
+              </p>
+            </address>
+          </div>
         </div>
 
         <p className="mt-5 text-center text-xs text-slate-500">GeoMentor Africa · Map what lives. Grow what matters.</p>
