@@ -736,7 +736,7 @@ const jobTitleGroups = {
 } as const;
 const contributionGroups = [
   {
-    label: "A. School Adoption, Mentorship & Learning",
+    label: "1. School Adoption, Mentorship & Learning",
     options: [
       "School Adoption",
       "Mentorship Support & Career Guidance",
@@ -747,7 +747,7 @@ const contributionGroups = [
     ],
   },
   {
-    label: "B. Events & Professional Engagement",
+    label: "2. Events & Professional Engagement",
     options: [
       "Organise or Support Hackathons & Olympiads",
       "Organise or Support Seminars & Conferences",
@@ -757,7 +757,7 @@ const contributionGroups = [
     ],
   },
   {
-    label: "C. Research, Science & Knowledge Development",
+    label: "3. Research, Science & Knowledge Development",
     options: [
       "Research & Scientific Collaboration",
       "Expert Validation & Technical Review",
@@ -767,7 +767,7 @@ const contributionGroups = [
     ],
   },
   {
-    label: "D. Data, Technology & Intelligence",
+    label: "4. Data, Technology & Intelligence",
     options: [
       "Environmental Data & Analytics",
       "GIS, Mapping & Earth Observation Support",
@@ -777,7 +777,7 @@ const contributionGroups = [
     ],
   },
   {
-    label: "E. Programme & Institutional Support",
+    label: "5. Programme ,",
     options: [
       "Programme Development, Monitoring & Evaluation",
       "Partnership & Stakeholder Engagement",
@@ -787,14 +787,7 @@ const contributionGroups = [
       "Internship, Industry Exposure & Exchange Opportunities",
     ],
   },
-  {
-    label: "F. Other",
-    options: [
-      "Other Professional or Technical Contribution",
-      "Other Institutional Contribution",
-      "Prefer to Specify",
-    ],
-  },
+ 
 ] as const;
 const participationOptions = [
   "Geo-Mentor",
@@ -1372,9 +1365,7 @@ export function WaitlistForm() {
       <p className="-mt-3 text-sm leading-6 text-slate-600">
         Select your primary role.
       </p>
-      <p className="-mt-3 text-sm leading-6 text-slate-600">
-        A Geo-Partner may be an individual, organisation, institution, company, government agency, university, professional body, donor, foundation or development partner contributing resources, expertise, technology, funding or institutional support to GeoMentor Africa.
-      </p>
+     
       <Field label="WOULD YOU LIKE AN ADDITIONAL ROLE? *" htmlFor="wantsAdditionalRole">
         <select
           id="wantsAdditionalRole"
