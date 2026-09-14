@@ -1091,9 +1091,7 @@ export function WaitlistForm() {
           />
         </Field>
         </div>
-      </CollapsibleSection>
 
-      <CollapsibleSection title="ADDRESS">
         <Field label="COUNTRY *" htmlFor="country">
         <select
           id="country"
@@ -1341,119 +1339,124 @@ export function WaitlistForm() {
           />
         </Field>
       </CollapsibleSection>
-      <Field
-        label="HOW WOULD YOU LIKE TO PARTICIPATE? *"
-        htmlFor="participationType"
-      >
-        <select
-          id="participationType"
-          required
-          value={formData.participationType}
-          onChange={(event) =>
-            setFormData({ ...formData, participationType: event.target.value })
-          }
-          className={inputClass}
+      <CollapsibleSection title="HOW WOULD YOU LIKE TO PARTICIPATE?">
+        <Field
+          label="HOW WOULD YOU LIKE TO PARTICIPATE? *"
+          htmlFor="participationType"
         >
-          <option value="">Select one</option>
-          {participationOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <p className="-mt-3 text-sm leading-6 text-slate-600">
-        Select your primary role.
-      </p>
-     
-      <Field label="WOULD YOU LIKE AN ADDITIONAL ROLE? *" htmlFor="wantsAdditionalRole">
-        <select
-          id="wantsAdditionalRole"
-          required
-          value={formData.wantsAdditionalRole}
-          onChange={(event) =>
-            setFormData({
-              ...formData,
-              wantsAdditionalRole: event.target.value,
-              additionalParticipationType:
-                event.target.value === "yes" ? formData.additionalParticipationType : "",
-            })
-          }
-          className={inputClass}
-        >
-          <option value="">Select yes or no</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
-      </Field>
-      <p className="-mt-3 text-sm leading-6 text-slate-600">
-        Volunteers may select one additional role based on expertise, interests,
-        resources and level of commitment.
-      </p>
-      {formData.wantsAdditionalRole === "yes" && (
-        <Field label="SELECT YOUR ADDITIONAL ROLE *" htmlFor="additionalParticipationType">
           <select
-            id="additionalParticipationType"
+            id="participationType"
             required
-            value={formData.additionalParticipationType}
+            value={formData.participationType}
             onChange={(event) =>
-              setFormData({ ...formData, additionalParticipationType: event.target.value })
+              setFormData({ ...formData, participationType: event.target.value })
             }
             className={inputClass}
           >
-            <option value="">Select an additional role</option>
-            {participationOptions
-              .filter((option) => option !== formData.participationType)
-              .map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
+            <option value="">Select one</option>
+            {participationOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
           </select>
         </Field>
-      )}
-      {selectedParticipationRoles.map((role) => {
-        const roleOptions = roleContributionOptions[role];
-        if (!roleOptions) return null;
-
-        return (
-          <CheckboxGroup
-            key={role}
-            legend={`${role.toUpperCase()} PATHWAYS *`}
-            description="Select all that apply."
-            options={roleOptions}
-            values={formData.roleContributionSelections}
-            onChange={(values) =>
-              setFormData({ ...formData, roleContributionSelections: values })
-            }
+        <p className="-mt-3 text-sm leading-6 text-slate-600">
+          Select your primary role.
+        </p>
+      
+        <Field label="WOULD YOU LIKE AN ADDITIONAL ROLE? *" htmlFor="wantsAdditionalRole">
+          <select
+            id="wantsAdditionalRole"
             required
-          />
-        );
-      })}
-      <CheckboxGroup
-        legend="HOW WOULD YOU LIKE TO SPECIFICALLY CONTRIBUTE? *"
-        description="Select a category to view its contribution options, then select all that apply."
-        groups={contributionGroups}
-        values={formData.contributionAreas}
-        onChange={(values) =>
-          setFormData({ ...formData, contributionAreas: values })
-        }
-        collapsibleGroups
-        required
-      />
-      <Field
-        label="ADDITIONAL CONTRIBUTION DETAILS"
-        htmlFor="additionalInformation"
-      >
-        <textarea
-          id="additionalInformation"
-          rows={5}
-          placeholder="Please provide any specific expertise, resources, opportunities or support you would like to contribute."
-          value={formData.additionalInformation}
-          onChange={(event) =>
-            setFormData({ ...formData, additionalInformation: event.target.value })
+            value={formData.wantsAdditionalRole}
+            onChange={(event) =>
+              setFormData({
+                ...formData,
+                wantsAdditionalRole: event.target.value,
+                additionalParticipationType:
+                  event.target.value === "yes" ? formData.additionalParticipationType : "",
+              })
+            }
+            className={inputClass}
+          >
+            <option value="">Select yes or no</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </Field>
+        <p className="-mt-3 text-sm leading-6 text-slate-600">
+          Volunteers may select one additional role based on expertise, interests,
+          resources and level of commitment.
+        </p>
+        {formData.wantsAdditionalRole === "yes" && (
+          <Field label="SELECT YOUR ADDITIONAL ROLE *" htmlFor="additionalParticipationType">
+            <select
+              id="additionalParticipationType"
+              required
+              value={formData.additionalParticipationType}
+              onChange={(event) =>
+                setFormData({ ...formData, additionalParticipationType: event.target.value })
+              }
+              className={inputClass}
+            >
+              <option value="">Select an additional role</option>
+              {participationOptions
+                .filter((option) => option !== formData.participationType)
+                .map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+            </select>
+          </Field>
+        )}
+        {selectedParticipationRoles.map((role) => {
+          const roleOptions = roleContributionOptions[role];
+          if (!roleOptions) return null;
+
+          return (
+            <CheckboxGroup
+              key={role}
+              legend={`${role.toUpperCase()} PATHWAYS *`}
+              description="Select all that apply."
+              options={roleOptions}
+              values={formData.roleContributionSelections}
+              onChange={(values) =>
+                setFormData({ ...formData, roleContributionSelections: values })
+              }
+              required
+            />
+          );
+        })}
+      </CollapsibleSection>
+
+      <CollapsibleSection title="ADDITIONAL CONTRIBUTION DETAILS">
+        <CheckboxGroup
+          legend="HOW WOULD YOU LIKE TO SPECIFICALLY CONTRIBUTE? *"
+          description="Select a category to view its contribution options, then select all that apply."
+          groups={contributionGroups}
+          values={formData.contributionAreas}
+          onChange={(values) =>
+            setFormData({ ...formData, contributionAreas: values })
           }
-          className={inputClass}
+          collapsibleGroups
+          required
         />
-      </Field>
+        <Field
+          label="ADDITIONAL CONTRIBUTION DETAILS"
+          htmlFor="additionalInformation"
+        >
+          <textarea
+            id="additionalInformation"
+            rows={5}
+            placeholder="Please provide any specific expertise, resources, opportunities or support you would like to contribute."
+            value={formData.additionalInformation}
+            onChange={(event) =>
+              setFormData({ ...formData, additionalInformation: event.target.value })
+            }
+            className={inputClass}
+          />
+        </Field>
+      </CollapsibleSection>
       <fieldset className="space-y-3">
         <legend className="mb-3 block text-xs font-black tracking-[.14em] text-emerald-700">
           PRIVACY &amp; PARTICIPATION CONSENT *
