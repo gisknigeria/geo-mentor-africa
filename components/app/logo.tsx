@@ -10,7 +10,7 @@ export function Logo({ compact = false, className }: { compact?: boolean; classN
       aria-label="GeoMentor Africa home"
     >
       <Image
-        src="/image.png"
+        src="/WhatsApp Image 2026-09-14 at 5.36.40 PM.jpeg"
         alt="GeoMentor Africa"
         width={compact ? 120 : 180}
         height={compact ? 36 : 54}

@@ -311,8 +311,8 @@ Every meaningful journey begins with a first step.
         `}</style>
 
         <div className="mx-auto max-w-7xl">
-          <div className="overflow-hidden rounded-2xl border border-[#dfe6df] bg-[#f7faf7] px-3 py-4">
-            <div className="partner-marquee-track flex min-w-max items-center gap-5 sm:gap-8">
+          <div className="overflow-hidden rounded-2xl border border-[#dfe6df] bg-white px-3 py-4">
+            <div className="partner-marquee-track flex min-w-max items-center gap-5 bg-white sm:gap-8">
               {[
                 "/ANG.png",
                 "/cheth-limited.png",
