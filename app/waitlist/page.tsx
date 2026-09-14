@@ -316,7 +316,6 @@ Every meaningful journey begins with a first step.
               {[
                 "/ANG.png",
                 "/cheth-limited.png",
-                "/clear Geoson Logo.jfif",
                 "/Ebis.png",
                 "/esri-logo.jpg",
                 "/Logo GIS Konsult.png",
