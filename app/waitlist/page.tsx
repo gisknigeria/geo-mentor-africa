@@ -298,9 +298,21 @@ Every meaningful journey begins with a first step.
       </section>
 
       <footer className="border-t border-[#dfe6df] bg-white px-5 py-8 text-sm text-slate-600 sm:px-8">
+        <style>{`
+          @keyframes partnerscroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+
+          .partner-marquee-track {
+            will-change: transform;
+            animation: partnerscroll 48s linear infinite;
+          }
+        `}</style>
+
         <div className="mx-auto max-w-7xl">
           <div className="overflow-hidden rounded-2xl border border-[#dfe6df] bg-[#f7faf7] px-3 py-4">
-            <div className="flex min-w-max animate-[partnerscroll_42s_linear_infinite] items-center gap-5 sm:gap-8">
+            <div className="partner-marquee-track flex min-w-max items-center gap-5 sm:gap-8">
               {[
                 "/ANG.png",
                 "/cheth-limited.png",
