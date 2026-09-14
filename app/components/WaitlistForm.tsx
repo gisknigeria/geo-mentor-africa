@@ -1504,7 +1504,7 @@ export function WaitlistForm() {
           }
           required
         >
-          I have read and understood the GeoMentor Africa <Link href="/privacy" className="font-semibold text-emerald-700 underline hover:text-emerald-900">Privacy Notice</Link> and agree to the processing of my personal data as necessary to manage my registration, participation and programme activities.
+          I have read and understood the GeoMentor Africa <Link href="/privacy" className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2 hover:text-blue-800">Privacy Notice</Link> and agree to the processing of my personal data as necessary to manage my registration, participation and programme activities.
         </Consent>
       </fieldset>
 
@@ -1518,20 +1518,6 @@ export function WaitlistForm() {
         opportunities and related communications. I understand that I can
         unsubscribe at any time.
       </Consent>
-
-      <address className="not-italic rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-sm leading-6 text-slate-600">
-        <p className="font-bold text-emerald-800">Contact Address</p>
-        <p>GIS Konsult Ltd, 44, Adeyi Avenue, Bodija, Ibadan</p>
-        <p>
-          Phone: <a className="font-semibold text-emerald-700" href="tel:08038089097">08038089097</a>
-        </p>
-        <p>
-          Email: <a className="font-semibold text-emerald-700" href="mailto:giskonsult@gisknigeria.com">giskonsult@gisknigeria.com</a>
-        </p>
-        <p className="mt-2">
-          <Link href="/feedback" className="font-semibold text-emerald-700 underline">Send feedback or ask a question</Link>
-        </p>
-      </address>
 
       {formState.message && (
         <div

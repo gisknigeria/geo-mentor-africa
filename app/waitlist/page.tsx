@@ -275,8 +275,28 @@ Every meaningful journey begins with a first step.
         </div>
       </section>
 
-      <footer className="border-t border-[#dfe6df] px-5 py-6 text-center text-xs text-slate-500 sm:px-8">
-        <p>GeoMentor Africa · Map what lives. Grow what matters.</p>
+      <footer className="border-t border-[#dfe6df] bg-white px-5 py-8 text-sm text-slate-600 sm:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Logo className="text-emerald-950" />
+          </div>
+
+          <address className="not-italic text-left md:text-right">
+            <p className="font-bold text-emerald-800">Contact Address</p>
+            <p>GIS Konsult Ltd, 44, Adeyi Avenue, Bodija, Ibadan</p>
+            <p>
+              Phone: <a className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2" href="tel:08038089097">08038089097</a>
+            </p>
+            <p>
+              Email: <a className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2" href="mailto:giskonsult@gisknigeria.com">giskonsult@gisknigeria.com</a>
+            </p>
+            <p className="mt-2">
+              <Link href="/feedback" className="font-semibold text-blue-700 underline decoration-blue-700 underline-offset-2">Send feedback or ask a question</Link>
+            </p>
+          </address>
+        </div>
+
+        <p className="mt-5 text-center text-xs text-slate-500">GeoMentor Africa · Map what lives. Grow what matters.</p>
       </footer>
     </main>
   );
