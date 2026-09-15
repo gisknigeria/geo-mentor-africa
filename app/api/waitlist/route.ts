@@ -133,18 +133,6 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation email if Resend is configured
     if (resendKey) {
-      const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-      const forwardedHost =
-        request.headers.get("x-forwarded-host") ??
-        request.headers.get("host") ??
-        "www.geomentorafrica.org";
-      const requestOrigin = `${forwardedProto}://${forwardedHost}`;
-      const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        process.env.NEXT_PUBLIC_APP_URL ||
-        requestOrigin;
-      const confirmationUrl = `${siteUrl.replace(/\/$/, "")}/twg/confirm?id=${waitlistEntry.id}`;
-
       try {
         const emailResponse = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -155,37 +143,27 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             from: process.env.RESEND_FROM_EMAIL || "GeoMentor <onboarding@resend.dev>",
             to: email,
-            subject: "Welcome to GeoMentor Africa - Confirm Your Waiting List Spot",
+            subject: "Welcome to GeoMentor Africa!",
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #0b4436; margin-bottom: 20px;">Welcome to GeoMentor Africa!</h2>
-                
-                <p>Hi ${full_name.split(" ")[0]},</p>
-                
-                <p>Thank you for joining our waiting list! We're excited to have you interested in the GeoMentor Africa programme.</p>
-                
-                <p>Please confirm your email address to secure your spot on the waiting list:</p>
-                
-                <p style="margin: 30px 0;">
-                  <a href="${confirmationUrl}" style="background-color: #0b4436; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                    Confirm Your Email
-                  </a>
-                </p>
-                
-                <p><strong>Your Interest Areas:</strong></p>
+
+                <p>Hi ${full_name},</p>
+
+                <p>Thank you for registering your interest in GeoMentor Africa. We’re delighted to welcome you to our growing community.</p>
+
+                <p>Our team will review your registration and share the next steps with you shortly.</p>
+
+                <p><strong>Interest Areas:</strong></p>
                 <ul>
-                  ${interested_in && interested_in.length > 0
-                    ? interested_in.map((item: string) => `<li>${item}</li>`).join("")
+                  ${participation_type
+                    ? participation_type.split("; ").map((item: string) => `<li>${item}</li>`).join("")
                     : "<li>Not specified</li>"
                   }
                 </ul>
-                
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-                
-                <p style="font-size: 12px; color: #666;">
-                  If you did not sign up for this service, please disregard this email.
-                </p>
-                
+
+                <p>Thank you for stepping forward. We look forward to having you on this journey with us.</p>
+
                 <p style="font-size: 12px; color: #666;">
                   Best regards,<br>
                   The GeoMentor Africa Team
