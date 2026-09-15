@@ -1327,6 +1327,9 @@ export function WaitlistForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-base">
       <SectionHeading title="REGISTRATION" />
+      <p className="-mt-3 text-sm text-slate-600">
+        Join the movement. Register on GeoMentor Africa and help drive impact across Africa.
+      </p>
       <CollapsibleSection title="BIO DATA">
         <Field label="PREFIX" htmlFor="professionalPrefix">
           <select
@@ -1376,7 +1379,7 @@ export function WaitlistForm() {
             <input
               id="phone"
               type="tel"
-              placeholder="+234..."
+              placeholder=""
               value={formData.phone}
               onChange={(event) =>
                 setFormData({ ...formData, phone: event.target.value })
