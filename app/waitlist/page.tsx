@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { Logo } from "../../components/app/logo";
 
-const launchDate = new Date("2026-10-10T10:00:00+01:00");
+const launchDate = new Date("2026-10-15T10:00:00+01:00");
 const heroImages = [
   {
     src: "/biodiversity-fieldwork.png",

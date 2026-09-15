@@ -1133,9 +1133,6 @@ export function WaitlistForm() {
   const [isLoadingLocalGovernments, setIsLoadingLocalGovernments] =
     useState(false);
   const [isManualLocalGovernment, setIsManualLocalGovernment] = useState(false);
-  const [openJobTitleGroup, setOpenJobTitleGroup] = useState<string | null>(
-    "Executive & Leadership",
-  );
   const selectedParticipationRoles = [
     formData.participationType,
     formData.wantsAdditionalRole === "yes"
@@ -1559,57 +1556,16 @@ export function WaitlistForm() {
           label="DESIGNATION (JOB TITLE / CURRENT ROLE)"
           htmlFor="jobTitle"
         >
-          <div className="space-y-3" id="jobTitle">
-            {Object.entries(jobTitleGroups).map(([group, options]) => {
-              const isOpen = openJobTitleGroup === group;
-
-              return (
-                <div
-                  key={group}
-                  className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenJobTitleGroup(isOpen ? null : group)}
-                    className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-bold text-slate-800"
-                  >
-                    <span>{group}</span>
-                    <ChevronDown
-                      className={`size-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  {isOpen && (
-                    <div className="grid gap-2 border-t border-slate-200 bg-white p-3 sm:grid-cols-2">
-                      {options.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            setFormData({ ...formData, jobTitle: option });
-                            setOpenJobTitleGroup(null);
-                          }}
-                          className={`rounded-md border px-3 py-2 text-left text-sm transition ${
-                            formData.jobTitle === option
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                              : "border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/50"
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {formData.jobTitle && (
-              <p className="text-sm font-medium text-emerald-700">
-                Selected: {formData.jobTitle}
-              </p>
-            )}
-          </div>
+          <input
+            id="jobTitle"
+            type="text"
+            value={formData.jobTitle}
+            onChange={(event) =>
+              setFormData({ ...formData, jobTitle: event.target.value })
+            }
+            placeholder="Enter your job title or current role"
+            className={inputClass}
+          />
         </Field>
         <Field label="WEBSITE / LINKEDIN PROFILE (PERSONAL)" htmlFor="website">
           <input
