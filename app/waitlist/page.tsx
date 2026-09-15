@@ -39,6 +39,18 @@ const heroImages = [
   },
 ];
 
+const pathwayImages = [
+  "/WhatsApp Image 2026-09-05 at 11.38.17 AM (1).jpeg",
+  "/WhatsApp Image 2026-09-05 at 11.38.17 AM.jpeg",
+  "/WhatsApp Image 2026-09-05 at 11.38.18 AM.jpeg",
+  "/WhatsApp Image 2026-09-05 at 11.39.04 AM (1).jpeg",
+  "/WhatsApp Image 2026-09-05 at 11.39.04 AM.jpeg",
+  "/WhatsApp Image 2026-09-05 at 11.40.19 AM.jpeg",
+  "/20230522_122039.jpg",
+  "/20230522_122403(0).jpg",
+  "/20230522_122641.jpg",
+];
+
 type Countdown = {
   days: number;
   hours: number;
@@ -76,6 +88,7 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
 export default function WaitlistPage() {
   const [countdown, setCountdown] = useState<Countdown>(getCountdown);
   const [activeHeroImage, setActiveHeroImage] = useState(0);
+  const [activePathwayImage, setActivePathwayImage] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => setCountdown(getCountdown()), 1000);
@@ -86,6 +99,13 @@ export default function WaitlistPage() {
     const timer = window.setInterval(() => {
       setActiveHeroImage((current) => (current + 1) % heroImages.length);
     }, 6000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActivePathwayImage((current) => (current + 1) % pathwayImages.length);
+    }, 4500);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -261,32 +281,39 @@ Every meaningful journey begins with a first step.
                 <li><strong>Geo-Partner &amp; Institutional Collaboration:</strong> An individual, organisation, institution, company, government agency, university, professional body, donor, foundation or development partner that supports GeoMentor Africa through resources, expertise, technology, funding, partnerships or institutional support.</li>
               </ol>
 
-              <div className="mt-6 overflow-hidden rounded-2xl border border-[#dfe6df] bg-[#edf6f1]">
-                <div className="flex animate-[carousel_18s_linear_infinite] gap-3 p-3">
-                  {[
-                    "/WhatsApp Image 2026-09-05 at 11.38.17 AM (1).jpeg",
-                    "/WhatsApp Image 2026-09-05 at 11.38.17 AM.jpeg",
-                    "/WhatsApp Image 2026-09-05 at 11.38.18 AM.jpeg",
-                    "/WhatsApp Image 2026-09-05 at 11.39.04 AM (1).jpeg",
-                    "/WhatsApp Image 2026-09-05 at 11.39.04 AM.jpeg",
-                    "/WhatsApp Image 2026-09-05 at 11.40.19 AM.jpeg",
-                    "/20230522_122039.jpg",
-                    "/20230522_122403(0).jpg",
-                    "/20230522_122641.jpg",
-                  ].map((image, index) => (
-                    <div key={`${image}-${index}`} className="relative h-32 w-44 shrink-0 overflow-hidden rounded-xl border border-white/60 bg-white shadow-sm sm:h-36 sm:w-52">
-                      <img
-                        src={image}
-                        alt="GeoMentor Africa participation pathway"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
             </div>
           </details>
+
+          <div className="mt-8 overflow-hidden rounded-2xl border border-[#dfe6df] bg-[#edf6f1]" aria-label="Participation pathway photos">
+            <div
+              className="flex transition-transform duration-700 ease-in-out"
+              style={{ transform: `translateX(-${activePathwayImage * 100}%)` }}
+            >
+              {pathwayImages.map((image) => (
+                <div key={image} className="w-full shrink-0 p-3">
+                  <div className="relative h-48 overflow-hidden rounded-xl border border-white/60 bg-white shadow-sm sm:h-64">
+                    <img
+                      src={image}
+                      alt="GeoMentor Africa participation pathway"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center gap-2 pb-3" aria-label="Participation pathway slides">
+              {pathwayImages.map((image, index) => (
+                <button
+                  key={image}
+                  type="button"
+                  onClick={() => setActivePathwayImage(index)}
+                  aria-label={`Show participation pathway image ${index + 1}`}
+                  className={`size-2.5 rounded-full transition ${index === activePathwayImage ? "bg-emerald-700" : "bg-emerald-700/25 hover:bg-emerald-700/50"}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         <div
