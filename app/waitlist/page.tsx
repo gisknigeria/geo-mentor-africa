@@ -42,10 +42,8 @@ const heroImages = [
 const pathwayImages = [
   "/WhatsApp Image 2026-09-05 at 11.38.17 AM (1).jpeg",
   "/WhatsApp Image 2026-09-05 at 11.38.17 AM.jpeg",
-  "/WhatsApp Image 2026-09-05 at 11.38.18 AM.jpeg",
   "/WhatsApp Image 2026-09-05 at 11.39.04 AM (1).jpeg",
   "/WhatsApp Image 2026-09-05 at 11.39.04 AM.jpeg",
-  "/WhatsApp Image 2026-09-05 at 11.40.19 AM.jpeg",
   
   "/20230522_122403(0).jpg",
   "/20230522_122641.jpg",
